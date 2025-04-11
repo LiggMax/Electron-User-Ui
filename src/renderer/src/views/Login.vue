@@ -26,13 +26,13 @@ const login = () => {
       <h1>欢迎使用客户端平台</h1>
       <div class="form-item">
         <div class="input-icon">
-          <i class="icon-user"></i>
+          <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />
           <input type="text" id="username" v-model="username" placeholder="请输入账户" />
         </div>
       </div>
       <div class="form-item">
         <div class="input-icon">
-          <i class="icon-lock"></i>
+          <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="密码" />
           <input type="password" id="password" v-model="password" placeholder="请输入密码" />
         </div>
       </div>
@@ -104,33 +104,32 @@ h1 {
 
 .input-icon {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.icon-user, .icon-lock {
+.icon-img {
   position: absolute;
   left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: #999;
+  width: 20px;
+  height: 20px;
   z-index: 2;
-}
-
-.icon-user:before {
-  content: "👤";
-}
-
-.icon-lock:before {
-  content: "🔒";
 }
 
 input[type="text"], input[type="password"] {
   width: 100%;
-  padding: 10px 10px 10px 30px;
+  padding: 10px 12px 10px 40px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+  border-color: #4169E1;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
 }
 
 .checkbox-item {
@@ -141,6 +140,7 @@ input[type="text"], input[type="password"] {
 input[type="checkbox"] {
   margin-right: 8px;
   width: auto;
+  cursor: pointer;
 }
 
 .checkbox-label {
@@ -148,6 +148,7 @@ input[type="checkbox"] {
   color: #666;
   display: inline;
   margin: 0;
+  cursor: pointer;
 }
 
 button {
@@ -159,6 +160,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
+  transition: background-color 0.3s;
 }
 
 button:hover {
