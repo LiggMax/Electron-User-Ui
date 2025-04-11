@@ -22,8 +22,8 @@ const login = () => {
 
 <template>
   <div class="login-container">
-    <h1>用户登录</h1>
     <div class="login-form">
+      <h1>用户登录</h1>
       <div class="form-item">
         <label for="username">用户名：</label>
         <input type="text" id="username" v-model="username" placeholder="请输入用户名" />
@@ -46,7 +46,25 @@ const login = () => {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #f5f5f5;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-image: url('../assets/login/Login.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  overflow: hidden; /* 防止滚动条出现 */
+}
+
+/* 添加背景遮罩，提高表单可读性 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .login-form {
@@ -55,6 +73,8 @@ const login = () => {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative; /* 确保表单在遮罩上方 */
+  z-index: 1;
 }
 
 h1 {
