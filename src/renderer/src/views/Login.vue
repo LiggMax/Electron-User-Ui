@@ -61,7 +61,7 @@ const login = () => {
   width: 100%;
   margin: 0;
   padding: 0 0 0 6%;
-  background-image: url('../assets/login/Login.png');
+  background-image: url('../assets/login/Login.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
