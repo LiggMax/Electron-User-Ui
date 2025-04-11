@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const username = ref("");
 const password = ref("");
+const rememberUsername = ref(false); // 默认选中
 
 const login = () => {
   if (!username.value || !password.value) {
@@ -14,6 +15,7 @@ const login = () => {
 
   // 这里可以添加实际的登录验证逻辑
   console.log("登录信息：", username.value, password.value);
+  console.log("是否记住用户名：", rememberUsername.value);
 
   // 登录成功后跳转到首页
   router.push("/home");
@@ -27,18 +29,20 @@ const login = () => {
       <div class="form-item">
         <div class="input-icon">
           <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />
-          <input type="text" id="username" v-model="username" placeholder="请输入账户" />
+          <input type="text" id="username" v-model="username" placeholder="请输入账户ID" />
         </div>
       </div>
       <div class="form-item">
         <div class="input-icon">
           <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="密码" />
-          <input type="password" id="password" v-model="password" placeholder="请输入密码" />
+          <input type="password" id="password" v-model="password" placeholder="请输入账户密码" />
         </div>
       </div>
       <div class="form-item checkbox-item">
-        <input type="checkbox" id="remember" />
-        <label for="remember" class="checkbox-label">记住账户</label>
+        <div class="checkbox-container">
+          <input type="checkbox" id="remember" v-model="rememberUsername" checked />
+          <label for="remember" class="checkbox-label">记住用户名</label>
+        </div>
       </div>
       <div class="form-item">
         <button @click="login">登录</button>
@@ -56,7 +60,7 @@ const login = () => {
   height: 100vh;
   width: 100%;
   margin: 0;
-  padding: 0 0 0 8%;
+  padding: 0 0 0 6%;
   background-image: url('../assets/login/Login.png');
   background-size: cover;
   background-position: center;
@@ -75,14 +79,17 @@ const login = () => {
 }
 
 .login-form {
-  width: 350px;
-  padding: 30px;
+  width: 420px;
+  padding: 40px 35px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 1;
   animation: slideIn 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @keyframes slideIn {
@@ -91,26 +98,32 @@ const login = () => {
 }
 
 h1 {
-  margin-bottom: 30px;
+  margin-bottom: 35px;
   color: #333;
   text-align: center;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
+  width: 100%;
 }
 
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  position: relative;
+  width: 90%;
 }
 
 .input-icon {
   position: relative;
   display: flex;
   align-items: center;
+  margin-bottom: 5px;
 }
 
 .icon-img {
   position: absolute;
   left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 20px;
   height: 20px;
   z-index: 2;
@@ -118,52 +131,112 @@ h1 {
 
 input[type="text"], input[type="password"] {
   width: 100%;
-  padding: 10px 12px 10px 40px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px 12px 12px 40px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0;
   box-sizing: border-box;
   font-size: 14px;
   transition: border-color 0.3s;
+  background-color: transparent;
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
-  border-color: #4169E1;
+  border-bottom-color: #4169E1;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+  box-shadow: none;
+}
+
+/* 添加输入框的占位符样式 */
+input::placeholder {
+  color: #999;
+  font-size: 14px;
 }
 
 .checkbox-item {
   display: flex;
   align-items: center;
+  margin-top: 5px;
+  width: 100%;
+  justify-content: flex-start;
+  padding-left: 0; /* 确保没有左内边距 */
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-left: 40px; /* 与输入框内文本起始位置对齐 */
+  position: relative; /* 添加相对定位 */
+}
+
+/* 添加伪元素模拟图标，确保垂直对齐 */
+.checkbox-container::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
 }
 
 input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
   margin-right: 8px;
-  width: auto;
+  position: relative;
   cursor: pointer;
+  vertical-align: middle;
+  background-color: white;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #5B7CF9;
+  border-color: #5B7CF9;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 3px;
+  height: 7px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 .checkbox-label {
   font-size: 14px;
   color: #666;
-  display: inline;
-  margin: 0;
+  display: inline-block;
+  vertical-align: middle;
   cursor: pointer;
+  user-select: none;
 }
 
 button {
   width: 100%;
   padding: 12px;
-  background-color: #4169E1;
+  background-color: #5B7CF9;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 50px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
+  margin-top: 10px;
 }
 
 button:hover {
-  background-color: #5A7BE6;
+  background-color: #6D8BFF;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(91, 124, 249, 0.3);
 }
 </style>
