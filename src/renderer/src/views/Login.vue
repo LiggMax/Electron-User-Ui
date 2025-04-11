@@ -23,14 +23,22 @@ const login = () => {
 <template>
   <div class="login-container">
     <div class="login-form">
-      <h1>用户登录</h1>
+      <h1>欢迎使用客户端平台</h1>
       <div class="form-item">
-        <label for="username">用户名：</label>
-        <input type="text" id="username" v-model="username" placeholder="请输入用户名" />
+        <div class="input-icon">
+          <i class="icon-user"></i>
+          <input type="text" id="username" v-model="username" placeholder="请输入账户" />
+        </div>
       </div>
       <div class="form-item">
-        <label for="password">密码：</label>
-        <input type="password" id="password" v-model="password" placeholder="请输入密码" />
+        <div class="input-icon">
+          <i class="icon-lock"></i>
+          <input type="password" id="password" v-model="password" placeholder="请输入密码" />
+        </div>
+      </div>
+      <div class="form-item checkbox-item">
+        <input type="checkbox" id="remember" />
+        <label for="remember" class="checkbox-label">记住账户</label>
       </div>
       <div class="form-item">
         <button @click="login">登录</button>
@@ -43,21 +51,20 @@ const login = () => {
 .login-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   height: 100vh;
   width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 8%;
   background-image: url('../assets/login/Login.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
-  overflow: hidden; /* 防止滚动条出现 */
+  overflow: hidden;
 }
 
-/* 添加背景遮罩，提高表单可读性 */
 .login-container::before {
   content: '';
   position: absolute;
@@ -72,39 +79,81 @@ const login = () => {
   padding: 30px;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  position: relative; /* 确保表单在遮罩上方 */
+  box-shadow: 10px 0 20px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
   z-index: 1;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 h1 {
   margin-bottom: 30px;
   color: #333;
   text-align: center;
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .form-item {
   margin-bottom: 20px;
 }
 
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #333;
+.input-icon {
+  position: relative;
 }
 
-input {
+.icon-user, .icon-lock {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #999;
+  z-index: 2;
+}
+
+.icon-user:before {
+  content: "👤";
+}
+
+.icon-lock:before {
+  content: "🔒";
+}
+
+input[type="text"], input[type="password"] {
   width: 100%;
-  padding: 10px;
+  padding: 10px 10px 10px 30px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
 }
 
+.checkbox-item {
+  display: flex;
+  align-items: center;
+}
+
+input[type="checkbox"] {
+  margin-right: 8px;
+  width: auto;
+}
+
+.checkbox-label {
+  font-size: 14px;
+  color: #666;
+  display: inline;
+  margin: 0;
+}
+
 button {
   width: 100%;
   padding: 12px;
-  background-color: #1890ff;
+  background-color: #4169E1;
   color: white;
   border: none;
   border-radius: 4px;
@@ -113,6 +162,6 @@ button {
 }
 
 button:hover {
-  background-color: #40a9ff;
+  background-color: #5A7BE6;
 }
 </style>
