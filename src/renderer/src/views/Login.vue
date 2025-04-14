@@ -1,24 +1,38 @@
 <script setup>
-import { ref } from "vue";
+import { inject, ref } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { UserLoginService } from "../api/user";
+import { userTokenStore } from "../store/token";
+
+const message = inject("message")
+
+const tokenStore = userTokenStore()
 
 const router = useRouter();
-const username = ref("");
-const password = ref("");
+const loginForm = ref({
+  account: "",
+  password: ""
+})
 const rememberUsername = ref(false); // 默认选中
 
-const login = () => {
-  if (!username.value || !password.value) {
-    alert("用户名和密码不能为空！");
+const login = async () => {
+  if (!loginForm.value.account || !loginForm.value.password) {
+    message.error("请输入账户ID和账户密码")
     return;
   }
 
-  // 这里可以添加实际的登录验证逻辑
-  console.log("登录信息：", username.value, password.value);
-  console.log("是否记住用户名：", rememberUsername.value);
+  const res = await UserLoginService(loginForm.value)
+  tokenStore.setToken(res.data)
 
+  await message.success("登录成功")
+
+  //如果不勾选 记住用户名，则清除本地存储的 rememberUsername 值
+  if (!rememberUsername.value) {
+    localStorage.removeItem("rememberUsername");
+  }
   // 登录成功后跳转到首页
-  router.push("/home");
+  await router.push("/home");
 };
 </script>
 
@@ -29,13 +43,13 @@ const login = () => {
       <div class="form-item">
         <div class="input-icon">
           <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />
-          <input type="text" id="username" v-model="username" placeholder="请输入账户ID" />
+          <input type="text" id="username" v-model="loginForm.account" placeholder="请输入账户ID" />
         </div>
       </div>
       <div class="form-item">
         <div class="input-icon">
           <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="密码" />
-          <input type="password" id="password" v-model="password" placeholder="请输入账户密码" />
+          <input type="password" id="password" v-model="loginForm.password" placeholder="请输入账户密码" />
         </div>
       </div>
       <div class="form-item checkbox-item">

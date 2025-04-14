@@ -21,18 +21,21 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "electron-updater": "^6.3.9",
-    "vue-router": "^4.5.0"
+    "vue-router": "^4.5.0",
+    "vuex-persistedstate": "^4.1.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^2.0.0",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@vitejs/plugin-vue": "^5.2.3",
+    "axios": "^1.8.4",
     "electron": "^35.0.3",
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.1.0",
     "element-plus": "^2.9.7",
     "eslint": "^9.23.0",
     "eslint-plugin-vue": "^9.33.0",
+    "pinia": "^3.0.2",
     "prettier": "^3.5.3",
     "vite": "^6.2.3",
     "vue": "^3.5.13"
