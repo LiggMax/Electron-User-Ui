@@ -1,11 +1,10 @@
 <script setup>
-import { inject, ref } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { UserLoginService } from "../api/user";
 import { userTokenStore } from "../store/token";
-
-const message = inject("message")
+import message from "../utils/message";
 
 const tokenStore = userTokenStore()
 
