@@ -1,5 +1,5 @@
 <template>
-  <div class="top-nav">
+  <div class="top-nav draggable">
     <div class="nav-left">
       <span class="current-page">
         <img src="../assets/imgae/triangle.png" style="width: 20px" alt="">
@@ -7,7 +7,7 @@
         <img src="../assets/svg/Max.svg" style="width: 20px" alt="">
       </span>
     </div>
-    <div class="nav-right">
+    <div class="nav-right non-draggable">
       <slot name="right-buttons">
         <div class="user-profile">
           <div class="profile-icon">
@@ -42,7 +42,9 @@ defineProps({
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 5px; /* 与内容区域保持一些距离 */
+  border-top-left-radius: 15px;
+  border-top-right-radius: 12px;
+  margin-bottom: 5px;
 }
 
 .nav-left {

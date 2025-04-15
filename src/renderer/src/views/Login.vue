@@ -94,10 +94,50 @@ defineExpose({
     progressBtn.clearTimers();
   }
 });
+
+// 窗口控制函数
+const closeWindow = () => {
+  if (window.api && window.api.windowControl) {
+    window.api.windowControl.close();
+  } else if (window.electron) {
+    window.electron.ipcRenderer.send('window-close');
+  }
+};
+
+const minimizeWindow = () => {
+  if (window.api && window.api.windowControl) {
+    window.api.windowControl.minimize();
+  } else if (window.electron) {
+    window.electron.ipcRenderer.send('window-minimize');
+  }
+};
+
+const maximizeWindow = () => {
+  if (window.api && window.api.windowControl) {
+    window.api.windowControl.maximize();
+  } else if (window.electron) {
+    window.electron.ipcRenderer.send('window-maximize');
+  }
+};
 </script>
 
 <template>
   <div class="login-container">
+    <!-- 添加顶部可拖拽区域 -->
+    <div class="window-drag-area draggable">
+      <!-- 窗口控制按钮移到右侧 -->
+      <div class="window-controls non-draggable">
+        <div class="control-btn minimize" @click="minimizeWindow">
+          <img src="../assets/svg/menu/minimize.svg" alt="最小化" />
+        </div>
+        <div class="control-btn maximize" @click="maximizeWindow">
+          <img src="../assets/svg/menu/Maximize-1.svg" alt="最大化" />
+        </div>
+        <div class="control-btn close" @click="closeWindow">
+          <img src="../assets/svg/menu/Shutdown.svg" alt="关闭" />
+        </div>
+      </div>
+    </div>
     <div class="login-form">
       <h1>欢迎使用客户端平台</h1>
       <div class="form-item">
@@ -160,11 +200,11 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start; /* 更改为从顶部开始布局 */
   height: 100vh;
   width: 100%;
   margin: 0;
-  padding: 0 0 0 6%;
+  padding: 0;
   background-image: url('../assets/login/Login.jpg');
   background-size: cover;
   background-position: center;
@@ -173,11 +213,37 @@ defineExpose({
   overflow: hidden;
 }
 
-.login-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
+/* 窗口拖拽区域样式 */
+.window-drag-area {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 控制按钮右对齐 */
+  padding: 0 20px;
+  position: relative;
+  z-index: 10;
+}
+
+/* 窗口控制按钮区域 */
+.window-controls {
+  display: flex;
+  gap: 15px;
+  margin-right: 20px;
+}
+
+/* 窗口控制按钮样式 */
+.control-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.control-btn img {
   width: 100%;
   height: 100%;
 }
@@ -194,6 +260,8 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 15vh; /* 将表单向下移动，留出顶部空间 */
+  margin-left: 6%; /* 保持左侧间距 */
 }
 
 @keyframes slideIn {

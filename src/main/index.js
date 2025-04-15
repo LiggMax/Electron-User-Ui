@@ -13,12 +13,13 @@ function createWindow() {
     show: false,
     autoHideMenuBar: true,
     frame: false,
-    transparent: true,
     titleBarStyle: 'hidden',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegration: true,
+      contextIsolation: true
     }
   })
 
