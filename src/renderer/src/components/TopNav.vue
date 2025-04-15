@@ -8,16 +8,7 @@
       </span>
     </div>
     <div class="nav-right non-draggable">
-      <slot name="right-buttons">
-        <div class="user-profile">
-          <div class="profile-icon">
-            <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="" />
-          </div>
-          <div class="user-info">
-            <img src="../assets/svg/avatar.svg" style="width: 35px; height: 35px;" alt="" />
-            <span class="username">用户昵称</span>
-          </div>
-        </div>
+      <div class="user-controls-container">
         <!-- 窗口控制按钮 -->
         <div class="window-controls">
           <div class="control-btn minimize" @click="minimizeWindow">
@@ -32,7 +23,18 @@
             <img src="../assets/svg/menu/Shutdown.svg" alt="关闭" />
           </div>
         </div>
-      </slot>
+
+        <!-- 用户信息 -->
+        <div class="user-profile">
+          <div class="profile-icon">
+            <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="" />
+          </div>
+          <div class="user-info">
+            <img src="../assets/svg/avatar.svg" style="width: 35px; height: 35px;" alt="" />
+            <span class="username">用户昵称</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -129,10 +131,18 @@ if (window.electron) {
   align-items: center;
 }
 
+/* 用户和控制按钮的容器 */
+.user-controls-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .user-profile {
   display: flex;
   align-items: center;
   gap: 15px;
+  margin-top: 5px;
 }
 
 .profile-icon {
@@ -181,19 +191,19 @@ if (window.electron) {
 .window-controls {
   display: flex;
   align-items: center;
-  margin-left: 15px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
 .control-btn {
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s;
-  margin-left: 5px;
 }
 
 .control-btn:hover {
@@ -205,11 +215,11 @@ if (window.electron) {
 }
 
 .control-btn.close:hover img {
-  filter: invert(1);
+  filter: brightness(10);
 }
 
 .control-btn img {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
 }
 </style>
