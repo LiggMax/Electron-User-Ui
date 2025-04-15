@@ -255,8 +255,8 @@ if (window.electron) {
 
 /* 窗口控制按钮样式 */
 .control-btn {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;

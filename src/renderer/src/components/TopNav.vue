@@ -142,7 +142,6 @@ if (window.electron) {
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-top: 5px;
 }
 
 .profile-icon {
@@ -191,13 +190,13 @@ if (window.electron) {
 .window-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
+  gap: 6px;
+  padding-right: 2px;
 }
 
 .control-btn {
-  width: 16px;
-  height: 16px;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
