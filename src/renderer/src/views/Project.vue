@@ -195,7 +195,9 @@ onMounted(() => {
   display: flex;
   height: 100vh;
   width: 100%;
-  background-color: #f5f6fa;
+  background-color: #f7f9fc;
+  overflow: hidden;
+  padding: 0;
 }
 
 /* 右侧内容区样式 */

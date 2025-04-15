@@ -42,6 +42,7 @@ defineProps({
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 5px; /* 与内容区域保持一些距离 */
 }
 
 .nav-left {
@@ -59,6 +60,7 @@ defineProps({
   color: #5698f6;
   font-size: 14px;
   font-weight: bold;
+  margin: 0 8px;
 }
 
 .nav-right {

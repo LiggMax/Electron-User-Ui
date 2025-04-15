@@ -69,26 +69,41 @@ const handleMenuClick = (item) => {
 .sidebar {
   width: 180px;
   background-color: #f7f9fc;
-  border-right: 1px solid #e0e0e0;
+  border-right: none;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.08);
   height: 100vh;
+  padding-right: 5px;
+  z-index: 1;
+  position: relative;
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0));
+  pointer-events: none;
 }
 
 .logo {
   padding: 20px 15px;
   font-size: 18px;
   font-weight: bold;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: none;
   color: #333;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .menu-items {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
+  margin-top: 10px;
   padding: 0 5px;
 }
 
