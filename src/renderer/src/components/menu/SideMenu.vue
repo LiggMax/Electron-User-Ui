@@ -98,10 +98,11 @@ const handleMenuClick = (item) => {
   padding: 12px 15px;
   cursor: pointer;
   color: #666;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
   border-radius: 6px;
   margin-bottom: 8px;
   position: relative;
+  border-right: 3px solid transparent;
 }
 
 .menu-item:hover {
@@ -113,7 +114,6 @@ const handleMenuClick = (item) => {
   background-color: #e6f7ff;
   color: #2b6cff;
   font-weight: 500;
-  border-left: none;
   border-right: 3px solid #2b6cff;
 }
 
@@ -124,6 +124,12 @@ const handleMenuClick = (item) => {
   justify-content: center;
   width: 22px;
   height: 22px;
+  transition: transform 0.2s ease;
+}
+
+.menu-item:hover .menu-icon,
+.menu-item.active .menu-icon {
+  transform: scale(1.05);
 }
 
 .menu-icon img {
