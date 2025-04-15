@@ -18,18 +18,77 @@
             <span class="username">用户昵称</span>
           </div>
         </div>
+        <!-- 窗口控制按钮 -->
+        <div class="window-controls">
+          <div class="control-btn minimize" @click="minimizeWindow">
+            <img src="../assets/svg/menu/minimize.svg" alt="最小化" />
+          </div>
+          <div class="control-btn maximize" @click="maximizeWindow">
+            <!-- 根据窗口状态显示不同的图标 -->
+            <img v-if="isMaximized" src="../assets/svg/menu/Maximize-2.svg" alt="还原" />
+            <img v-else src="../assets/svg/menu/Maximize-1.svg" alt="最大化" />
+          </div>
+          <div class="control-btn close" @click="closeWindow">
+            <img src="../assets/svg/menu/Shutdown.svg" alt="关闭" />
+          </div>
+        </div>
       </slot>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+
+const isMaximized = ref(false);
+
 defineProps({
   title: {
     type: String,
     default: '项目列表'
   }
 });
+
+// 窗口控制函数
+const closeWindow = () => {
+  if (window.api && window.api.windowControl) {
+    window.api.windowControl.close();
+  } else if (window.electron) {
+    window.electron.ipcRenderer.send('window-close');
+  }
+};
+
+const minimizeWindow = () => {
+  if (window.api && window.api.windowControl) {
+    window.api.windowControl.minimize();
+  } else if (window.electron) {
+    window.electron.ipcRenderer.send('window-minimize');
+  }
+};
+
+const maximizeWindow = () => {
+  if (window.api && window.api.windowControl) {
+    window.api.windowControl.maximize();
+    isMaximized.value = !isMaximized.value;
+  } else if (window.electron) {
+    window.electron.ipcRenderer.send('window-maximize');
+    isMaximized.value = !isMaximized.value;
+  }
+};
+
+// 初始化检查窗口状态
+if (window.electron) {
+  window.electron.ipcRenderer.invoke('is-window-maximized').then(maximized => {
+    isMaximized.value = maximized;
+  });
+}
+
+// 监听窗口最大化状态变化
+if (window.electron) {
+  window.electron.ipcRenderer.on('window-maximize-change', (event, maximized) => {
+    isMaximized.value = maximized;
+  });
+}
 </script>
 
 <style scoped>
@@ -116,5 +175,41 @@ defineProps({
 .username {
   font-size: 14px;
   color: #666;
+}
+
+/* 窗口控制按钮样式 */
+.window-controls {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.control-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 5px;
+}
+
+.control-btn:hover {
+  background-color: #f0f2f5;
+}
+
+.control-btn.close:hover {
+  background-color: #ff4d4f;
+}
+
+.control-btn.close:hover img {
+  filter: invert(1);
+}
+
+.control-btn img {
+  width: 16px;
+  height: 16px;
 }
 </style>

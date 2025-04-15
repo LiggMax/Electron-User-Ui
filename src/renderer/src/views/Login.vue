@@ -95,6 +95,9 @@ defineExpose({
   }
 });
 
+// 窗口状态
+const isMaximized = ref(false);
+
 // 窗口控制函数
 const closeWindow = () => {
   if (window.api && window.api.windowControl) {
@@ -115,10 +118,26 @@ const minimizeWindow = () => {
 const maximizeWindow = () => {
   if (window.api && window.api.windowControl) {
     window.api.windowControl.maximize();
+    isMaximized.value = !isMaximized.value;
   } else if (window.electron) {
     window.electron.ipcRenderer.send('window-maximize');
+    isMaximized.value = !isMaximized.value;
   }
 };
+
+// 初始化检查窗口状态
+if (window.electron) {
+  window.electron.ipcRenderer.invoke('is-window-maximized').then(maximized => {
+    isMaximized.value = maximized;
+  });
+}
+
+// 监听窗口最大化状态变化
+if (window.electron) {
+  window.electron.ipcRenderer.on('window-maximize-change', (event, maximized) => {
+    isMaximized.value = maximized;
+  });
+}
 </script>
 
 <template>
@@ -131,7 +150,9 @@ const maximizeWindow = () => {
           <img src="../assets/svg/menu/minimize.svg" alt="最小化" />
         </div>
         <div class="control-btn maximize" @click="maximizeWindow">
-          <img src="../assets/svg/menu/Maximize-1.svg" alt="最大化" />
+          <!-- 根据窗口状态显示不同的图标 -->
+          <img v-if="isMaximized" src="../assets/svg/menu/Maximize-2.svg" alt="还原" />
+          <img v-else src="../assets/svg/menu/Maximize-1.svg" alt="最大化" />
         </div>
         <div class="control-btn close" @click="closeWindow">
           <img src="../assets/svg/menu/Shutdown.svg" alt="关闭" />

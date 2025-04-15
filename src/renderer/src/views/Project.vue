@@ -9,23 +9,7 @@
     <!-- 右侧内容区 -->
     <div class="content">
       <!-- 使用顶部导航组件 -->
-      <TopNav title="项目列表">
-        <template v-slot:right-buttons>
-          <!-- 窗口控制按钮 -->
-          <div class="window-controls non-draggable">
-            <div class="control-btn minimize" @click="minimizeWindow">
-              <img src="../assets/svg/menu/minimize.svg" alt="最小化" />
-            </div>
-            <div class="control-btn maximize" @click="maximizeWindow">
-              <img src="../assets/svg/menu/Maximize-1.svg" alt="最大化" />
-            </div>
-            <div class="control-btn close" @click="closeWindow">
-              <img src="../assets/svg/menu/Shutdown.svg" alt="关闭" />
-            </div>
-          </div>
-        </template>
-      </TopNav>
-
+      <TopNav title="项目列表"/>
       <!-- 主内容区 -->
       <div class="main-content">
         <!-- 公告栏卡片 -->
@@ -198,31 +182,6 @@ const viewDetail = (item) => {
 // 收藏
 const collectItem = (item) => {
   message.success(`已收藏${item.country}`);
-};
-
-// 窗口控制函数
-const closeWindow = () => {
-  if (window.api && window.api.windowControl) {
-    window.api.windowControl.close();
-  } else if (window.electron) {
-    window.electron.ipcRenderer.send('window-close');
-  }
-};
-
-const minimizeWindow = () => {
-  if (window.api && window.api.windowControl) {
-    window.api.windowControl.minimize();
-  } else if (window.electron) {
-    window.electron.ipcRenderer.send('window-minimize');
-  }
-};
-
-const maximizeWindow = () => {
-  if (window.api && window.api.windowControl) {
-    window.api.windowControl.maximize();
-  } else if (window.electron) {
-    window.electron.ipcRenderer.send('window-maximize');
-  }
 };
 
 onMounted(() => {
