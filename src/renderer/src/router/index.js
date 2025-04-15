@@ -13,7 +13,7 @@ const routes = [
   {
     path: '/home',
     name: 'Home',
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Project.vue')
   }
 ]
 
@@ -22,4 +22,4 @@ const router = createRouter({
   routes
 })
 
-export default router 
+export default router
