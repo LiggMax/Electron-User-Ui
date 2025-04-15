@@ -2,19 +2,22 @@
   <div class="top-nav">
     <div class="nav-left">
       <span class="current-page">
-        <img src="../assets/imgae/triangle.png" style="width: 24px" alt="">
+        <img src="../assets/imgae/triangle.png" style="width: 20px" alt="">
         <span class="title-text">{{ title }}</span>
-        <img src="../assets/svg/Max.svg" style="width: 24px" alt="">
+        <img src="../assets/svg/Max.svg" style="width: 20px" alt="">
       </span>
     </div>
     <div class="nav-right">
       <slot name="right-buttons">
-        <button class="user-btn">
-          <i class="icon">👤</i>
-        </button>
-        <button class="settings-btn">
-          <i class="icon">⚙️</i>
-        </button>
+        <div class="user-profile">
+          <div class="profile-icon">
+            <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="" />
+          </div>
+          <div class="user-info">
+            <img src="../assets/svg/avatar.svg" style="width: 35px; height: 35px;" alt="" />
+            <span class="username">用户昵称</span>
+          </div>
+        </div>
       </slot>
     </div>
   </div>
@@ -54,33 +57,60 @@ defineProps({
 
 .title-text {
   color: #5698f6;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: bold;
 }
 
 .nav-right {
   display: flex;
-  gap: 10px;
+  align-items: center;
 }
 
-.user-btn, .settings-btn {
-  width: 36px;
-  height: 36px;
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-icon {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #f5f7fa;
   cursor: pointer;
-  transition: all 0.3s;
 }
 
-.user-btn:hover, .settings-btn:hover {
-  background-color: #f5f5f5;
+.profile-icon img {
+  width: 24px;
+  height: 24px;
 }
 
-.icon {
-  font-size: 18px;
+.user-info {
+  display: flex;
+  align-items: center;
+  padding: 2px 10px 2px 2px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #f5f7fa;
+}
+
+.user-info:hover {
+  background-color: #e6f7ff;
+}
+
+.user-info img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.username {
+  font-size: 14px;
+  color: #666;
 }
 </style>
