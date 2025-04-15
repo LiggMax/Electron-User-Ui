@@ -12,6 +12,9 @@ function createWindow() {
     minWidth: 900,
     show: false,
     autoHideMenuBar: true,
+    frame: false,
+    transparent: true,
+    titleBarStyle: 'hidden',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -50,6 +53,25 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  ipcMain.on('window-close', () => {
+    BrowserWindow.getFocusedWindow()?.close();
+  });
+
+  ipcMain.on('window-minimize', () => {
+    BrowserWindow.getFocusedWindow()?.minimize();
+  });
+
+  ipcMain.on('window-maximize', () => {
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      if (win.isMaximized()) {
+        win.unmaximize();
+      } else {
+        win.maximize();
+      }
+    }
+  });
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
