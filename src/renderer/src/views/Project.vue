@@ -8,20 +8,8 @@
 
     <!-- 右侧内容区 -->
     <div class="content">
-      <!-- 顶部导航 -->
-      <div class="top-nav">
-        <div class="nav-left">
-          <span class="current-page">« 返回列表</span>
-        </div>
-        <div class="nav-right">
-          <button class="user-btn">
-            <i class="icon">👤</i>
-          </button>
-          <button class="settings-btn">
-            <i class="icon">⚙️</i>
-          </button>
-        </div>
-      </div>
+      <!-- 使用顶部导航组件 -->
+      <TopNav title="项目列表" />
 
       <!-- 主内容区 -->
       <div class="main-content">
@@ -123,6 +111,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import message from "../utils/message";
 import SideMenu from "../components/menu/SideMenu.vue";
+import TopNav from "../components/TopNav.vue";
 
 const router = useRouter();
 
@@ -215,53 +204,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.top-nav {
-  height: 60px;
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-}
-
-.current-page {
-  color: #4a6ae8;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.nav-right {
-  display: flex;
-  gap: 10px;
-}
-
-.user-btn, .settings-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.user-btn:hover, .settings-btn:hover {
-  background-color: #f5f5f5;
-}
-
-.icon {
-  font-size: 18px;
 }
 
 /* 主内容区样式 */
