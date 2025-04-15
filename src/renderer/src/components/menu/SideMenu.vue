@@ -22,6 +22,10 @@
 
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
+import projectIcon from '../../assets/menuicon/Project.png';
+import smsIcon from '../../assets/menuicon/SMS.png';
+import userIcon from '../../assets/menuicon/User.png';
+import logoutIcon from '../../assets/menuicon/Logout.png';
 
 const props = defineProps({
   activeMenu: {
@@ -37,22 +41,22 @@ const menuItems = ref([
   {
     name: 'project',
     label: '项目列表',
-    icon: new URL('../assets/menuicon/Project.png', import.meta.url).href
+    icon: projectIcon
   },
   {
     name: 'sms',
     label: '获取短信',
-    icon: new URL('../assets/menuicon/SMS.png', import.meta.url).href
+    icon: smsIcon
   },
   {
     name: 'user',
     label: '个人中心',
-    icon: new URL('../assets/menuicon/User.png', import.meta.url).href
+    icon: userIcon
   },
   {
     name: 'logout',
     label: '退出登录',
-    icon: new URL('../assets/menuicon/Logout.png', import.meta.url).href
+    icon: logoutIcon
   }
 ]);
 
