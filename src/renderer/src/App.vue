@@ -13,6 +13,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none; /* 全局禁止文本选中 */
 }
 
 html, body, #app {
@@ -41,5 +42,11 @@ html, body, #app {
 .non-draggable {
   -webkit-app-region: no-drag;
   app-region: no-drag;
+}
+
+/* 允许选择的文本 */
+.selectable-text {
+  user-select: text;
+  -webkit-user-select: text;
 }
 </style>

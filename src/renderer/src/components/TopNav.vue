@@ -184,33 +184,27 @@ if (window.electron) {
 .username {
   font-size: 14px;
   color: #666;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* 窗口控制按钮样式 */
 .window-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding-right: 2px;
+  gap: 8px;
+  padding-right: 0;
 }
 
 .control-btn {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
-}
-
-.control-btn:hover {
-  background-color: #f0f2f5;
-}
-
-.control-btn.close:hover {
-  background-color: #ff4d4f;
 }
 
 .control-btn.close:hover img {
@@ -218,7 +212,7 @@ if (window.electron) {
 }
 
 .control-btn img {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
 }
 </style>

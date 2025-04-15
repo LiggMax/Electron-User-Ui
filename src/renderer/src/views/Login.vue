@@ -249,24 +249,30 @@ if (window.electron) {
 /* 窗口控制按钮区域 */
 .window-controls {
   display: flex;
-  gap: 15px;
-  margin-right: 20px;
+  gap: 8px; /* 与TopNav保持一致的间距 */
+  margin-right: 5px; /* 减小右侧间距 */
 }
 
 /* 窗口控制按钮样式 */
 .control-btn {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  border-radius: 4px; /* 增加圆角与TopNav一致 */
+}
+
+
+.control-btn.close:hover img {
+  filter: brightness(10); /* 关闭按钮图标悬停效果与TopNav一致 */
 }
 
 .control-btn img {
-  width: 100%;
-  height: 100%;
+  width: 15px; /* 调整图标尺寸与TopNav一致 */
+  height: 15px;
 }
 
 .login-form {
@@ -343,6 +349,8 @@ input[type="text"], input[type="password"] {
   font-size: 14px;
   transition: border-color 0.3s;
   background-color: transparent;
+  user-select: text; /* 允许输入框文本选择 */
+  -webkit-user-select: text;
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
