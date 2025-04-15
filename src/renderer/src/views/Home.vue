@@ -7,16 +7,28 @@
       </div>
       <div class="menu-items">
         <div class="menu-item active">
-          <i class="menu-icon">📢</i>
-          <span>公告栏</span>
+          <i class="menu-icon">
+            <img src="../assets/menuicon/Project.png" style="width: 20px" alt="Logo">
+          </i>
+          <span>项目列表</span>
         </div>
         <div class="menu-item">
-          <i class="menu-icon">👤</i>
+          <i class="menu-icon">
+            <img src="../assets/menuicon/SMS.png" style="width: 20px" alt="SMS" >
+          </i>
+          <span>获取短信</span>
+        </div>
+        <div class="menu-item">
+          <i class="menu-icon">
+            <img src="../assets/menuicon/User.png" style="width: 20px" alt="user" >
+          </i>
           <span>个人中心</span>
         </div>
         <div class="menu-item">
-          <i class="menu-icon">🔧</i>
-          <span>系统设置</span>
+          <i class="menu-icon">
+            <img src="../assets/menuicon/Logout.png" style="width: 20px" alt="logout" >
+          </i>
+          <span>退出登录</span>
         </div>
       </div>
     </div>
@@ -45,7 +57,7 @@
           <div class="card-header">
             <div class="card-title">公告栏</div>
           </div>
-          
+
           <!-- 搜索表单 -->
           <div class="search-form">
             <div class="form-row">
@@ -70,7 +82,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="form-row">
               <div class="form-item">
                 <label>发布号/状态：</label>
@@ -105,7 +117,7 @@
                 刷新列表
               </button>
             </div>
-            
+
             <div class="card-list">
               <div v-for="item in announcements" :key="item.id" class="item-card">
                 <div class="item-icon">
@@ -134,51 +146,51 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import message from '../utils/message';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import message from "../utils/message";
 
 const router = useRouter();
 
 // 标题输入
-const title = ref('');
+const title = ref("");
 // 关键字输入
-const keyword = ref('');
+const keyword = ref("");
 // 发布号输入
-const publishId = ref('');
+const publishId = ref("");
 // 时间范围
-const timeRange = ref('');
+const timeRange = ref("");
 
 // 公告列表数据
 const announcements = ref([
   {
     id: 1,
-    country: '中国澳门',
-    icon: '🇲🇴',
-    publishNo: '3156个',
+    country: "中国澳门",
+    icon: "🇲🇴",
+    publishNo: "3156个",
     price: 10.00
   },
   {
     id: 2,
-    country: '中国香港',
-    icon: '🇭🇰',
-    publishNo: '3306个',
+    country: "中国香港",
+    icon: "🇭🇰",
+    publishNo: "3306个",
     price: 7.00
   }
 ]);
 
 // 搜索方法
 const searchAnnouncements = () => {
-  message.success('搜索成功');
+  message.success("搜索成功");
   // 这里实际项目中会调用API进行搜索
 };
 
 // 重置搜索
 const resetSearch = () => {
-  title.value = '';
-  keyword.value = '';
-  publishId.value = '';
-  timeRange.value = '';
+  title.value = "";
+  keyword.value = "";
+  publishId.value = "";
+  timeRange.value = "";
 };
 
 // 查看详情
@@ -192,7 +204,7 @@ const collectItem = (item) => {
 };
 
 onMounted(() => {
-  message.success('欢迎进入系统');
+  message.success("欢迎进入系统");
 });
 </script>
 
@@ -519,4 +531,4 @@ onMounted(() => {
   border-color: #4a6ae8;
   color: #4a6ae8;
 }
-</style> 
+</style>
