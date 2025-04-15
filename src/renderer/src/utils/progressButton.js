@@ -32,11 +32,11 @@ export function useProgressButton(options = {}) {
   const progressStyle = computed(() => ({
     width: `${progress.value}%`,
     transition: 'width 30ms linear',
-    // 使用金色渐变
-    background: 'linear-gradient(90deg, rgba(255, 223, 126, 0.4) 0%, rgba(255, 236, 179, 0.7) 50%, rgba(255, 223, 126, 0.4) 100%)',
+    // 优化的渐变效果
+    background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.6) 0%, rgba(91, 124, 249, 0.8) 50%, rgba(147, 197, 253, 0.7) 100%)',
     borderTopRightRadius: '50px',
     borderBottomRightRadius: '50px',
-    boxShadow: '0 0 20px rgba(255, 220, 100, 0.6)',
+    boxShadow: '0 0 15px rgba(91, 124, 249, 0.4)',
     height: '100%',
     position: 'absolute',
     top: '0',

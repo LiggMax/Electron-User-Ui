@@ -25,10 +25,6 @@ const formErrors = ref({
 const progressBtn = useProgressButton({
   duration: 3,
   updateInterval: 20, // 更新更频繁，动画更流畅
-  onComplete: async () => {
-    // 倒计时完成后的回调
-    await router.push("/home");
-  }
 });
 
 // 重置输入框错误状态
@@ -71,26 +67,25 @@ const login = async () => {
     return;
   }
 
+  // 启动进度条前先清除可能存在的token
+  tokenStore.removeToken();
+
   // 分离API调用和进度条
   progressBtn.start();
 
-  try {
-    // 尝试登录
     const res = await UserLoginService(loginForm.value);
     tokenStore.setToken(res.data);
 
     // 显示成功消息
     message.success("登录成功");
 
+    // 登录成功立即跳转到主页，无需等待倒计时
+    await router.push("/home");
+
     //如果不勾选 记住用户名，则清除本地存储的 rememberUsername 值
     if (!rememberUsername.value) {
       localStorage.removeItem("rememberUsername");
     }
-  } catch (error) {
-    // 发生错误时显示错误信息，但不影响倒计时
-    console.error("登录出错:", error);
-    message.error("登录失败，请检查账号密码");
-  }
 };
 
 // 确保在组件卸载时清除所有定时器
