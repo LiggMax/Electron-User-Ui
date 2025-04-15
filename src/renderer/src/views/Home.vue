@@ -1,37 +1,10 @@
 <template>
   <div class="home-container">
-    <!-- 左侧菜单 -->
-    <div class="sidebar">
-      <div class="logo">
-        <span>客户端平台</span>
-      </div>
-      <div class="menu-items">
-        <div class="menu-item active">
-          <i class="menu-icon">
-            <img src="../assets/menuicon/Project.png" style="width: 20px" alt="Logo">
-          </i>
-          <span>项目列表</span>
-        </div>
-        <div class="menu-item">
-          <i class="menu-icon">
-            <img src="../assets/menuicon/SMS.png" style="width: 20px" alt="SMS" >
-          </i>
-          <span>获取短信</span>
-        </div>
-        <div class="menu-item">
-          <i class="menu-icon">
-            <img src="../assets/menuicon/User.png" style="width: 20px" alt="user" >
-          </i>
-          <span>个人中心</span>
-        </div>
-        <div class="menu-item">
-          <i class="menu-icon">
-            <img src="../assets/menuicon/Logout.png" style="width: 20px" alt="logout" >
-          </i>
-          <span>退出登录</span>
-        </div>
-      </div>
-    </div>
+    <!-- 使用侧边栏组件 -->
+    <SideMenu
+      :activeMenu="activeMenu"
+      @menuChange="handleMenuChange"
+    />
 
     <!-- 右侧内容区 -->
     <div class="content">
@@ -149,8 +122,28 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import message from "../utils/message";
+import SideMenu from "../components/menu/SideMenu.vue";
 
 const router = useRouter();
+
+// 当前激活的菜单
+const activeMenu = ref('project');
+
+// 处理菜单变化
+const handleMenuChange = (menuName) => {
+  activeMenu.value = menuName;
+
+  // 根据菜单项处理不同的逻辑
+  if (menuName === 'logout') {
+    // 处理退出登录
+    message.info('正在退出登录...');
+    setTimeout(() => {
+      router.push('/login');
+    }, 500);
+  } else {
+    message.info(`切换到${menuName}菜单`);
+  }
+};
 
 // 标题输入
 const title = ref("");
@@ -214,56 +207,6 @@ onMounted(() => {
   height: 100vh;
   width: 100%;
   background-color: #f5f6fa;
-}
-
-/* 左侧菜单样式 */
-.sidebar {
-  width: 180px;
-  background-color: #fff;
-  border-right: 1px solid #e0e0e0;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-}
-
-.logo {
-  padding: 20px 15px;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
-}
-
-.menu-items {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  cursor: pointer;
-  color: #666;
-  transition: all 0.3s;
-}
-
-.menu-item:hover {
-  background-color: #f5f5f5;
-  color: #4a6ae8;
-}
-
-.menu-item.active {
-  background-color: #f0f5ff;
-  color: #4a6ae8;
-  border-left: 3px solid #4a6ae8;
-  font-weight: 500;
-}
-
-.menu-icon {
-  margin-right: 10px;
-  font-size: 18px;
 }
 
 /* 右侧内容区样式 */
