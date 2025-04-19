@@ -12,11 +12,14 @@
       <TopNav title="项目列表"/>
       <!-- 主内容区 -->
       <div class="main-content">
+
         <!-- 公告栏卡片 -->
         <div class="announcement-board">
           <div class="sidebar-title">公告栏</div>
           <div class="announcement-content">
             <!-- 公告内容将在这里 -->
+            <H1>公告标题</H1>
+            <p>公告内容............................</p>
           </div>
         </div>
 
@@ -332,6 +335,7 @@ onMounted(() => {
 .search-row {
   display: flex;
   margin-bottom: 15px;
+  flex-wrap: nowrap;
 }
 
 .search-item {
@@ -339,16 +343,26 @@ onMounted(() => {
   display: flex;
   align-items: center;
   margin-right: 15px;
+  min-width: 0;
+}
+
+.search-item:last-child {
+  margin-right: 0;
 }
 
 .search-item label {
-  width: 120px;
+  width: auto;
+  min-width: 50px;
   font-size: 14px;
   color: #333;
+  margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .select-input, .text-input {
   flex: 1;
+  min-width: 0;
   height: 36px;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
