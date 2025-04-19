@@ -44,14 +44,14 @@
             </div>
             <div class="search-item">
               <label>指定号码：</label>
-              <input type="text" v-model="specifiedNumber" placeholder="输入您想要的指定号码" class="text-input">
+              <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
             </div>
           </div>
 
           <div class="search-row">
             <div class="search-item">
               <label>排除号码或号段：</label>
-              <input type="text" v-model="excludedNumbers" placeholder="单个号码使用逗号" class="text-input">
+              <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">
             </div>
             <div class="search-item">
               <label>只获取此卡商的卡：</label>
@@ -61,13 +61,13 @@
 
           <div class="action-buttons">
             <button class="action-btn single-query" @click="singleQueryNumber">
-              单独查询号码
+              释放全部号码并清空
             </button>
             <button class="action-btn batch-query" @click="batchQueryNumbers">
-              批量查询号码
+              拉黑全部号码并清空
             </button>
             <button class="action-btn query-specific" @click="querySpecificNumber">
-              查询单个号码
+              释放单个号码
             </button>
             <button class="action-btn get-number" @click="getNumber">
               取号
@@ -412,8 +412,8 @@ onMounted(() => {
 
 .reset {
   background-color: #f5f7fa;
-  color: #606266;
-  border: 1px solid #dcdfe6;
+  color: #4085f6;
+  border: 1px solid #4085f6;
 }
 
 .action-btn:hover {
