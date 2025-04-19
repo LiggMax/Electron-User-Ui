@@ -80,7 +80,7 @@ const login = async () => {
     message.success("登录成功");
 
     // 登录成功立即跳转到主页，无需等待倒计时
-    await router.push("/home");
+    await router.push("/project");
 
     //如果不勾选 记住用户名，则清除本地存储的 rememberUsername 值
     if (!rememberUsername.value) {

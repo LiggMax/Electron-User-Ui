@@ -95,7 +95,7 @@ if (window.electron) {
 
 <style scoped>
 .top-nav {
-  height: 60px;
+  height: 70px;
   background-color: #fff;
   border-bottom: 1px solid #e0e0e0;
   display: flex;

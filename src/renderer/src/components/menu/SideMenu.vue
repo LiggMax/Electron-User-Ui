@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar">
-    <div class="logo">
+    <div class="logo draggable">
       <span>客户端平台</span>
     </div>
     <div class="menu-items">
@@ -67,7 +67,7 @@ const handleMenuClick = (item) => {
 <style scoped>
 /* 左侧菜单样式 */
 .sidebar {
-  width: 180px;
+  width: 170px;
   background-color: #f7f9fc;
   border-right: none;
   display: flex;
