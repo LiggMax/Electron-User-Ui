@@ -14,98 +14,99 @@
       <div class="main-content">
         <!-- 公告栏卡片 -->
         <div class="announcement-board">
-          <div class="sidebar-title">
-            <div class="title-text">公告栏</div>
+          <div class="sidebar-title">公告栏</div>
+          <div class="announcement-content">
+            <!-- 公告内容将在这里 -->
           </div>
-          
-          <!-- 搜索表单区域 -->
-          <div class="search-area">
-            <div class="search-row">
-              <div class="search-item">
-                <label>项目：</label>
-                <select v-model="selectedProject" class="select-input">
-                  <option value="请选择项目">请选择项目</option>
-                  <option value="项目一">项目一</option>
-                  <option value="项目二">项目二</option>
-                </select>
-              </div>
-              <div class="search-item">
-                <label>国家：</label>
-                <select v-model="selectedCountry" class="select-input">
-                  <option value="请选择国家">请选择国家</option>
-                  <option value="中国澳门">中国澳门</option>
-                  <option value="中国香港">中国香港</option>
-                </select>
-              </div>
-              <div class="search-item">
-                <label>指定号码：</label>
-                <input type="text" v-model="specifiedNumber" placeholder="输入您想要的指定号码" class="text-input">
-              </div>
+        </div>
+
+        <!-- 搜索表单区域 -->
+        <div class="search-area">
+          <div class="search-row">
+            <div class="search-item">
+              <label>项目：</label>
+              <select v-model="selectedProject" class="select-input">
+                <option value="请选择项目">请选择项目</option>
+                <option value="项目一">项目一</option>
+                <option value="项目二">项目二</option>
+              </select>
             </div>
-            
-            <div class="search-row">
-              <div class="search-item">
-                <label>排除号码或号段：</label>
-                <input type="text" v-model="excludedNumbers" placeholder="单个号码使用逗号" class="text-input">
-              </div>
-              <div class="search-item">
-                <label>只获取此卡商的卡：</label>
-                <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
-              </div>
+            <div class="search-item">
+              <label>国家：</label>
+              <select v-model="selectedCountry" class="select-input">
+                <option value="请选择国家">请选择国家</option>
+                <option value="中国澳门">中国澳门</option>
+                <option value="中国香港">中国香港</option>
+              </select>
             </div>
-            
-            <div class="action-buttons">
-              <button class="action-btn single-query" @click="singleQueryNumber">
-                单独查询号码
-              </button>
-              <button class="action-btn batch-query" @click="batchQueryNumbers">
-                批量查询号码
-              </button>
-              <button class="action-btn query-specific" @click="querySpecificNumber">
-                查询单个号码
-              </button>
-              <button class="action-btn get-number" @click="getNumber">
-                取号
-              </button>
-              <button class="action-btn reset" @click="resetAll">
-                重置
-              </button>
+            <div class="search-item">
+              <label>指定号码：</label>
+              <input type="text" v-model="specifiedNumber" placeholder="输入您想要的指定号码" class="text-input">
             </div>
           </div>
-          
-          <!-- 智能查询按钮 -->
-          <div class="smart-query-section">
-            <button class="smart-query-btn" @click="smartQuery">
-              智能查询
+
+          <div class="search-row">
+            <div class="search-item">
+              <label>排除号码或号段：</label>
+              <input type="text" v-model="excludedNumbers" placeholder="单个号码使用逗号" class="text-input">
+            </div>
+            <div class="search-item">
+              <label>只获取此卡商的卡：</label>
+              <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="action-btn single-query" @click="singleQueryNumber">
+              单独查询号码
+            </button>
+            <button class="action-btn batch-query" @click="batchQueryNumbers">
+              批量查询号码
+            </button>
+            <button class="action-btn query-specific" @click="querySpecificNumber">
+              查询单个号码
+            </button>
+            <button class="action-btn get-number" @click="getNumber">
+              取号
+            </button>
+            <button class="action-btn reset" @click="resetAll">
+              重置
             </button>
           </div>
-          
-          <!-- 卡片列表区域 -->
-          <div class="card-list-area">
-            <div class="card-item" v-for="card in cardList" :key="card.id">
-              <div class="card-icon">
-                <img :src="card.icon" :alt="card.country" class="country-flag">
-              </div>
-              <div class="card-content">
-                <div class="card-country">{{ card.country }}</div>
-                <div class="card-count">数量: {{ card.count }}个</div>
-                <div class="card-price-controls">
-                  <div class="quantity-control">
-                    <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
-                    <input type="text" v-model="card.quantity" class="qty-input">
-                    <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
-                  </div>
-                  <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
+        </div>
+
+        <!-- 智能查询按钮 -->
+        <div class="smart-query-section">
+          <button class="smart-query-btn" @click="smartQuery">
+            智能查询
+          </button>
+        </div>
+
+        <!-- 卡片列表区域 -->
+        <div class="card-list-area">
+          <div class="card-item" v-for="card in cardList" :key="card.id">
+            <div class="card-icon">
+              <img :src="card.icon" :alt="card.country" class="country-flag">
+            </div>
+            <div class="card-content">
+              <div class="card-country">{{ card.country }}</div>
+              <div class="card-count">数量: {{ card.count }}个</div>
+              <div class="card-price-controls">
+                <div class="quantity-control">
+                  <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
+                  <input type="text" v-model="card.quantity" class="qty-input">
+                  <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
                 </div>
+                <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
               </div>
-              <div class="card-actions">
-                <button class="card-btn collect" @click="collectCard(card)">
-                  收藏
-                </button>
-                <button class="card-btn buy-now" @click="buyCard(card)">
-                  立即购买
-                </button>
-              </div>
+            </div>
+            <div class="card-actions">
+              <button class="card-btn collect" @click="collectCard(card)">
+                收藏
+              </button>
+              <button class="card-btn buy-now" @click="buyCard(card)">
+                立即购买
+              </button>
             </div>
           </div>
         </div>
@@ -263,41 +264,69 @@ onMounted(() => {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  display: flex;
+  height: 120px;
+  position: relative;
   overflow: hidden;
 }
 
-/* 侧边标题样式 */
-.sidebar-title {
-  background-color: #f06057;
-  color: white;
-  width: 40px;
-  float: left;
-  height: 100%;
-  writing-mode: vertical-lr;
-  text-orientation: upright;
-  padding: 20px 8px;
-  font-weight: bold;
-  font-size: 18px;
-  box-sizing: border-box;
-  letter-spacing: 2px;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
+.announcement-content {
+  flex: 1;
+  padding: 15px 20px;
 }
 
-.title-text {
-  font-size: 18px;
-  text-orientation: upright;
+/* 侧边标题 */
+.sidebar-title {
+  background-color: #d3756c;
+  color: white;
   writing-mode: vertical-lr;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 0;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 10px;
+  text-align: center;
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 50px 0;
+}
+
+.sidebar-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50px 0 0 0;
 }
 
 /* 搜索区域样式 */
 .search-area {
-  margin-left: 40px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   padding: 15px 20px;
-  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 20px;
 }
 
 .search-row {
