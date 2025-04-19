@@ -49,4 +49,34 @@ html, body, #app {
   user-select: text;
   -webkit-user-select: text;
 }
+
+/* 全局滚动条美化样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(97, 97, 97, 0.2);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Firefox 滚动条支持 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(97, 97, 97, 0.2) transparent;
+}
 </style>
