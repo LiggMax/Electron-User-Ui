@@ -1,10 +1,8 @@
 <template>
   <div class="sms-content">
-    <h1>获取短信页面</h1>
     <div class="sms-form">
       <div class="form-item">
-        <label>手机号码：</label>
-        <input type="text" v-model="phoneNumber" placeholder="请输入手机号码">
+        <h4>项目：</h4>
       </div>
       <div class="form-item">
         <label>短信内容：</label>
@@ -30,7 +28,7 @@ const getSms = () => {
     message.error('请输入手机号码');
     return;
   }
-  
+
   // 模拟获取短信
   smsContent.value = `这是${phoneNumber.value}的短信内容，验证码为: 123456`;
   message.success('获取短信成功');
@@ -41,7 +39,7 @@ const refreshSms = () => {
     message.error('请先输入手机号码');
     return;
   }
-  
+
   // 模拟刷新短信
   smsContent.value = `这是${phoneNumber.value}的刷新后短信内容，新验证码为: 654321`;
   message.success('刷新短信成功');
@@ -49,25 +47,16 @@ const refreshSms = () => {
 </script>
 
 <style scoped>
-.sms-content {
-  padding: 20px;
-}
-
-h1 {
-  margin-bottom: 20px;
-  font-size: 24px;
-  color: #333;
-}
 
 .sms-form {
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
 
 .form-item {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .form-item label {
@@ -118,4 +107,4 @@ h1 {
 .action-btn:hover {
   opacity: 0.85;
 }
-</style> 
+</style>
