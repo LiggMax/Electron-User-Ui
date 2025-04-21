@@ -55,18 +55,6 @@ import message from '../utils/message';
 import userAvatar from '../assets/imgae/userInfo.png';
 import userInfoStore from "../store/userInfoStore";
 const {userInfo} = userInfoStore()
-// 用户信息
-const userInfoData = ref({
-  id: '1213800',
-  nickname: '用户昵称',
-  avatar: '',
-  balance: '546.00',
-  orderCount: '23'
-});
-
-//从userInfoStore中获取用户信息
-
-
 
 onMounted(() => {
 });
