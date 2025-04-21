@@ -3,11 +3,11 @@
     <div class="profile-card">
       <div class="user-avatar-section">
         <div class="avatar-container">
-          <img :src="userInfo.avatar || defaultAvatar" alt="用户头像" class="user-avatar" />
+          <img :src="userInfo.userAvatar || userAvatar" alt="用户头像" class="user-avatar" />
         </div>
         <div class="user-basic-info">
-          <div class="username">{{ userInfo.nickname || '用户昵称' }}</div>
-          <div class="user-id">ID: {{ userInfo.id || '1213800' }}</div>
+          <div class="username">{{ userInfo.nickName || '用户昵称' }}</div>
+          <div class="user-id">ID: {{ userInfo.userId }}</div>
         </div>
       </div>
 
@@ -52,10 +52,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import message from '../utils/message';
-import defaultAvatar from '../assets/svg/avatar.svg';
-
+import userAvatar from '../assets/imgae/userInfo.png';
+import userInfoStore from "../store/userInfoStore";
+const {userInfo} = userInfoStore()
 // 用户信息
-const userInfo = ref({
+const userInfoData = ref({
   id: '1213800',
   nickname: '用户昵称',
   avatar: '',
@@ -63,20 +64,11 @@ const userInfo = ref({
   orderCount: '23'
 });
 
-// 获取用户信息
-const getUserInfo = async () => {
-  try {
-    // 实际项目中这里应该调用API获取用户信息
-    // const res = await userService.getUserInfo();
-    // userInfo.value = res.data;
-    message.success('获取用户信息成功');
-  } catch (error) {
-    message.error('获取用户信息失败');
-  }
-};
+//从userInfoStore中获取用户信息
+
+
 
 onMounted(() => {
-  getUserInfo();
 });
 </script>
 
