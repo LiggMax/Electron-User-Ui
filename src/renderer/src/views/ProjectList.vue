@@ -88,28 +88,32 @@
         <!-- 卡片列表区域 -->
         <div class="card-list-area">
           <div class="card-item" v-for="card in cardList" :key="card.id">
-            <div class="card-icon">
-              <img :src="card.icon" :alt="card.country" class="country-flag">
-            </div>
-            <div class="card-content">
-              <div class="card-country">{{ card.country }}</div>
-              <div class="card-count">数量: {{ card.count }}个</div>
-              <div class="card-price-controls">
+            <div class="left-section">
+              <div class="card-icon">
+                <img :src="card.icon" :alt="card.country" class="country-flag">
+              </div>
+              <div class="quantity-section">
+                <div class="card-count">数量: {{ card.count }}个</div>
                 <div class="quantity-control">
                   <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
                   <input type="text" v-model="card.quantity" class="qty-input">
                   <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
                 </div>
-                <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
               </div>
             </div>
-            <div class="card-actions">
-              <button class="card-btn collect" @click="collectCard(card)">
-                收藏
-              </button>
-              <button class="card-btn buy-now" @click="buyCard(card)">
-                立即购买
-              </button>
+            <div class="right-section">
+              <div class="card-content">
+                <div class="card-country">{{ card.country }}</div>
+                <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
+              </div>
+              <div class="card-actions">
+                <button class="card-btn collect" @click="collectCard(card)">
+                  收藏
+                </button>
+                <button class="card-btn buy-now" @click="buyCard(card)">
+                  立即购买
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -454,34 +458,46 @@ onMounted(() => {
   border-radius: 8px;
   padding: 15px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   background-color: #fff;
   transition: all 0.3s;
 }
 
-.card-item:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+.left-section {
+  display: flex;
+  flex-direction: column;
+  margin-right: 15px;
+}
+
+.right-section {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
 }
 
 .card-icon {
-  width: 50px;
-  height: 50px;
-  margin-right: 15px;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .country-flag {
-  width: 50px;
-  height: 50px;
+  width: 90px;
+  height: 90px;
   object-fit: contain;
 }
 
+.quantity-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .card-content {
-  flex: 1;
-  margin-right: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-country {
@@ -497,10 +513,11 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 
-.card-price-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.card-price {
+  font-size: 16px;
+  font-weight: bold;
+  color: #f56c6c;
+  margin-top: auto;
 }
 
 .quantity-control {
@@ -530,12 +547,6 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.card-price {
-  font-size: 16px;
-  font-weight: bold;
-  color: #f56c6c;
-}
-
 .card-actions {
   display: flex;
   flex-direction: column;
@@ -545,7 +556,7 @@ onMounted(() => {
 .card-btn {
   padding: 6px 12px;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -557,9 +568,9 @@ onMounted(() => {
 }
 
 .buy-now {
-  background-color: #fff;
-  color: #f3a447;
-  border: 1px solid #f3a447;
+  background-color: #f3a447;
+  color: white;
+  border: none;
 }
 
 .collect:hover {

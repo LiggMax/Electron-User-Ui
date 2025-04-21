@@ -21,6 +21,7 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "electron-updater": "^6.3.9",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "vue-router": "^4.5.0",
     "vuex-persistedstate": "^4.1.0"
   },

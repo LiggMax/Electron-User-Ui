@@ -6,39 +6,39 @@ import { userTokenStore } from "../store/token";
 import message from "../utils/message";
 import { useProgressButton } from "../utils/progressButton";
 
-const tokenStore = userTokenStore()
+const tokenStore = userTokenStore();
 const router = useRouter();
 
 const loginForm = ref({
   account: "",
   password: ""
-})
+});
 const rememberUsername = ref(false); // 默认选中
 
 // 输入框验证状态
 const formErrors = ref({
   account: false,
   password: false
-})
+});
 
 // 使用进度按钮控制器
 const progressBtn = useProgressButton({
   duration: 3,
-  updateInterval: 20, // 更新更频繁，动画更流畅
+  updateInterval: 20 // 更新更频繁，动画更流畅
 });
 
 // 重置输入框错误状态
 const resetErrors = () => {
   formErrors.value.account = false;
   formErrors.value.password = false;
-}
+};
 
 // 输入时自动清除对应字段的错误状态
 const handleInput = (field) => {
   if (formErrors.value[field]) {
     formErrors.value[field] = false;
   }
-}
+};
 
 const login = async () => {
   // 如果正在登录过程中，不允许再次点击
@@ -73,19 +73,20 @@ const login = async () => {
   // 分离API调用和进度条
   progressBtn.start();
 
-    const res = await UserLoginService(loginForm.value);
-    tokenStore.setToken(res.data);
+  const res = await UserLoginService(loginForm.value);
+  console.log(res.data);
+  tokenStore.setToken(res.data);
 
-    // 显示成功消息
-    message.success("登录成功");
+  // 显示成功消息
+  message.success("登录成功");
 
-    // 登录成功立即跳转到主页，无需等待倒计时
-    await router.push("/project");
+  // 登录成功立即跳转到主页，无需等待倒计时
+  await router.push("/project");
 
-    //如果不勾选 记住用户名，则清除本地存储的 rememberUsername 值
-    if (!rememberUsername.value) {
-      localStorage.removeItem("rememberUsername");
-    }
+  //如果不勾选 记住用户名，则清除本地存储的 rememberUsername 值
+  if (!rememberUsername.value) {
+    localStorage.removeItem("rememberUsername");
+  }
 };
 
 // 确保在组件卸载时清除所有定时器
@@ -103,7 +104,7 @@ const closeWindow = () => {
   if (window.api && window.api.windowControl) {
     window.api.windowControl.close();
   } else if (window.electron) {
-    window.electron.ipcRenderer.send('window-close');
+    window.electron.ipcRenderer.send("window-close");
   }
 };
 
@@ -111,7 +112,7 @@ const minimizeWindow = () => {
   if (window.api && window.api.windowControl) {
     window.api.windowControl.minimize();
   } else if (window.electron) {
-    window.electron.ipcRenderer.send('window-minimize');
+    window.electron.ipcRenderer.send("window-minimize");
   }
 };
 
@@ -120,21 +121,21 @@ const maximizeWindow = () => {
     window.api.windowControl.maximize();
     isMaximized.value = !isMaximized.value;
   } else if (window.electron) {
-    window.electron.ipcRenderer.send('window-maximize');
+    window.electron.ipcRenderer.send("window-maximize");
     isMaximized.value = !isMaximized.value;
   }
 };
 
 // 初始化检查窗口状态
 if (window.electron) {
-  window.electron.ipcRenderer.invoke('is-window-maximized').then(maximized => {
+  window.electron.ipcRenderer.invoke("is-window-maximized").then(maximized => {
     isMaximized.value = maximized;
   });
 }
 
 // 监听窗口最大化状态变化
 if (window.electron) {
-  window.electron.ipcRenderer.on('window-maximize-change', (event, maximized) => {
+  window.electron.ipcRenderer.on("window-maximize-change", (event, maximized) => {
     isMaximized.value = maximized;
   });
 }
@@ -202,7 +203,7 @@ if (window.electron) {
           :class="{ 'loading': progressBtn.isLoading.value }"
         >
           <div class="button-content">
-            {{ progressBtn.isLoading.value ? `登录中 (${progressBtn.countdown.value})` : '登录' }}
+            {{ progressBtn.isLoading.value ? `登录中 (${progressBtn.countdown.value})` : "登录" }}
           </div>
           <div
             v-if="progressBtn.isLoading.value"
@@ -292,19 +293,31 @@ if (window.electron) {
 }
 
 @keyframes slideIn {
-  from { transform: translateX(-30px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* 输入框震动动画 */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
 }
 
 .shake {
-  animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+  animation: shake 0.6s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 h1 {
@@ -487,9 +500,9 @@ button {
   left: 0;
   height: 100%;
   background: linear-gradient(90deg,
-    rgba(255, 223, 126, 0.4) 0%,
-    rgba(255, 236, 179, 0.7) 50%,
-    rgba(255, 223, 126, 0.4) 100%);
+  rgba(255, 223, 126, 0.4) 0%,
+  rgba(255, 236, 179, 0.7) 50%,
+  rgba(255, 223, 126, 0.4) 100%);
   z-index: 1;
   box-shadow: 0 0 20px rgba(255, 220, 100, 0.6);
   animation: glow 1.5s infinite alternate;
@@ -506,9 +519,9 @@ button {
   right: 0;
   bottom: 0;
   background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%);
+  transparent 0%,
+  rgba(255, 255, 255, 0.4) 50%,
+  transparent 100%);
   animation: shine 1.5s infinite;
   transform: skewX(-20deg);
 }
@@ -523,8 +536,12 @@ button {
 }
 
 @keyframes shine {
-  0% { transform: translateX(-100%) skewX(-20deg); }
-  100% { transform: translateX(200%) skewX(-20deg); }
+  0% {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-20deg);
+  }
 }
 
 button:hover:not(:disabled) {
@@ -547,9 +564,15 @@ button.loading {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.9; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* 已移除百分比调试信息显示样式 */

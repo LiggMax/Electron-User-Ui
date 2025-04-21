@@ -30,8 +30,8 @@
             <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="" />
           </div>
           <div class="user-info">
-            <img src="../assets/svg/avatar.svg" style="width: 35px; height: 35px;" alt="" />
-            <span class="username">用户昵称</span>
+            <img :src="userInfoDate.userAvatar? userInfoDate.userAvatar : Avatar" style="width: 35px; height: 35px;" alt="" />
+            <span class="username">{{ userInfoDate.nickName }}</span>
           </div>
         </div>
       </div>
@@ -40,9 +40,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-
+import { onMounted, ref } from "vue";
+import { UserInfoService } from "../api/user";
+import Avatar from '../assets/svg/avatar.svg'
+import userInfoStore from "../store/userInfoStore";
 const isMaximized = ref(false);
+const userInfoDate = ref({
+  account: '',
+  nickName: '',
+  avatar: '',
+  email: '',
+  userAvatar: '',
+  createdAt: ''
+});
+
+const userInfo = userInfoStore()
 
 defineProps({
   title: {
@@ -91,6 +103,20 @@ if (window.electron) {
     isMaximized.value = maximized;
   });
 }
+
+//获取用户信息
+const getUserInfo = async () => {
+  const res = await UserInfoService()
+  userInfoDate.value = res.data;
+  userInfo.setUserInfo(res.data)
+
+};
+
+//钩子函数
+onMounted(() => {
+  getUserInfo();
+});
+
 </script>
 
 <style scoped>
@@ -153,11 +179,14 @@ if (window.electron) {
   justify-content: center;
   background-color: #f5f7fa;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .profile-icon img {
-  width: 24px;
-  height: 24px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .user-info {
