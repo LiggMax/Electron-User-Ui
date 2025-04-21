@@ -201,7 +201,6 @@ const buyCard = (card) => {
 };
 
 onMounted(() => {
-  message.success("欢迎进入系统");
 });
 </script>
 

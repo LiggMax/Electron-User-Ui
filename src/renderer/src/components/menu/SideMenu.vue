@@ -57,6 +57,7 @@ const menuItems = ref([
     name: 'user',
     label: '个人中心',
     icon: userIcon,
+    path: '/user'
   },
   {
     name: 'logout',

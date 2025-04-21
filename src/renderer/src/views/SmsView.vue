@@ -139,11 +139,6 @@ const View = (phone) => {
   message.info(`查看: ${phone.phoneNumber}`);
 };
 
-// 刷新短信
-const refreshSms = () => {
-  message.success('刷新短信列表');
-};
-
 // 删除短信
 const deleteSms = (sms) => {
   message.success(`删除短信ID: ${sms.id}`);
@@ -186,10 +181,7 @@ const deleteSms = (sms) => {
   color: #333;
 }
 
-.form-actions {
-  display: flex;
-  gap: 15px;
-}
+
 
 /* 自定义表头样式 */
 :deep(.el-table__header) {

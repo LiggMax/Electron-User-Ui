@@ -32,6 +32,15 @@ const routes = [
           title: '获取短信',
           activeMenu: 'sms'
         }
+      },
+      {
+        path: 'user',
+        name: 'User',
+        component: () => import('../views/UserView.vue'),
+        meta: {
+          title: '个人中心',
+          activeMenu: 'user'
+        }
       }
     ]
   }
@@ -41,5 +50,16 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 })
+
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+  // 确保组件正确加载
+  if (to.matched.length === 0) {
+    // 如果没有匹配到路由，重定向到项目列表
+    next('/project');
+  } else {
+    next();
+  }
+});
 
 export default router
