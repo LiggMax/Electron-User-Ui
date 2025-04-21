@@ -81,7 +81,7 @@
         <!-- 智能查询按钮 -->
         <div class="smart-query-section">
           <div class="smart-query-label">
-            智能查询
+            智能匹配
           </div>
         </div>
 
@@ -238,7 +238,7 @@ onMounted(() => {
   display: flex;
   height: 100vh;
   width: 100%;
-  background-color: #f7f9fc;
+  background-color: #f0f2f5;
   overflow: hidden;
   padding: 0;
 }
@@ -418,6 +418,8 @@ onMounted(() => {
 .smart-query-section {
   padding: 0;
   margin-bottom: 20px;
+  display: flex;
+  align-items: stretch;
 }
 
 .smart-query-label {
@@ -430,6 +432,13 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 500;
   cursor: default;
+}
+
+.smart-query-section::after {
+  content: '';
+  flex: 1;
+  background-color: #fff;
+  border-radius: 0 8px 8px 0;
 }
 
 /* 卡片列表区域 */
