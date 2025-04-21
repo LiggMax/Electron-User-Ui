@@ -80,9 +80,9 @@
 
         <!-- 智能查询按钮 -->
         <div class="smart-query-section">
-          <button class="smart-query-btn" @click="smartQuery">
+          <div class="smart-query-label">
             智能查询
-          </button>
+          </div>
         </div>
 
         <!-- 卡片列表区域 -->
@@ -217,10 +217,6 @@ const resetAll = () => {
   message.success("已重置所有选项");
 };
 
-// 智能查询
-const smartQuery = () => {
-  message.success("智能查询");
-};
 
 // 收藏
 const collectCard = (card) => {
@@ -386,7 +382,7 @@ onMounted(() => {
 
 .action-btn {
   padding: 9px 15px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
   border: none;
@@ -421,32 +417,27 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
-/* 智能查询按钮 */
+/* 智能匹配标签 */
 .smart-query-section {
-  padding: 15px 20px;
-  margin-left: 40px;
-  border-bottom: 1px solid #eaeaea;
+  padding: 0;
+  margin-bottom: 20px;
 }
 
-.smart-query-btn {
+.smart-query-label {
+  display: inline-block;
   background-color: #4085f6;
   color: white;
-  padding: 9px 20px;
+  padding: 10px 25px;
   border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.smart-query-btn:hover {
-  background-color: #3a75db;
+  border-radius: 8px 0 0 8px;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: default;
 }
 
 /* 卡片列表区域 */
 .card-list-area {
   padding: 20px;
-  margin-left: 40px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
