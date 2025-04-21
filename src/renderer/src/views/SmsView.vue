@@ -40,19 +40,30 @@
         </el-table-column>
       </el-table>
 
-      <div class="form-item">
-        <label>短信内容：</label>
-        <el-input
-          v-model="smsContent"
-          type="textarea"
-          :rows="6"
-          placeholder="短信内容将在这里显示"
-          readonly
-        />
+      <!-- 用户信息栏 -->
+      <div class="user-info-section">
+        <span class="user-phone">用户号码: +8613800138000</span>
+        <span class="sms-counter">获取短信次数: 3</span>
       </div>
-      <div class="form-actions">
-        <el-button type="primary" @click="getSms">获取短信</el-button>
-        <el-button type="success" @click="refreshSms">刷新</el-button>
+
+      <!-- 短信内容区域 -->
+      <div class="sms-content-area">
+        <div class="sms-list">
+          <div class="sms-item" v-for="(sms, index) in smsList" :key="index">
+            <div class="sms-meta">
+              <div class="sms-project">项目来源：{{ sms.project }}</div>
+            </div>
+            <div class="sms-message">{{ sms.message }}</div>
+            <div class="sms-footer">
+              <div class="sms-time">{{ sms.time }}</div>
+              <div class="sms-actions">
+                <button class="sms-delete" @click="deleteSms(sms)">
+                  <i class="delete-icon"><el-icon><img :src="Delete" alt="删除" style="width: 20px; height: 20px;" /></el-icon></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -61,9 +72,8 @@
 <script setup>
 import { ref } from 'vue';
 import message from '../utils/message';
-
+import Delete from '../assets/svg/delete.svg'
 const selectedProject = ref('');
-const smsContent = ref('');
 const selectedRows = ref([]);
 
 // 项目选项
@@ -92,6 +102,28 @@ const phoneList = ref([
   }
 ]);
 
+// 短信列表数据
+const smsList = ref([
+  {
+    id: 1,
+    project: 'Facebook',
+    time: '2023-10-01 14:30',
+    message: '您的验证码是: 123456'
+  },
+  {
+    id: 2,
+    project: 'Instagram',
+    time: '2023-10-01 09:20',
+    message: '验证码: 654321, 请妥善保管'
+  },
+  {
+    id: 3,
+    project: 'YouTube',
+    time: '2023-09-30 18:45',
+    message: '您的验证码是: 789123'
+  }
+]);
+
 // 多选变化
 const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
@@ -107,26 +139,15 @@ const View = (phone) => {
   message.info(`查看: ${phone.phoneNumber}`);
 };
 
-const getSms = () => {
-  if (!selectedProject.value) {
-    message.error('请选择项目');
-    return;
-  }
-
-  // 模拟获取短信
-  smsContent.value = `这是 ${selectedProject.value} 项目的短信内容，验证码为: 123456`;
-  message.success('获取短信成功');
+// 刷新短信
+const refreshSms = () => {
+  message.success('刷新短信列表');
 };
 
-const refreshSms = () => {
-  if (!selectedProject.value) {
-    message.error('请先选择项目');
-    return;
-  }
-
-  // 模拟刷新短信
-  smsContent.value = `这是 ${selectedProject.value} 项目的刷新后短信内容，新验证码为: 654321`;
-  message.success('刷新短信成功');
+// 删除短信
+const deleteSms = (sms) => {
+  message.success(`删除短信ID: ${sms.id}`);
+  smsList.value = smsList.value.filter(s => s.id !== sms.id);
 };
 </script>
 
@@ -183,5 +204,81 @@ const refreshSms = () => {
 
 :deep(.el-table--border th.el-table__cell) {
   border-color: #ebeef5;
+}
+
+/* 用户信息区域 */
+.user-info-section {
+  background-color: #303133;
+  color: white;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 短信内容区域 */
+.sms-content-area {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.sms-list {
+  padding: 15px;
+}
+
+.sms-item {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  border-radius: 4px;
+  background-color: #f0f2f5;
+}
+
+.sms-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #606266;
+  font-weight: bold;
+}
+
+.sms-message {
+  padding: 8px 0;
+  color: #303133;
+  word-break: break-word;
+}
+
+.sms-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sms-time {
+  font-size: 12px;
+  color: #909399;
+}
+
+.sms-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sms-delete {
+  background: none;
+  border: none;
+  color: #f56c6c;
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.sms-delete:hover {
+  opacity: 1;
 }
 </style>
