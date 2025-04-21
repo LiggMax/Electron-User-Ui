@@ -22,10 +22,15 @@
 
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
+import { useRouter } from 'vue-router';
 import projectIcon from '../../assets/menuicon/Project.png';
 import smsIcon from '../../assets/menuicon/SMS.png';
 import userIcon from '../../assets/menuicon/User.png';
 import logoutIcon from '../../assets/menuicon/Logout.png';
+import message from '../../utils/message';
+
+const router = useRouter();
+
 defineProps({
   activeMenu: {
     type: String,
@@ -39,17 +44,20 @@ const menuItems = ref([
   {
     name: 'project',
     label: '项目列表',
-    icon: projectIcon
+    icon: projectIcon,
+    path: '/project'
   },
   {
     name: 'sms',
     label: '获取短信',
-    icon: smsIcon
+    icon: smsIcon,
+    path: '/sms'
   },
   {
     name: 'user',
     label: '个人中心',
-    icon: userIcon
+    icon: userIcon,
+    path: '/user'
   },
   {
     name: 'logout',
@@ -61,6 +69,18 @@ const menuItems = ref([
 // 菜单点击处理
 const handleMenuClick = (item) => {
   emit('menuChange', item.name);
+  
+  // 处理路由跳转
+  if (item.name === 'logout') {
+    // 处理退出登录
+    message.info('正在退出登录...');
+    setTimeout(() => {
+      router.push('/login');
+    }, 500);
+  } else if (item.path) {
+    // 如果定义了路径，则进行路由跳转
+    router.push(item.path);
+  }
 };
 </script>
 

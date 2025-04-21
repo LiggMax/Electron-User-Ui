@@ -87,32 +87,42 @@
 
         <!-- 卡片列表区域 -->
         <div class="card-list-area">
-          <div class="card-item" v-for="card in cardList" :key="card.id">
-            <div class="left-section">
-              <div class="card-icon">
-                <img :src="card.icon" :alt="card.country" class="country-flag">
+          <div v-if="cardList.length > 0" class="card-grid">
+            <div class="card-item" v-for="card in cardList" :key="card.id">
+              <div class="left-section">
+                <div class="card-icon">
+                  <img :src="card.icon" :alt="card.country" class="country-flag">
+                </div>
+                <div class="quantity-section">
+                  <div class="card-count">数量: {{ card.count }}个</div>
+                  <div class="quantity-control">
+                    <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
+                    <input type="text" v-model="card.quantity" class="qty-input">
+                    <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
+                  </div>
+                </div>
               </div>
-              <div class="quantity-section">
-                <div class="card-count">数量: {{ card.count }}个</div>
-                <div class="quantity-control">
-                  <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
-                  <input type="text" v-model="card.quantity" class="qty-input">
-                  <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
+              <div class="right-section">
+                <div class="card-content">
+                  <div class="card-country">{{ card.country }}</div>
+                  <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
+                </div>
+                <div class="card-actions">
+                  <button class="card-btn collect" @click="collectCard(card)">
+                    收藏
+                  </button>
+                  <button class="card-btn buy-now" @click="buyCard(card)">
+                    立即购买
+                  </button>
                 </div>
               </div>
             </div>
-            <div class="right-section">
-              <div class="card-content">
-                <div class="card-country">{{ card.country }}</div>
-                <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
-              </div>
-              <div class="card-actions">
-                <button class="card-btn collect" @click="collectCard(card)">
-                  收藏
-                </button>
-                <button class="card-btn buy-now" @click="buyCard(card)">
-                  立即购买
-                </button>
+          </div>
+          <div v-else class="empty-data-container">
+            <div class="no-data-content">
+              <div class="no-data-image-wrapper">
+                <img src="../assets/imgae/NoData.jpg" alt="暂无数据" class="no-data-img">
+                <h2 class="no-data-text">暂无搜索</h2>
               </div>
             </div>
           </div>
@@ -139,17 +149,6 @@ const activeMenu = ref('project');
 // 处理菜单变化
 const handleMenuChange = (menuName) => {
   activeMenu.value = menuName;
-
-  // 根据菜单项处理不同的逻辑
-  if (menuName === 'logout') {
-    // 处理退出登录
-    message.info('正在退出登录...');
-    setTimeout(() => {
-      router.push('/login');
-    }, 500);
-  } else {
-    message.info(`切换到${menuName}菜单`);
-  }
 };
 
 // 搜索参数
@@ -448,6 +447,9 @@ onMounted(() => {
 /* 卡片列表区域 */
 .card-list-area {
   padding: 20px;
+}
+
+.card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
@@ -580,5 +582,42 @@ onMounted(() => {
 .buy-now:hover {
   background-color: #f3a447;
   color: white;
+}
+
+/* 空数据状态 */
+.empty-data-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.no-data-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-data-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.no-data-img {
+  max-width: 300px;
+  height: auto;
+  display: block;
+}
+
+.no-data-text {
+  position: absolute;
+  bottom: 45px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #909399;
+  font-size: 18px;
+  font-weight: normal;
+  margin: 0;
 }
 </style>
