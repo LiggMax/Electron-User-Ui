@@ -129,7 +129,7 @@ onMounted(() => {
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  border-top-left-radius: 15px;
+  border-top-left-radius: 0;
   border-top-right-radius: 12px;
   margin-bottom: 5px;
 }
