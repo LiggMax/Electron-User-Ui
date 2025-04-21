@@ -1,131 +1,114 @@
 <template>
-  <div class="home-container">
-    <!-- 使用侧边栏组件 -->
-    <SideMenu
-      :activeMenu="activeMenu"
-      @menuChange="handleMenuChange"
-    />
+  <div class="project-content">
+    <!-- 公告栏卡片 -->
+    <div class="announcement-board">
+      <div class="sidebar-title">公告栏</div>
+      <div class="announcement-content">
+        <!-- 公告内容将在这里 -->
+        <H1>公告标题</H1>
+        <p>公告内容............................</p>
+      </div>
+    </div>
 
-    <!-- 右侧内容区 -->
-    <div class="content">
-      <!-- 使用顶部导航组件 -->
-      <TopNav title="项目列表"/>
-      <!-- 主内容区 -->
-      <div class="main-content">
-
-        <!-- 公告栏卡片 -->
-        <div class="announcement-board">
-          <div class="sidebar-title">公告栏</div>
-          <div class="announcement-content">
-            <!-- 公告内容将在这里 -->
-            <H1>公告标题</H1>
-            <p>公告内容............................</p>
-          </div>
+    <!-- 搜索表单区域 -->
+    <div class="search-area">
+      <div class="search-row">
+        <div class="search-item">
+          <label>项目：</label>
+          <select v-model="selectedProject" class="select-input">
+            <option value="请选择项目">请选择项目</option>
+            <option value="项目一">项目一</option>
+            <option value="项目二">项目二</option>
+          </select>
         </div>
-
-        <!-- 搜索表单区域 -->
-        <div class="search-area">
-          <div class="search-row">
-            <div class="search-item">
-              <label>项目：</label>
-              <select v-model="selectedProject" class="select-input">
-                <option value="请选择项目">请选择项目</option>
-                <option value="项目一">项目一</option>
-                <option value="项目二">项目二</option>
-              </select>
-            </div>
-            <div class="search-item">
-              <label>国家：</label>
-              <select v-model="selectedCountry" class="select-input">
-                <option value="请选择国家">请选择国家</option>
-                <option value="中国澳门">中国澳门</option>
-                <option value="中国香港">中国香港</option>
-              </select>
-            </div>
-            <div class="search-item">
-              <label>指定号码：</label>
-              <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
-            </div>
-          </div>
-
-          <div class="search-row">
-            <div class="search-item">
-              <label>排除号码或号段：</label>
-              <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">
-            </div>
-            <div class="search-item">
-              <label>只获取此卡商的卡：</label>
-              <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
-            </div>
-          </div>
-
-          <div class="action-buttons">
-            <button class="action-btn single-query" @click="singleQueryNumber">
-              释放全部号码并清空
-            </button>
-            <button class="action-btn batch-query" @click="batchQueryNumbers">
-              拉黑全部号码并清空
-            </button>
-            <button class="action-btn query-specific" @click="querySpecificNumber">
-              释放单个号码
-            </button>
-            <button class="action-btn get-number" @click="getNumber">
-              取号
-            </button>
-            <button class="action-btn reset" @click="resetAll">
-              重置
-            </button>
-          </div>
+        <div class="search-item">
+          <label>国家：</label>
+          <select v-model="selectedCountry" class="select-input">
+            <option value="请选择国家">请选择国家</option>
+            <option value="中国澳门">中国澳门</option>
+            <option value="中国香港">中国香港</option>
+          </select>
         </div>
-
-        <!-- 智能查询按钮 -->
-        <div class="smart-query-section">
-          <div class="smart-query-label">
-            智能匹配
-          </div>
+        <div class="search-item">
+          <label>指定号码：</label>
+          <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
         </div>
+      </div>
 
-        <!-- 卡片列表区域 -->
-        <div class="card-list-area">
-          <div v-if="cardList.length > 0" class="card-grid">
-            <div class="card-item" v-for="card in cardList" :key="card.id">
-              <div class="left-section">
-                <div class="card-icon">
-                  <img :src="card.icon" :alt="card.country" class="country-flag">
-                </div>
-                <div class="quantity-section">
-                  <div class="card-count">数量: {{ card.count }}个</div>
-                  <div class="quantity-control">
-                    <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
-                    <input type="text" v-model="card.quantity" class="qty-input">
-                    <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
-                  </div>
-                </div>
-              </div>
-              <div class="right-section">
-                <div class="card-content">
-                  <div class="card-country">{{ card.country }}</div>
-                  <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
-                </div>
-                <div class="card-actions">
-                  <button class="card-btn collect" @click="collectCard(card)">
-                    收藏
-                  </button>
-                  <button class="card-btn buy-now" @click="buyCard(card)">
-                    立即购买
-                  </button>
-                </div>
+      <div class="search-row">
+        <div class="search-item">
+          <label>排除号码或号段：</label>
+          <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">
+        </div>
+        <div class="search-item">
+          <label>只获取此卡商的卡：</label>
+          <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="action-btn single-query" @click="singleQueryNumber">
+          释放全部号码并清空
+        </button>
+        <button class="action-btn batch-query" @click="batchQueryNumbers">
+          拉黑全部号码并清空
+        </button>
+        <button class="action-btn query-specific" @click="querySpecificNumber">
+          释放单个号码
+        </button>
+        <button class="action-btn get-number" @click="getNumber">
+          取号
+        </button>
+        <button class="action-btn reset" @click="resetAll">
+          重置
+        </button>
+      </div>
+    </div>
+
+    <!-- 智能查询按钮 -->
+    <div class="smart-query-section">
+      <div class="smart-query-label">
+        智能匹配
+      </div>
+    </div>
+
+    <!-- 卡片列表区域 -->
+    <div class="card-list-area">
+      <div v-if="cardList.length > 0" class="card-grid">
+        <div class="card-item" v-for="card in cardList" :key="card.id">
+          <div class="left-section">
+            <div class="card-icon">
+              <img :src="card.icon" :alt="card.country" class="country-flag">
+            </div>
+            <div class="quantity-section">
+              <div class="card-count">数量: {{ card.count }}个</div>
+              <div class="quantity-control">
+                <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
+                <input type="text" v-model="card.quantity" class="qty-input">
+                <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
               </div>
             </div>
           </div>
-          <div v-else class="empty-data-container">
-            <div class="no-data-content">
-              <div class="no-data-image-wrapper">
-                <img src="../assets/imgae/NoData.jpg" alt="暂无数据" class="no-data-img">
-                <h2 class="no-data-text">暂无搜索</h2>
-              </div>
+          <div class="right-section">
+            <div class="card-content">
+              <div class="card-country">{{ card.country }}</div>
+              <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
+            </div>
+            <div class="card-actions">
+              <button class="card-btn collect" @click="collectCard(card)">
+                收藏
+              </button>
+              <button class="card-btn buy-now" @click="buyCard(card)">
+                立即购买
+              </button>
             </div>
           </div>
+        </div>
+      </div>
+      <div v-else class="empty-data-container">
+        <div class="no-data-image-wrapper">
+          <img src="../assets/imgae/NoData.jpg" alt="暂无数据" class="no-data-img">
+          <h2 class="no-data-text">暂无搜索</h2>
         </div>
       </div>
     </div>
@@ -134,22 +117,9 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import message from "../utils/message";
-import SideMenu from "../components/menu/SideMenu.vue";
-import TopNav from "../components/TopNav.vue";
 import macauFlag from "../assets/imgae/Macau.png";
 import hongkongFlag from "../assets/imgae/HongKong.png";
-
-const router = useRouter();
-
-// 当前激活的菜单
-const activeMenu = ref('project');
-
-// 处理菜单变化
-const handleMenuChange = (menuName) => {
-  activeMenu.value = menuName;
-};
 
 // 搜索参数
 const selectedProject = ref("请选择项目");
@@ -220,7 +190,6 @@ const resetAll = () => {
   message.success("已重置所有选项");
 };
 
-
 // 收藏
 const collectCard = (card) => {
   message.success(`已收藏${card.country}卡片`);
@@ -237,30 +206,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.home-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  background-color: #f0f2f5;
-  overflow: hidden;
-  padding: 0;
-}
-
-/* 右侧内容区样式 */
-.content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* 主内容区样式 */
-.main-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
 /* 公告板样式 */
 .announcement-board {
   background-color: #fff;
@@ -590,12 +535,6 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   padding: 40px 0;
-}
-
-.no-data-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .no-data-image-wrapper {

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import MainLayout from '../layouts/MainLayout.vue'
 
 const routes = [
   {
@@ -8,17 +9,31 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue'),
+    component: () => import('../views/Login.vue')
   },
   {
-    path: '/project',
-    name: 'Project',
-    component: () => import('../views/ProjectList.vue')
-  },
-  {
-    path: '/sms',
-    name: 'SMS',
-    component: () => import('../views/SmsView.vue')
+    path: '/',
+    component: MainLayout,
+    children: [
+      {
+        path: 'project',
+        name: 'Project',
+        component: () => import('../views/ProjectList.vue'),
+        meta: {
+          title: '项目列表',
+          activeMenu: 'project'
+        }
+      },
+      {
+        path: 'sms',
+        name: 'SMS',
+        component: () => import('../views/SmsView.vue'),
+        meta: {
+          title: '获取短信',
+          activeMenu: 'sms'
+        }
+      }
+    ]
   }
 ]
 

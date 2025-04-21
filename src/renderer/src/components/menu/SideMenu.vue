@@ -57,7 +57,6 @@ const menuItems = ref([
     name: 'user',
     label: '个人中心',
     icon: userIcon,
-    path: '/user'
   },
   {
     name: 'logout',
@@ -69,7 +68,7 @@ const menuItems = ref([
 // 菜单点击处理
 const handleMenuClick = (item) => {
   emit('menuChange', item.name);
-  
+
   // 处理路由跳转
   if (item.name === 'logout') {
     // 处理退出登录
