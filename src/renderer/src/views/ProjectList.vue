@@ -289,9 +289,6 @@ onMounted(() => {
   letter-spacing: 10px;
   text-align: center;
   width: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
