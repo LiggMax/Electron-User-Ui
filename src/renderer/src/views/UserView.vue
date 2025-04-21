@@ -24,15 +24,15 @@
 
       <div class="quick-actions">
         <div class="action-button personal-info">
-          <el-icon class="action-icon"><img src="../assets/svg/user.svg" alt="个人信息" /></el-icon>
+          <el-icon class="action-icon"><img src="../assets/imgae/userInfo.png" alt="个人信息" /></el-icon>
           <span class="action-text">个人信息</span>
         </div>
         <div class="action-button my-orders">
-          <el-icon class="action-icon"><img src="../assets/svg/order.svg" alt="我的订单" /></el-icon>
+          <el-icon class="action-icon"><img src="../assets/imgae/prompt.png" alt="我的订单" /></el-icon>
           <span class="action-text">我的订单</span>
         </div>
         <div class="action-button my-collections">
-          <el-icon class="action-icon"><img src="../assets/svg/collect.svg" alt="我的收藏" /></el-icon>
+          <el-icon class="action-icon"><img src="../assets/imgae/collection.png" alt="我的收藏" /></el-icon>
           <span class="action-text">我的收藏</span>
         </div>
         <div class="action-button change-password">
@@ -42,7 +42,7 @@
       </div>
 
       <div class="empty-data-section">
-        <img src="../assets/imgae/NoData.jpg" alt="暂无订单" class="no-data-img" />
+        <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
         <div class="empty-text">暂无订单</div>
       </div>
     </div>
@@ -160,36 +160,40 @@ onMounted(() => {
 .quick-actions {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  gap: 15px;
 }
 
 .action-button {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   padding: 15px;
-  width: 22%;
+  width: calc(25% - 12px);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .action-icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-right: 10px;
+  margin-bottom: 0;
 }
 
 .action-icon img {
-  width: 24px;
-  height: 24px;
+  width: 50px;
+  height: 50px;
 }
 
 .action-text {
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 500;
   color: #333;
 }
 
@@ -218,8 +222,9 @@ onMounted(() => {
 }
 
 .no-data-img {
-  width: 150px;
-  margin-bottom: 10px;
+  width: 210px;
+  height: auto;
+  margin-bottom: 15px;
 }
 
 .empty-text {
