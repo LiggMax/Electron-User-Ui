@@ -23,7 +23,11 @@
       </div>
 
       <div class="quick-actions">
-        <div class="action-button personal-info">
+        <div
+          class="action-button personal-info"
+          :class="{ 'active': activeSection === 'personal-info' }"
+          @click="toggleSection('personal-info')"
+        >
           <el-icon class="action-icon"><img src="../assets/imgae/userInfo.png" alt="个人信息" /></el-icon>
           <span class="action-text">个人信息</span>
         </div>
@@ -41,7 +45,36 @@
         </div>
       </div>
 
-      <div class="empty-data-section">
+      <!-- 个人信息内容区域 -->
+      <div v-if="activeSection === 'personal-info'" class="info-section">
+        <div class="info-section-header">
+          <div class="info-icon-container">
+            <span class="info-section-title">头像</span>
+            <img :src="userInfo.userAvatar" alt="个人信息图标" class="info-icon" />
+          </div>
+
+        </div>
+
+        <div class="info-section-content">
+          <el-form :model="userForm" label-width="80px">
+            <el-form-item label="用户昵称:">
+              <el-input v-model="userForm.nickName" placeholder="请输入昵称"></el-input>
+            </el-form-item>
+
+            <el-form-item label="修改密码:">
+              <el-input v-model="userForm.phone" placeholder="请输入密码"></el-input>
+            </el-form-item>
+          </el-form>
+
+          <div class="form-actions">
+            <el-button type="primary" @click="saveUserInfo" class="action-btn save-btn">保存</el-button>
+            <el-button @click="cancelEdit" class="action-btn cancel-btn">取消</el-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 默认展示内容 -->
+      <div v-if="!activeSection" class="empty-data-section">
         <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
         <div class="empty-text">暂无订单</div>
       </div>
@@ -50,13 +83,51 @@
 </template>
 
 <script setup>
-import {  onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import message from '../utils/message';
 import userAvatar from '../assets/imgae/userInfo.png';
 import userInfoStore from "../store/userInfoStore";
-const {userInfo} = userInfoStore()
+
+const {userInfo} = userInfoStore();
+const activeSection = ref('');
+
+// 用户表单数据
+const userForm = ref({
+  nickName: '',
+  phone: '',
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+});
+
+// 切换部分
+const toggleSection = (section) => {
+  if (activeSection.value === section) {
+    activeSection.value = '';
+  } else {
+    activeSection.value = section;
+    if (section === 'personal-info') {
+      // 初始化表单数据
+      userForm.value.nickName = userInfo.nickName || '';
+      userForm.value.phone = userInfo.phone || '';
+    }
+  }
+};
+
+// 保存用户信息
+const saveUserInfo = () => {
+  // 这里应该调用API保存用户信息
+  message.success('个人信息更新成功');
+  activeSection.value = ''; // 保存后关闭表单
+};
+
+// 取消编辑
+const cancelEdit = () => {
+  activeSection.value = '';
+};
 
 onMounted(() => {
+  // 初始化操作
 });
 </script>
 
@@ -156,6 +227,11 @@ onMounted(() => {
   transition: all 0.3s;
 }
 
+.action-button.active {
+  background-color: #e6f7ff;
+  box-shadow: 0 0 0 1px #1890ff inset;
+}
+
 .action-icon {
   width: 36px;
   height: 36px;
@@ -210,5 +286,79 @@ onMounted(() => {
 .empty-text {
   font-size: 16px;
   color: #999;
+}
+
+/* 信息区域样式 */
+.info-section {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0;
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid #eaeaea;
+  width: 80%;
+  max-width: 600px;
+}
+
+.info-section-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #f0f2f5;
+  border-bottom: 1px solid #eaeaea;
+  border-radius: 8px 8px 0 0;
+}
+
+.info-icon-container {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.info-section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.info-section-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.info-section-content .el-form {
+  width: 90%;
+  max-width: 400px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+.action-btn {
+  min-width: 100px;
+}
+
+.save-btn {
+  background-color: #1890ff;
+}
+
+.cancel-btn {
+  background-color: #f0f0f0;
+  color: #606266;
 }
 </style>

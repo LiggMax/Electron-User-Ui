@@ -75,13 +75,13 @@
     <!-- 卡片列表区域 -->
     <div class="card-list-area">
       <div v-if="cardList.length > 0" class="card-grid">
-        <div class="card-item" v-for="card in cardList" :key="card.id">
+        <div class="card-item" v-for="card in cardList" :key="card.projectId">
           <div class="left-section">
             <div class="card-icon">
-              <img :src="card.icon" :alt="card.country" class="country-flag">
+              <img :src="getCountryFlag(card.projectName)" :alt="card.projectName" class="country-flag">
             </div>
             <div class="quantity-section">
-              <div class="card-count">数量: {{ card.count }}个</div>
+              <div class="card-count">数量: {{ card.phoneCount }}个</div>
               <div class="quantity-control">
                 <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
                 <input type="text" v-model="card.quantity" class="qty-input">
@@ -91,8 +91,8 @@
           </div>
           <div class="right-section">
             <div class="card-content">
-              <div class="card-country">{{ card.country }}</div>
-              <div class="card-price">¥ {{ card.price.toFixed(2) }}</div>
+              <div class="card-country">{{ card.projectName }}</div>
+              <div class="card-price">¥ {{ card.projectPrice.toFixed(2) }}</div>
             </div>
             <div class="card-actions">
               <button class="card-btn collect" @click="collectCard(card)">
@@ -146,11 +146,17 @@ const getCountryFlag = (projectName) => {
 
 // 增加数量
 const increaseQuantity = (card) => {
+  if (!card.quantity) {
+    card.quantity = 1;
+  }
   card.quantity++;
 };
 
 // 减少数量
 const decreaseQuantity = (card) => {
+  if (!card.quantity) {
+    card.quantity = 1;
+  }
   if (card.quantity > 1) {
     card.quantity--;
   }
@@ -188,12 +194,12 @@ const resetAll = () => {
 
 // 收藏
 const collectCard = (card) => {
-  message.success(`已收藏${card.country}卡片`);
+  message.success(`已收藏${card.projectName}卡片`);
 };
 
 // 购买
 const buyCard = (card) => {
-  message.success(`正在购买${card.country}卡片 ${card.quantity}张`);
+  message.success(`正在购买${card.projectName}卡片 ${card.quantity || 1}张`);
 };
 
 /**
@@ -202,15 +208,12 @@ const buyCard = (card) => {
 const getProjectList = async () => {
   try {
     const res = await ProjectListService();
-      // 转换API返回的数据格式为卡片列表需要的格式
-      cardList.value = res.data.map(item => ({
-        id: item.projectId,
-        country: item.projectName,
-        icon: getCountryFlag(item.projectName),
-        count: item.phoneCount,
-        price: item.projectPrice,
-        quantity: 1
-      }));
+    // 直接使用后端返回的数据格式，为每个项目添加quantity字段
+    cardList.value = res.data.map(item => {
+      // 添加quantity字段用于前端操作
+      item.quantity = 1;
+      return item;
+    });
   } catch (error) {
     console.error(error);
   }
@@ -439,8 +442,8 @@ onMounted(() => {
 }
 
 .card-icon {
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100 px;
   margin-bottom: 5px;
   display: flex;
   align-items: center;
