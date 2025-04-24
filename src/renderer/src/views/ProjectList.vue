@@ -443,7 +443,7 @@ onMounted(() => {
 
 .card-icon {
   width: 100px;
-  height: 100 px;
+  height: 100px;
   margin-bottom: 5px;
   display: flex;
   align-items: center;

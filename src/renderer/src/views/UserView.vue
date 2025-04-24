@@ -59,9 +59,11 @@
             <el-form-item label="用户昵称:">
               <el-input v-model="userForm.nickName" placeholder="请输入昵称"></el-input>
             </el-form-item>
-
+            <el-form-item label="原始密码:">
+              <el-input v-model="userForm.oldPassword" placeholder="请输入原始密码"></el-input>
+            </el-form-item>
             <el-form-item label="修改密码:">
-              <el-input v-model="userForm.phone" placeholder="请输入密码"></el-input>
+              <el-input v-model="userForm.newPassword" placeholder="请输入密码"></el-input>
             </el-form-item>
           </el-form>
 
@@ -86,6 +88,7 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
+import { UserUpdateService } from "../api/user";
 
 const { userInfo } = userInfoStore();
 const activeSection = ref("");
@@ -93,10 +96,8 @@ const activeSection = ref("");
 // 用户表单数据
 const userForm = ref({
   nickName: "",
-  phone: "",
   oldPassword: "",
   newPassword: "",
-  confirmPassword: ""
 });
 
 // 切换部分
@@ -114,10 +115,10 @@ const toggleSection = (section) => {
 };
 
 // 保存用户信息
-const saveUserInfo = () => {
+const saveUserInfo = async () => {
   // 这里应该调用API保存用户信息
-  message.success("个人信息更新成功");
-  activeSection.value = ""; // 保存后关闭表单
+  await UserUpdateService(userForm.value);
+  message.success("用户信息更新成功")
 };
 
 // 取消编辑
