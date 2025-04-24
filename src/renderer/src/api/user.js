@@ -20,3 +20,12 @@ export const UserInfoService = () => {
 export const UserUpdateService = (userData) => {
   return request.put("/user/update", userData)
 }
+
+/**
+ * 项目收藏
+ */
+export const ProjectCollectService = (projectId) => {
+  return request.post("/user/favorite", {
+    projectId
+  })
+}

@@ -121,6 +121,7 @@ import message from "../utils/message";
 import macauFlag from "../assets/imgae/Macau.png";
 import hongkongFlag from "../assets/imgae/HongKong.png";
 import { ProjectListService } from "../api/project";
+import { ProjectCollectService } from "../api/user";
 
 // 搜索参数
 const selectedProject = ref("请选择项目");
@@ -194,7 +195,9 @@ const resetAll = () => {
 
 // 收藏
 const collectCard = (card) => {
-  message.success(`已收藏${card.projectName}卡片`);
+
+  ProjectCollectService(card.projectId)
+  message.success('收藏成功');
 };
 
 // 购买
