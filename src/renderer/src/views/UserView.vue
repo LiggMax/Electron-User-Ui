@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import {  onMounted } from 'vue';
 import message from '../utils/message';
 import userAvatar from '../assets/imgae/userInfo.png';
 import userInfoStore from "../store/userInfoStore";

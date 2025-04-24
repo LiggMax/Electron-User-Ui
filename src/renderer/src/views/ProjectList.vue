@@ -120,6 +120,7 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import macauFlag from "../assets/imgae/Macau.png";
 import hongkongFlag from "../assets/imgae/HongKong.png";
+import { ProjectListService } from "../api/project";
 
 // 搜索参数
 const selectedProject = ref("请选择项目");
@@ -129,24 +130,19 @@ const excludedNumbers = ref("");
 const specificCard = ref("");
 
 // 卡片列表
-const cardList = ref([
-  {
-    id: 1,
-    country: "中国澳门",
-    icon: macauFlag,
-    count: 2768,
-    price: 10.00,
-    quantity: 1
-  },
-  {
-    id: 2,
-    country: "中国香港",
-    icon: hongkongFlag,
-    count: 2090,
-    price: 7.00,
-    quantity: 1
+const cardList = ref([]);
+
+// 判断国旗图片
+const getCountryFlag = (projectName) => {
+  switch (projectName) {
+    case "中国澳门":
+      return macauFlag;
+    case "中国香港":
+      return hongkongFlag;
+    default:
+      return macauFlag; // 默认图片
   }
-]);
+};
 
 // 增加数量
 const increaseQuantity = (card) => {
@@ -200,7 +196,28 @@ const buyCard = (card) => {
   message.success(`正在购买${card.country}卡片 ${card.quantity}张`);
 };
 
+/**
+ * 获取项目列表内容
+ */
+const getProjectList = async () => {
+  try {
+    const res = await ProjectListService();
+      // 转换API返回的数据格式为卡片列表需要的格式
+      cardList.value = res.data.map(item => ({
+        id: item.projectId,
+        country: item.projectName,
+        icon: getCountryFlag(item.projectName),
+        count: item.phoneCount,
+        price: item.projectPrice,
+        quantity: 1
+      }));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 onMounted(() => {
+  getProjectList();
 });
 </script>
 
