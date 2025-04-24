@@ -6,18 +6,18 @@
           <img :src="userInfo.userAvatar || userAvatar" alt="用户头像" class="user-avatar" />
         </div>
         <div class="user-basic-info">
-          <div class="username">{{ userInfo.nickName || '用户昵称' }}</div>
+          <div class="username">{{ userInfo.nickName || "用户昵称" }}</div>
           <div class="user-id">ID: {{ userInfo.userId }}</div>
         </div>
       </div>
 
       <div class="user-stats">
         <div class="stat-item">
-          <div class="stat-value">{{ userInfo.balance || '546.00' }}</div>
+          <div class="stat-value">{{ userInfo.balance || "546.00" }}</div>
           <div class="stat-label">总余额（元）</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">{{ userInfo.orderCount || '23' }}</div>
+          <div class="stat-value">{{ userInfo.orderCount || "23" }}</div>
           <div class="stat-label">总订单数</div>
         </div>
       </div>
@@ -47,15 +47,14 @@
 
       <!-- 个人信息内容区域 -->
       <div v-if="activeSection === 'personal-info'" class="info-section">
-        <div class="info-section-header">
-          <div class="info-icon-container">
-            <span class="info-section-title">头像</span>
-            <img :src="userInfo.userAvatar" alt="个人信息图标" class="info-icon" />
+        <div class="info-section-content">
+          <div class="user-info-header">
+            <span class="avatar-label">头像</span>
+            <div class="avatar-wrapper">
+              <img :src="userInfo.userAvatar || userAvatar" alt="用户头像" class="profile-avatar" />
+            </div>
           </div>
 
-        </div>
-
-        <div class="info-section-content">
           <el-form :model="userForm" label-width="80px">
             <el-form-item label="用户昵称:">
               <el-input v-model="userForm.nickName" placeholder="请输入昵称"></el-input>
@@ -83,33 +82,33 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import message from '../utils/message';
-import userAvatar from '../assets/imgae/userInfo.png';
+import { ref, onMounted } from "vue";
+import message from "../utils/message";
+import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
 
-const {userInfo} = userInfoStore();
-const activeSection = ref('');
+const { userInfo } = userInfoStore();
+const activeSection = ref("");
 
 // 用户表单数据
 const userForm = ref({
-  nickName: '',
-  phone: '',
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
+  nickName: "",
+  phone: "",
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: ""
 });
 
 // 切换部分
 const toggleSection = (section) => {
   if (activeSection.value === section) {
-    activeSection.value = '';
+    activeSection.value = "";
   } else {
     activeSection.value = section;
-    if (section === 'personal-info') {
+    if (section === "personal-info") {
       // 初始化表单数据
-      userForm.value.nickName = userInfo.nickName || '';
-      userForm.value.phone = userInfo.phone || '';
+      userForm.value.nickName = userInfo.nickName || "";
+      userForm.value.phone = userInfo.phone || "";
     }
   }
 };
@@ -117,13 +116,13 @@ const toggleSection = (section) => {
 // 保存用户信息
 const saveUserInfo = () => {
   // 这里应该调用API保存用户信息
-  message.success('个人信息更新成功');
-  activeSection.value = ''; // 保存后关闭表单
+  message.success("个人信息更新成功");
+  activeSection.value = ""; // 保存后关闭表单
 };
 
 // 取消编辑
 const cancelEdit = () => {
-  activeSection.value = '';
+  activeSection.value = "";
 };
 
 onMounted(() => {
@@ -290,67 +289,42 @@ onMounted(() => {
 
 /* 信息区域样式 */
 .info-section {
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  background-color: #ffffff;
+  border-radius: 20px;
   padding: 0;
-  margin-top: 10px;
+  margin-top: 20px;
   margin-left: auto;
   margin-right: auto;
-  border: 1px solid #eaeaea;
-  width: 80%;
-  max-width: 600px;
-}
-
-.info-section-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  background-color: #f0f2f5;
-  border-bottom: 1px solid #eaeaea;
-  border-radius: 8px 8px 0 0;
-}
-
-.info-icon-container {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-}
-
-.info-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.info-section-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
+  border: none;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .info-section-content {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
 
-.info-section-content .el-form {
-  width: 90%;
-  max-width: 400px;
+.info-section-content {
+  width: 100%;
+  max-width: 500px;
+  padding-left: 20px;
 }
 
 .form-actions {
   display: flex;
   justify-content: center;
   margin-top: 20px;
-  gap: 20px;
+  width: 100%;
+  gap: 10px;
 }
 
 .action-btn {
-  min-width: 100px;
+  min-width: 80px;
+  border-radius: 4px;
 }
 
 .save-btn {
@@ -360,5 +334,34 @@ onMounted(() => {
 .cancel-btn {
   background-color: #f0f0f0;
   color: #606266;
+}
+
+.user-info-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.avatar-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f0f2f5;
+  margin-right: 15px;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
 }
 </style>
