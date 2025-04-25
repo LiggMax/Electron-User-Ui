@@ -78,7 +78,7 @@
         <div class="card-item" v-for="card in cardList" :key="card.projectId">
           <div class="left-section">
             <div class="card-icon">
-              <img :src="getCountryFlag(card.projectName)" :alt="card.projectName" class="country-flag">
+              <img :src="getProjectIcon(card.projectName)" :alt="card.projectName" class="country-flag">
             </div>
             <div class="quantity-section">
               <div class="card-count">数量: {{ card.phoneCount }}个</div>
@@ -123,6 +123,12 @@ import hongkongFlag from "../assets/imgae/HongKong.png";
 import { ProjectListService } from "../api/project";
 import { ProjectCollectService } from "../api/user";
 
+//导入项目图标
+import Telegram from '../assets/imgae/project/Telegram.png'
+import facebook from '../assets/imgae/project/facebook.png'
+import TikTok from '../assets/imgae/project/TikTok.webp'
+import Instagram from '../assets/imgae/project/Instagram.webp'
+
 // 搜索参数
 const selectedProject = ref("请选择项目");
 const selectedCountry = ref("请选择国家");
@@ -142,6 +148,22 @@ const getCountryFlag = (projectName) => {
       return hongkongFlag;
     default:
       return macauFlag; // 默认图片
+  }
+};
+
+// 获取项目图标
+const getProjectIcon = (projectName) => {
+  switch (projectName) {
+    case "Instagram":
+      return Instagram;
+    case "facebook":
+      return facebook;
+    case "TikTok":
+      return TikTok;
+    case "Telegram":
+      return Telegram;
+    default:
+      return facebook; // 默认图片
   }
 };
 
@@ -451,12 +473,15 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .country-flag {
   width: 90px;
   height: 90px;
-  object-fit: contain;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .quantity-section {
