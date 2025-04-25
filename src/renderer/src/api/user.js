@@ -29,3 +29,10 @@ export const ProjectCollectService = (projectId) => {
     projectId
   })
 }
+
+/**
+ * 号码购买
+ */
+export const PhoneBuyService = (phoneData) => {
+  return request.post("/user/buy", phoneData)
+}

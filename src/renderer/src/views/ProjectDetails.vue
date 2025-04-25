@@ -44,12 +44,12 @@
           </div>
         </div>
       </div>
-      
+
       <div v-else-if="loading" class="loading-section">
         <div class="loading-spinner"></div>
         <div class="loading-text">加载中...</div>
       </div>
-      
+
       <div v-else class="empty-section">
         <div class="empty-icon">🔍</div>
         <div class="empty-text">暂无可用地区</div>
@@ -68,6 +68,7 @@ import Telegram from '../assets/imgae/project/Telegram.png';
 import facebook from '../assets/imgae/project/facebook.png';
 import TikTok from '../assets/imgae/project/TikTok.webp';
 import Instagram from '../assets/imgae/project/Instagram.webp';
+import { PhoneBuyService } from "../api/user";
 
 // 获取URL参数
 let urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
@@ -125,12 +126,33 @@ const decreaseQuantity = (region) => {
 };
 
 // 购买
-const buyRegion = (region) => {
+const buyRegion = async (region) => {
   if (region.phoneCount <= 0) {
     message.error('该地区暂无可用号码');
     return;
   }
-  message.success(`正在购买${region.regionName}地区${region.quantity || 1}个号码`);
+  
+  try {
+    // 构建购买数据对象，确保所有ID和数量字段是数字类型
+    const buyData = {
+      projectId: Number(projectId.value),  // 确保转换为数字
+      regionId: Number(region.regionId),   // 确保转换为数字
+      quantity: Number(region.quantity || 1) // 确保转换为数字
+    };
+    
+    console.log('发送的购买数据:', buyData); // 调试日志
+    
+    // 发送购买请求
+    const res = await PhoneBuyService(buyData);
+    if (res && res.code === 200) {
+      message.success(`成功购买${region.regionName}地区${region.quantity || 1}个号码`);
+      // 刷新数据
+      await getProjectGoods();
+    }
+  } catch (error) {
+    console.error('购买失败:', error);
+    message.error('购买失败，请稍后再试');
+  }
 };
 
 // 监听从主进程发来的更新内容消息
@@ -156,23 +178,28 @@ onBeforeUnmount(() => {
 const getProjectGoods = async () => {
   loading.value = true;
   regionList.value = [];
-  
+
   try {
     const res = await ProjectGoodsService(projectId.value);
-    if (res.code === 200 && res.data) {
       // 为每个地区添加quantity字段用于前端操作
       regionList.value = res.data.map(item => {
         item.quantity = 1;
         return item;
       });
-    } else {
-      message.error(res.message || '获取地区列表失败');
-    }
   } catch (error) {
     console.error(error);
-    message.error('获取地区列表失败');
   } finally {
     loading.value = false;
+  }
+};
+
+//号码购买
+const buyNumber = async () => {
+  try {
+
+      message.success('购买成功');
+  } catch (error) {
+    console.error(error);
   }
 };
 </script>

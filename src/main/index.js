@@ -113,6 +113,14 @@ function createDetailsWindow(projectId, projectName) {
       projectDetailsWindow.restore();
     }
     projectDetailsWindow.focus();
+    // 确保窗口在最前面
+    projectDetailsWindow.setAlwaysOnTop(true);
+    // 短暂设置后恢复正常，以避免永久置顶
+    setTimeout(() => {
+      if (projectDetailsWindow && !projectDetailsWindow.isDestroyed()) {
+        projectDetailsWindow.setAlwaysOnTop(false);
+      }
+    }, 1000);
     return projectDetailsWindow;
   }
 
@@ -127,6 +135,7 @@ function createDetailsWindow(projectId, projectName) {
     frame: false, // 去掉标题栏
     transparent: true, // 窗口背景透明
     titleBarStyle: 'hidden',
+    alwaysOnTop: true, // 设置为始终在顶层
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -142,7 +151,13 @@ function createDetailsWindow(projectId, projectName) {
   });
 
   projectDetailsWindow.on('ready-to-show', () => {
-    projectDetailsWindow.show()
+    projectDetailsWindow.show();
+    // 短暂置顶后取消，避免一直保持置顶
+    setTimeout(() => {
+      if (projectDetailsWindow && !projectDetailsWindow.isDestroyed()) {
+        projectDetailsWindow.setAlwaysOnTop(false);
+      }
+    }, 1000);
   })
 
   // 加载页面并传递参数
