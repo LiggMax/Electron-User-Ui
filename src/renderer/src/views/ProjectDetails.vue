@@ -2,7 +2,7 @@
   <div class="project-details">
     <!-- 自定义窗口标题栏 -->
     <div class="window-titlebar">
-      <div class="title">{{ projectName }} - 地区详情</div>
+      <div class="title">{{ projectName }}</div>
       <div class="window-controls">
         <button class="control-button minimize" @click="minimize">
           <span>&#8211;</span>
@@ -36,7 +36,7 @@
               <input type="text" v-model="region.quantity" class="qty-input" disabled>
               <button class="qty-btn increase" @click="increaseQuantity(region)">+</button>
             </div>
-            <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']" 
+            <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
                   :disabled="region.phoneCount <= 0"
                   @click="buyRegion(region)">
               立即购买
@@ -45,16 +45,21 @@
         </div>
       </div>
       
-      <div v-else class="loading-section">
+      <div v-else-if="loading" class="loading-section">
         <div class="loading-spinner"></div>
         <div class="loading-text">加载中...</div>
+      </div>
+      
+      <div v-else class="empty-section">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">暂无可用地区</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { ProjectGoodsService } from '../api/project';
 import message from '../utils/message';
 
@@ -65,16 +70,18 @@ import TikTok from '../assets/imgae/project/TikTok.webp';
 import Instagram from '../assets/imgae/project/Instagram.webp';
 
 // 获取URL参数
-const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
-const projectId = urlParams.get('projectId');
-const projectName = urlParams.get('projectName');
+let urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+const projectId = ref(urlParams.get('projectId'));
+const projectName = ref(urlParams.get('projectName'));
 
 // 地区列表数据
 const regionList = ref([]);
+// 加载状态
+const loading = ref(false);
 
 // 获取项目图标
-const getProjectIcon = (projectName) => {
-  switch (projectName) {
+const getProjectIcon = (name) => {
+  switch (name) {
     case 'Instagram':
       return Instagram;
     case 'facebook':
@@ -126,10 +133,32 @@ const buyRegion = (region) => {
   message.success(`正在购买${region.regionName}地区${region.quantity || 1}个号码`);
 };
 
+// 监听从主进程发来的更新内容消息
+const updateHandler = (event, newProjectId, newProjectName) => {
+  projectId.value = newProjectId;
+  projectName.value = newProjectName;
+  // 重新加载内容
+  getProjectGoods();
+};
+
+// 在组件挂载时添加监听器
+onMounted(() => {
+  window.electron.ipcRenderer.on('update-project-content', updateHandler);
+  getProjectGoods();
+});
+
+// 在组件卸载前移除监听器
+onBeforeUnmount(() => {
+  window.electron.ipcRenderer.removeListener('update-project-content', updateHandler);
+});
+
 // 获取项目商品列表
 const getProjectGoods = async () => {
+  loading.value = true;
+  regionList.value = [];
+  
   try {
-    const res = await ProjectGoodsService(projectId);
+    const res = await ProjectGoodsService(projectId.value);
     if (res.code === 200 && res.data) {
       // 为每个地区添加quantity字段用于前端操作
       regionList.value = res.data.map(item => {
@@ -142,12 +171,10 @@ const getProjectGoods = async () => {
   } catch (error) {
     console.error(error);
     message.error('获取地区列表失败');
+  } finally {
+    loading.value = false;
   }
 };
-
-onMounted(() => {
-  getProjectGoods();
-});
 </script>
 
 <style scoped>
@@ -360,4 +387,24 @@ onMounted(() => {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-</style> 
+
+/* 空数据状态 */
+.empty-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #c0c4cc;
+}
+
+.empty-text {
+  font-size: 18px;
+}
+</style>

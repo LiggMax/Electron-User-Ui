@@ -223,8 +223,18 @@ const collectCard = (card) => {
 };
 
 // 购买
-const buyCard = (card) => {
-  window.api.openProjectDetails(card.projectId, card.projectName);
+const buyCard = async (card) => {
+  try {
+    // 尝试更新已存在的项目详情窗口
+    const updated = await window.api.updateProjectDetails(card.projectId, card.projectName);
+    // 如果没有已打开的窗口或更新失败，则打开新窗口
+    if (!updated) {
+      window.api.openProjectDetails(card.projectId, card.projectName);
+    }
+  } catch (error) {
+    // 如果更新失败，打开新窗口
+    window.api.openProjectDetails(card.projectId, card.projectName);
+  }
 };
 
 /**

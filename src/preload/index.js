@@ -12,6 +12,10 @@ const api = {
   // 添加打开项目详情窗口的API
   openProjectDetails: (projectId, projectName) => {
     ipcRenderer.send('open-project-details', projectId, projectName)
+  },
+  // 更新项目详情
+  updateProjectDetails: (projectId, projectName) => {
+    return ipcRenderer.invoke('update-project-details', projectId, projectName)
   }
 }
 

@@ -11,16 +11,16 @@ function createWindow() {
     minHeight: 550,
     minWidth: 900,
     show: false,
-    autoHideMenuBar: true,
-    frame: false,
-    transparent: true,
+    autoHideMenuBar: true, // 隐藏标题栏
+    frame: false, // 去掉标题栏
+    transparent: true, // 窗口背景透明
     titleBarStyle: 'hidden',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      nodeIntegration: true,
-      contextIsolation: true
+      sandbox: false, // 启用sandbox模式
+      nodeIntegration: true, // 启用nodeIntegration
+      contextIsolation: true // 启用contextIsolation
     }
   })
 
@@ -99,44 +99,73 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
+// 存储项目详情窗口的引用
+let projectDetailsWindow = null;
+
 // 创建项目详情窗口
 function createDetailsWindow(projectId, projectName) {
-  const detailsWindow = new BrowserWindow({
+  // 如果窗口已经存在，则更新内容而不是创建新窗口
+  if (projectDetailsWindow && !projectDetailsWindow.isDestroyed()) {
+    // 更新窗口内容
+    projectDetailsWindow.webContents.send('update-project-content', projectId, projectName);
+    // 显示窗口（如果已经最小化）
+    if (projectDetailsWindow.isMinimized()) {
+      projectDetailsWindow.restore();
+    }
+    projectDetailsWindow.focus();
+    return projectDetailsWindow;
+  }
+
+  // 创建新窗口
+  projectDetailsWindow = new BrowserWindow({
     width: 800,
     height: 600,
     minHeight: 400,
     minWidth: 600,
     show: false,
-    autoHideMenuBar: true,
-    frame: false,
-    parent: BrowserWindow.getFocusedWindow(),
-    modal: true,
-    transparent: true,
+    autoHideMenuBar: true, // 隐藏标题栏
+    frame: false, // 去掉标题栏
+    transparent: true, // 窗口背景透明
     titleBarStyle: 'hidden',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      nodeIntegration: true,
-      contextIsolation: true
+      sandbox: false, // 启用sandbox模式
+      nodeIntegration: true, // 启用nodeIntegration
+      contextIsolation: true // 启用contextIsolation
     }
   })
 
-  detailsWindow.on('ready-to-show', () => {
-    detailsWindow.show()
+  // 监听窗口关闭事件
+  projectDetailsWindow.on('closed', () => {
+    projectDetailsWindow = null;
+  });
+
+  projectDetailsWindow.on('ready-to-show', () => {
+    projectDetailsWindow.show()
   })
 
   // 加载页面并传递参数
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    detailsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#/project-details?projectId=${projectId}&projectName=${encodeURIComponent(projectName)}`)
+    projectDetailsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#/project-details?projectId=${projectId}&projectName=${encodeURIComponent(projectName)}`)
   } else {
-    detailsWindow.loadFile(join(__dirname, '../renderer/index.html'), {
+    projectDetailsWindow.loadFile(join(__dirname, '../renderer/index.html'), {
       hash: `project-details?projectId=${projectId}&projectName=${encodeURIComponent(projectName)}`
     })
   }
 
-  return detailsWindow
+  return projectDetailsWindow
 }
+
+// 处理更新项目详情窗口内容的请求
+ipcMain.handle('update-project-details', async (_, projectId, projectName) => {
+  if (projectDetailsWindow && !projectDetailsWindow.isDestroyed()) {
+    // 向渲染进程发送更新内容的消息
+    projectDetailsWindow.webContents.send('update-project-content', projectId, projectName);
+    return true;
+  }
+  return false;
+});
 
 // 监听打开项目详情窗口的事件
 ipcMain.on('open-project-details', (_, projectId, projectName) => {
