@@ -224,7 +224,7 @@ const collectCard = (card) => {
 
 // 购买
 const buyCard = (card) => {
-  message.success(`正在购买${card.projectName}卡片 ${card.quantity || 1}张`);
+  window.api.openProjectDetails(card.projectId, card.projectName);
 };
 
 /**

@@ -98,3 +98,47 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+// 创建项目详情窗口
+function createDetailsWindow(projectId, projectName) {
+  const detailsWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    minHeight: 400,
+    minWidth: 600,
+    show: false,
+    autoHideMenuBar: true,
+    frame: false,
+    parent: BrowserWindow.getFocusedWindow(),
+    modal: true,
+    transparent: true,
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+      nodeIntegration: true,
+      contextIsolation: true
+    }
+  })
+
+  detailsWindow.on('ready-to-show', () => {
+    detailsWindow.show()
+  })
+
+  // 加载页面并传递参数
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    detailsWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#/project-details?projectId=${projectId}&projectName=${encodeURIComponent(projectName)}`)
+  } else {
+    detailsWindow.loadFile(join(__dirname, '../renderer/index.html'), {
+      hash: `project-details?projectId=${projectId}&projectName=${encodeURIComponent(projectName)}`
+    })
+  }
+
+  return detailsWindow
+}
+
+// 监听打开项目详情窗口的事件
+ipcMain.on('open-project-details', (_, projectId, projectName) => {
+  createDetailsWindow(projectId, projectName)
+});

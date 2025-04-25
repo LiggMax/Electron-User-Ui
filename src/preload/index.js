@@ -8,6 +8,10 @@ const api = {
     close: () => ipcRenderer.send('window-close'),
     minimize: () => ipcRenderer.send('window-minimize'),
     maximize: () => ipcRenderer.send('window-maximize')
+  },
+  // 添加打开项目详情窗口的API
+  openProjectDetails: (projectId, projectName) => {
+    ipcRenderer.send('open-project-details', projectId, projectName)
   }
 }
 

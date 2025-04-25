@@ -6,3 +6,14 @@ import request from "../utils/request";
 export const ProjectListService = () => {
   return request.get("/project/list")
 }
+
+/**
+ * 根据项目ID查询项目下的商品列表
+ */
+export const ProjectGoodsService = (projectId) => {
+  return request.get("/project/commodity", {
+    params: {
+      projectId
+    }
+  })
+}
