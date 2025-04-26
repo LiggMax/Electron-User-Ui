@@ -28,8 +28,10 @@ import smsIcon from '../../assets/menuicon/SMS.png';
 import userIcon from '../../assets/menuicon/User.png';
 import logoutIcon from '../../assets/menuicon/Logout.png';
 import message from '../../utils/message';
+import { userTokenStore } from '../../store/token';
 
 const router = useRouter();
+const tokenStore = userTokenStore();
 
 defineProps({
   activeMenu: {
@@ -74,6 +76,10 @@ const handleMenuClick = (item) => {
   if (item.name === 'logout') {
     // 处理退出登录
     message.info('正在退出登录...');
+    
+    // 清除token但保留记住的用户名
+    tokenStore.removeToken();
+    
     setTimeout(() => {
       router.push('/login');
     }, 500);

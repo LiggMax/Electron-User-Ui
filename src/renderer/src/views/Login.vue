@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { UserLoginService } from "../api/user";
 import { userTokenStore } from "../store/token";
@@ -81,17 +81,21 @@ const login = async () => {
       console.log(res.data);
       tokenStore.setToken(res.data);
       
+      // 处理记住用户名选项
+      if (rememberUsername.value) {
+        // 如果勾选了"记住用户名"，则保存用户名
+        localStorage.setItem("rememberedUsername", loginForm.value.account);
+      } else {
+        // 如果未勾选，则清除保存的用户名
+        localStorage.removeItem("rememberedUsername");
+      }
+
       // 显示成功消息
       message.success("登录成功");
       
       // 登录成功立即跳转到主页
       progressBtn.setLoading(false);
       await router.push("/project");
-      
-      // 如果不勾选 记住用户名，则清除本地存储
-      if (!rememberUsername.value) {
-        localStorage.removeItem("rememberUsername");
-      }
     } else {
       // 登录失败情况
       message.error(res?.message || "登录失败，请检查账户和密码");
@@ -115,6 +119,16 @@ onBeforeUnmount(() => {
 
 // 窗口状态
 const isMaximized = ref(false);
+
+// 在组件挂载时加载保存的用户名
+onMounted(() => {
+  // 读取本地存储中的用户名
+  const savedUsername = localStorage.getItem("rememberedUsername");
+  if (savedUsername) {
+    loginForm.value.account = savedUsername;
+    rememberUsername.value = true; // 如果有保存的用户名，自动勾选"记住用户名"
+  }
+});
 
 // 窗口控制函数
 const closeWindow = () => {
