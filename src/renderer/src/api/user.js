@@ -6,6 +6,12 @@ import request from "../utils/request";
 export const UserLoginService = (loginData) => {
   return request.post("/user/account/login", loginData)
 }
+/**
+ * 注册
+ */
+export const UserRegisterService = (registerData) => {
+  return request.post("/user/account/register", registerData)
+}
 
 /**
  * 获取用户信息

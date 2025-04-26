@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onBeforeUnmount, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { UserLoginService } from "../api/user";
+import { UserLoginService, UserRegisterService } from "../api/user";
 import { userTokenStore } from "../store/token";
 import message from "../utils/message";
 import { useProgressButton } from "../utils/progressButton";
@@ -9,10 +9,21 @@ import { useProgressButton } from "../utils/progressButton";
 const tokenStore = userTokenStore();
 const router = useRouter();
 
+// 添加注册表单状态
+const isRegisterMode = ref(false);
+
 const loginForm = ref({
   account: "",
   password: ""
 });
+
+// 添加注册表单
+const registerForm = ref({
+  account: "",
+  password: "",
+  confirmPassword: ""
+});
+
 const rememberUsername = ref(false); // 默认选中
 
 // 输入框验证状态
@@ -21,11 +32,33 @@ const formErrors = ref({
   password: false
 });
 
+// 注册表单验证状态
+const registerErrors = ref({
+  account: false,
+  password: false,
+  confirmPassword: false,
+  passwordMatch: false
+});
+
 // 使用进度按钮控制器
 const progressBtn = useProgressButton({
   duration: 3,
   updateInterval: 20 // 更新更频繁，动画更流畅
 });
+
+// 切换到注册模式
+const switchToRegister = () => {
+  isRegisterMode.value = true;
+  resetErrors();
+  resetRegisterErrors();
+};
+
+// 切换到登录模式
+const switchToLogin = () => {
+  isRegisterMode.value = false;
+  resetErrors();
+  resetRegisterErrors();
+};
 
 // 重置输入框错误状态
 const resetErrors = () => {
@@ -33,10 +66,30 @@ const resetErrors = () => {
   formErrors.value.password = false;
 };
 
+// 重置注册表单错误状态
+const resetRegisterErrors = () => {
+  registerErrors.value.account = false;
+  registerErrors.value.password = false;
+  registerErrors.value.confirmPassword = false;
+  registerErrors.value.passwordMatch = false;
+};
+
 // 输入时自动清除对应字段的错误状态
 const handleInput = (field) => {
   if (formErrors.value[field]) {
     formErrors.value[field] = false;
+  }
+};
+
+// 输入时只清除相应错误状态
+const handleRegisterInput = (field) => {
+  if (registerErrors.value[field]) {
+    registerErrors.value[field] = false;
+  }
+  
+  // 清除密码不匹配的错误
+  if (field === 'password' || field === 'confirmPassword') {
+    registerErrors.value.passwordMatch = false;
   }
 };
 
@@ -80,7 +133,7 @@ const login = async () => {
     if (res && res.code === 200) {
       console.log(res.data);
       tokenStore.setToken(res.data);
-      
+
       // 处理记住用户名选项
       if (rememberUsername.value) {
         // 如果勾选了"记住用户名"，则保存用户名
@@ -92,7 +145,7 @@ const login = async () => {
 
       // 显示成功消息
       message.success("登录成功");
-      
+
       // 登录成功立即跳转到主页
       progressBtn.setLoading(false);
       await router.push("/project");
@@ -108,6 +161,84 @@ const login = async () => {
     message.error(error?.message || "登录失败，请稍后再试");
     // 启动倒计时
     progressBtn.start();
+  }
+};
+
+// 注册函数
+const register = async () => {
+  // 如果正在处理中，不允许再次点击
+  if (progressBtn.isLoading.value) {
+    return;
+  }
+
+  // 重置错误状态
+  resetRegisterErrors();
+
+  // 验证输入
+  let hasError = false;
+
+  if (!registerForm.value.account) {
+    registerErrors.value.account = true;
+    hasError = true;
+  }
+
+  if (!registerForm.value.password) {
+    registerErrors.value.password = true;
+    hasError = true;
+  }
+
+  if (!registerForm.value.confirmPassword) {
+    registerErrors.value.confirmPassword = true;
+    hasError = true;
+  }
+
+  // 检查密码是否匹配
+  if (registerForm.value.password !== registerForm.value.confirmPassword) {
+    registerErrors.value.passwordMatch = true;
+    hasError = true;
+  }
+
+  // 如果有错误，直接返回不发送请求
+  if (hasError) {
+    return;
+  }
+
+  // 按钮状态为加载中
+  progressBtn.setLoading(true);
+
+  try {
+    // 创建一个新对象，只包含需要发送的字段（账号和密码）
+    const registerData = {
+      account: registerForm.value.account,
+      password: registerForm.value.password
+      // 不包含 confirmPassword 字段
+    };
+
+    // 调用注册API，只发送必要的数据
+    const res = await UserRegisterService(registerData);
+    
+    // 只有在服务器返回成功状态码时才处理成功逻辑
+    if (res && res.code === 200) {
+      message.success("注册成功，请登录");
+      
+      // 将注册账号自动填入登录表单
+      loginForm.value.account = registerForm.value.account;
+      loginForm.value.password = "";
+      
+      // 切换到登录模式
+      switchToLogin();
+    } else {
+      // 服务器返回了错误消息
+      message.error(res?.message || "注册失败，请稍后重试");
+      progressBtn.start();
+    }
+  } catch (error) {
+    message.error(error?.message || "注册失败，请稍后重试");
+    progressBtn.start();
+  } finally {
+    if (progressBtn.isLoading.value) {
+      progressBtn.setLoading(false);
+    }
   }
 };
 
@@ -191,62 +322,134 @@ if (window.electron) {
         </div>
       </div>
     </div>
-    <div class="login-form">
-      <h1>欢迎使用客户端平台</h1>
-      <div class="form-item">
-        <div class="input-icon" :class="{ 'error-input': formErrors.account, 'shake': formErrors.account }">
-          <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />
-          <input
-            type="text"
-            id="username"
-            v-model="loginForm.account"
-            placeholder="请输入账户ID"
-            @input="handleInput('account')"
-            :class="{ 'error-border': formErrors.account }"
-          />
-          <div v-if="formErrors.account" class="error-message">请输入账户ID</div>
-        </div>
-      </div>
-      <div class="form-item">
-        <div class="input-icon" :class="{ 'error-input': formErrors.password, 'shake': formErrors.password }">
-          <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="密码" />
-          <input
-            type="password"
-            id="password"
-            v-model="loginForm.password"
-            placeholder="请输入账户密码"
-            @input="handleInput('password')"
-            :class="{ 'error-border': formErrors.password }"
-          />
-          <div v-if="formErrors.password" class="error-message">请输入账户密码</div>
-        </div>
-      </div>
-      <div class="form-item checkbox-item">
-        <div class="checkbox-container">
-          <input type="checkbox" id="remember" v-model="rememberUsername" checked />
-          <label for="remember" class="checkbox-label">记住用户名</label>
-        </div>
-      </div>
-      <div class="form-item">
-        <button
-          @click="login"
-          :disabled="progressBtn.isLoading.value"
-          :class="{ 'loading': progressBtn.isLoading.value }"
-        >
-          <div class="button-content">
-            {{ progressBtn.isLoading.value && progressBtn.progress.value > 0 ?
-              `登录中 (${progressBtn.countdown.value})` :
-              progressBtn.isLoading.value ? "登录中..." : "登录" }}
+
+    <!-- 使用transition组件直接包裹表单 -->
+    <transition name="form-transition" mode="out-in">
+      <!-- 登录表单 -->
+      <div class="login-form" v-if="!isRegisterMode" key="login">
+        <h1>欢迎使用客户端平台</h1>
+        <div class="form-item">
+          <div class="input-icon" :class="{ 'error-input': formErrors.account, 'shake': formErrors.account }">
+            <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />
+            <input
+              type="text"
+              id="username"
+              v-model="loginForm.account"
+              placeholder="请输入账户ID"
+              @input="handleInput('account')"
+              :class="{ 'error-border': formErrors.account }"
+            />
+            <div v-if="formErrors.account" class="error-message">请输入账户ID</div>
           </div>
-          <div
-            v-if="progressBtn.isLoading.value && progressBtn.progress.value > 0"
-            class="progress-container"
+        </div>
+        <div class="form-item">
+          <div class="input-icon" :class="{ 'error-input': formErrors.password, 'shake': formErrors.password }">
+            <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="密码" />
+            <input
+              type="password"
+              id="password"
+              v-model="loginForm.password"
+              placeholder="请输入账户密码"
+              @input="handleInput('password')"
+              :class="{ 'error-border': formErrors.password }"
+            />
+            <div v-if="formErrors.password" class="error-message">请输入账户密码</div>
+          </div>
+        </div>
+        <div class="form-item checkbox-item">
+          <div class="checkbox-container">
+            <input type="checkbox" id="remember" v-model="rememberUsername" checked />
+            <label for="remember" class="checkbox-label">记住用户名</label>
+          </div>
+        </div>
+        <div class="form-item">
+          <button
+            @click="login"
+            :disabled="progressBtn.isLoading.value"
+            :class="{ 'loading': progressBtn.isLoading.value }"
           >
-            <div class="progress-bar" :style="progressBtn.progressStyle"></div>
-          </div>
-        </button>
+            <div class="button-content">
+              {{ progressBtn.isLoading.value && progressBtn.progress.value > 0 ?
+                `登录中 (${progressBtn.countdown.value})` :
+                progressBtn.isLoading.value ? "登录中..." : "登录" }}
+            </div>
+            <div
+              v-if="progressBtn.isLoading.value && progressBtn.progress.value > 0"
+              class="progress-container"
+            >
+              <div class="progress-bar" :style="progressBtn.progressStyle"></div>
+            </div>
+          </button>
+          <div class="switch-mode-text" @click="switchToRegister">还没有账号? 点击注册</div>
+        </div>
       </div>
-    </div>
+
+      <!-- 注册表单 -->
+      <div class="login-form" v-else key="register">
+        <h1>注册新账号</h1>
+        <div class="form-item">
+          <div class="input-icon" :class="{ 'error-input': registerErrors.account, 'shake': registerErrors.account }">
+            <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />
+            <input
+              type="text"
+              id="register-username"
+              v-model="registerForm.account"
+              placeholder="请输入账户ID"
+              @input="handleRegisterInput('account')"
+              :class="{ 'error-border': registerErrors.account }"
+            />
+            <div v-if="registerErrors.account" class="error-message">请输入账户ID</div>
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="input-icon" :class="{ 'error-input': registerErrors.password, 'shake': registerErrors.password }">
+            <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="密码" />
+            <input
+              type="password"
+              id="register-password"
+              v-model="registerForm.password"
+              placeholder="请输入账户密码"
+              @input="handleRegisterInput('password')"
+              :class="{ 'error-border': registerErrors.password }"
+            />
+            <div v-if="registerErrors.password" class="error-message">请输入账户密码</div>
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="input-icon" :class="{ 'error-input': registerErrors.confirmPassword || registerErrors.passwordMatch, 'shake': registerErrors.confirmPassword || registerErrors.passwordMatch }">
+            <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="确认密码" />
+            <input
+              type="password"
+              id="confirm-password"
+              v-model="registerForm.confirmPassword"
+              placeholder="请再次输入密码"
+              @input="handleRegisterInput('confirmPassword')"
+              :class="{ 'error-border': registerErrors.confirmPassword || registerErrors.passwordMatch }"
+            />
+            <div v-if="registerErrors.confirmPassword" class="error-message">请再次输入密码</div>
+            <div v-if="registerErrors.passwordMatch" class="error-message">两次密码输入不一致</div>
+          </div>
+        </div>
+        <div class="form-item">
+          <button
+            @click="register"
+            :disabled="progressBtn.isLoading.value"
+            :class="{ 'loading': progressBtn.isLoading.value }"
+          >
+            <div class="button-content">
+              {{ progressBtn.isLoading.value ? "注册中..." : "注册" }}
+            </div>
+            <div
+              v-if="progressBtn.isLoading.value"
+              class="progress-container"
+            >
+              <div class="progress-bar" :style="progressBtn.progressStyle"></div>
+            </div>
+          </button>
+          <div class="switch-mode-text" @click="switchToLogin">已有账号? 点击登录</div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -317,23 +520,29 @@ if (window.electron) {
   box-shadow: 10px 0 20px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 1;
-  animation: slideIn 0.5s ease-out;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 15vh; /* 将表单向下移动，留出顶部空间 */
+  margin-top: 10vh; /* 将表单向上移动，从15vh改为10vh */
   margin-left: 6%; /* 保持左侧间距 */
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(-30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+/* 过渡动画 */
+.form-transition-enter-active,
+.form-transition-leave-active {
+  transition: opacity 0.2s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.form-transition-enter-from,
+.form-transition-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+}
+
+.form-transition-enter-to,
+.form-transition-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 /* 输入框震动动画 */
@@ -350,7 +559,7 @@ if (window.electron) {
 }
 
 .shake {
-  animation: shake 0.6s cubic-bezier(.36, .07, .19, .97) both;
+  animation: shake 0.3s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 h1 {
@@ -608,5 +817,18 @@ button.loading {
   }
 }
 
-/* 已移除百分比调试信息显示样式 */
+/* 模式切换文本样式 */
+.switch-mode-text {
+  text-align: center;
+  margin-top: 15px;
+  color: #5B7CF9;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.switch-mode-text:hover {
+  text-decoration: underline;
+  color: #4A6AE8;
+}
 </style>

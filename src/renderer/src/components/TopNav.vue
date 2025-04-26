@@ -26,8 +26,8 @@
 
         <!-- 用户信息 -->
         <div class="user-profile">
-          <div class="profile-icon">
-            <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="" />
+          <div class="profile-icon" @click="showCustomerService">
+            <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="客服" />
           </div>
           <div class="user-info">
             <img :src="userInfoDate.userAvatar? userInfoDate.userAvatar : Avatar" style="width: 35px; height: 35px;" alt="" />
@@ -37,6 +37,30 @@
       </div>
     </div>
   </div>
+
+  <!-- 客服电话弹窗 -->
+  <el-dialog
+    v-model="customerServiceDialogVisible"
+    title="客服电话"
+    width="350px"
+    :close-on-click-modal="true"
+    center
+  >
+    <div class="service-dialog-content">
+      <div class="service-icon">
+        <img src="../assets/imgae/serve.png" alt="客服" />
+      </div>
+      <div class="service-phone">
+        <div class="phone-container">
+          <h3>1213800123</h3>
+          <el-button type="primary" size="small" class="copy-btn" @click="copyPhoneNumber">
+            <el-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M4 16V4a2 2 0 0 1 2-2h10"></path></svg></el-icon>
+            复制
+          </el-button>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -44,6 +68,7 @@ import { onMounted, ref } from "vue";
 import { UserInfoService } from "../api/user";
 import Avatar from '../assets/svg/avatar.svg'
 import userInfoStore from "../store/userInfoStore";
+import { ElMessage } from 'element-plus';
 const isMaximized = ref(false);
 const userInfoDate = ref({
   account: '',
@@ -54,6 +79,9 @@ const userInfoDate = ref({
   createdAt: ''
 });
 
+// 客服电话弹窗
+const customerServiceDialogVisible = ref(false);
+
 const userInfo = userInfoStore()
 
 defineProps({
@@ -62,6 +90,31 @@ defineProps({
     default: '项目列表'
   }
 });
+
+// 显示客服电话弹窗
+const showCustomerService = () => {
+  customerServiceDialogVisible.value = true;
+};
+
+// 复制电话号码
+const copyPhoneNumber = () => {
+  const phoneNumber = '1213800123';
+  navigator.clipboard.writeText(phoneNumber).then(() => {
+    // 使用Element Plus的消息提示
+    ElMessage({
+      message: '电话号码已复制到剪贴板',
+      type: 'success',
+      duration: 2000
+    });
+  }).catch(err => {
+    console.error('复制失败:', err);
+    ElMessage({
+      message: '复制失败，请手动复制',
+      type: 'error',
+      duration: 2000
+    });
+  });
+};
 
 // 窗口控制函数
 const closeWindow = () => {
@@ -243,5 +296,51 @@ onMounted(() => {
 .control-btn img {
   width: 15px;
   height: 15px;
+}
+
+/* 客服电话弹窗样式 */
+.service-dialog-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.service-icon {
+  margin-bottom: 20px;
+}
+
+.service-icon img {
+  width: 60px;
+  height: 60px;
+}
+
+.service-phone {
+  margin-bottom: 15px;
+}
+
+.service-phone h3 {
+  font-size: 24px;
+  color: #409EFF;
+  margin: 0;
+}
+
+.phone-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.service-time {
+  color: #909399;
+  font-size: 14px;
 }
 </style>
