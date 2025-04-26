@@ -43,3 +43,10 @@ export const PhoneBuyService = (phoneData) => {
 export const UserFavoriteService = () => {
   return request.get("/user/favorite")
 }
+
+/**
+ * 获取用户订单
+ */
+export const UserOrderService = () => {
+  return request.get("/user/order")
+}

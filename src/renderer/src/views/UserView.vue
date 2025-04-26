@@ -31,7 +31,11 @@
           <el-icon class="action-icon"><img src="../assets/imgae/userInfo.png" alt="个人信息" /></el-icon>
           <span class="action-text">个人信息</span>
         </div>
-        <div class="action-button my-orders">
+        <div
+          class="action-button my-orders"
+          :class="{ 'active': activeSection === 'my-orders' }"
+          @click="toggleSection('my-orders')"
+        >
           <el-icon class="action-icon"><img src="../assets/imgae/prompt.png" alt="我的订单" /></el-icon>
           <span class="action-text">我的订单</span>
         </div>
@@ -118,6 +122,41 @@
         </div>
       </div>
 
+      <!-- 我的订单内容区域 -->
+      <div v-if="activeSection === 'my-orders'" class="info-section orders-section">
+        <div class="section-header">
+          <span class="section-title">我的订单</span>
+        </div>
+        
+        <div class="section-content">
+          <div v-if="orderLoading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">正在加载订单...</span>
+          </div>
+          
+          <div v-else-if="orderList.length === 0" class="empty-orders">
+            <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
+            <div class="empty-text">暂无订单记录</div>
+          </div>
+          
+          <div v-else class="orders-list">
+            <div v-for="(item, index) in orderList" :key="index" class="order-item">
+              <div class="order-icon">
+                <img :src="getProjectIcon(getProjectName(item.user_project_id))" :alt="getProjectName(item.user_project_id)" class="project-icon">
+              </div>
+              <div class="order-info">
+                <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
+                <div class="order-phone-number">{{ formatPhoneNumber(item.phone_number) }}</div>
+                <div class="order-date">购买时间: {{ item.created_at.split('T')[0] }}</div>
+              </div>
+              <div class="order-status">
+                <div class="status-badge success">已完成</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 默认展示内容 -->
       <div v-if="!activeSection" class="empty-data-section">
         <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
@@ -132,7 +171,7 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
-import { UserUpdateService, UserFavoriteService } from "../api/user";
+import { UserUpdateService, UserFavoriteService, UserOrderService } from "../api/user";
 
 // 导入项目图标
 import Telegram from '../assets/imgae/project/Telegram.png';
@@ -155,6 +194,10 @@ const userForm = ref({
 const favoriteList = ref([]);
 // 加载状态
 const loading = ref(false);
+
+// 添加订单数据和加载状态
+const orderList = ref([]);
+const orderLoading = ref(false);
 
 // 获取项目图标
 const getProjectIcon = (projectName) => {
@@ -186,6 +229,9 @@ const toggleSection = async (section) => {
     } else if (section === "my-collections") {
       // 获取收藏列表
       await getFavoriteList();
+    } else if (section === "my-orders") {
+      // 获取订单列表
+      await getOrderList();
     } else if (section === "change-password") {
       // 显示个人信息区域，聚焦于密码修改
       activeSection.value = "personal-info";
@@ -218,6 +264,47 @@ const getFavoriteList = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// 获取订单列表
+const getOrderList = async () => {
+  orderLoading.value = true;
+  orderList.value = [];
+  
+  try {
+    const res = await UserOrderService();
+    if (res && res.code === 200 && res.data) {
+      orderList.value = res.data;
+    }
+  } catch (error) {
+    console.error('获取订单列表失败:', error);
+    message.error('获取订单列表失败');
+  } finally {
+    orderLoading.value = false;
+  }
+};
+
+// 获取项目名称
+const getProjectName = (projectId) => {
+  switch (projectId) {
+    case 1:
+      return 'Instagram';
+    case 2:
+      return 'TikTok';
+    case 3:
+      return 'facebook';
+    case 4:
+      return 'Telegram';
+    default:
+      return `项目${projectId}`;
+  }
+};
+
+// 格式化电话号码
+const formatPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  const numStr = phoneNumber.toString();
+  return `${numStr.slice(0, 3)} ${numStr.slice(3, 7)} ${numStr.slice(7)}`;
 };
 
 // 移除收藏
@@ -632,5 +719,87 @@ onMounted(() => {
 .remove-btn:hover {
   background-color: #f56c6c;
   color: white;
+}
+
+/* 我的订单样式 */
+.orders-section {
+  max-width: 600px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: all 0.2s;
+}
+
+.order-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.order-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 15px;
+  background-color: #fff;
+}
+
+.order-info {
+  flex: 1;
+}
+
+.order-project-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.order-phone-number {
+  font-size: 16px;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 5px;
+}
+
+.order-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.order-status {
+  margin-left: 10px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.success {
+  background-color: #e6fff1;
+  color: #52c41a;
+}
+
+.empty-orders {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
 }
 </style>
