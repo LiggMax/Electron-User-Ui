@@ -11,12 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
-        # 如需添加其他平台，可以取消注释以下内容
-        # os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: windows-latest
     
     steps:
       - name: 检出代码
@@ -33,58 +28,43 @@ jobs:
         
       - name: 构建应用程序
         run: npm run build:win
-        if: matrix.os == 'windows-latest'
-        
-      # 如需添加其他平台构建，可以取消注释以下内容
-      # - name: 构建MacOS应用程序
-      #   run: npm run build:mac
-      #   if: matrix.os == 'macos-latest'
-      # 
-      # - name: 构建Linux应用程序
-      #   run: npm run build:linux
-      #   if: matrix.os == 'ubuntu-latest'
         
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: electron-app-${{ matrix.os }}
+          name: electron-app-windows
           path: |
-            dist/
-            !dist/**/*.md
+            dist/*.exe
           retention-days: 5
           
   publish-release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # 确保只在main分支上发布
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     
     steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-      
-      - name: 下载所有构建产物
+      - name: 下载构建产物
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: electron-app-windows
+          path: dist
           
       - name: 显示构建产物结构
         run: |
-          ls -R artifacts/
+          ls -la dist/
       
       - name: 创建发布
-        id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: v${{ github.run_number }}
+          artifacts: "dist/*.exe"
+          tag: v${{ github.run_number }}
           name: 版本 ${{ github.run_number }}
           body: |
             自动构建发布版本 ${{ github.run_number }}
             提交：${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
           draft: false
           prerelease: false
-          files: |
-            artifacts/**/*.exe
-            artifacts/**/*.dmg
-            artifacts/**/*.AppImage
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
