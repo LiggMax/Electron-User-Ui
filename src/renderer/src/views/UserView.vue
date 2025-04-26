@@ -1,4 +1,4 @@
-<template>
+<template xmlns="">
   <div class="user-center-content">
     <div class="profile-card">
       <div class="user-avatar-section">
@@ -50,10 +50,10 @@
         <div
           class="action-button change-password"
           :class="{ 'active': activeSection === 'change-password' }"
-          @click="toggleSection('change-password')"
+          @click="logoutAccount"
         >
-          <el-icon class="action-icon"><img src="../assets/svg/password.svg" alt="修改密码" /></el-icon>
-          <span class="action-text">修改密码</span>
+          <el-icon class="action-icon"><img src="../assets/imgae/logout.png" style="height: 40px;" alt="注销账号" /></el-icon>
+          <span class="action-text">注销账号</span>·
         </div>
       </div>
 
@@ -111,7 +111,7 @@
               <div class="collection-info">
                 <div class="collection-name">{{ item.project_name }}</div>
                 <div class="collection-price">¥{{ item.project_price.toFixed(2) }}</div>
-                <div class="collection-date">收藏于: {{ item.created_at.split('T')[0] }}</div>
+                <div class="collection-date">收藏于: {{ item.created_at.split("T")[0] }}</div>
               </div>
               <div class="collection-actions">
                 <button class="action-btn view-btn" @click="openProjectDetail(item)">查看</button>
@@ -127,18 +127,18 @@
         <div class="section-header">
           <span class="section-title">我的订单</span>
         </div>
-        
+
         <div class="section-content">
           <div v-if="orderLoading" class="loading-container">
             <div class="loading-spinner"></div>
             <span class="loading-text">正在加载订单...</span>
           </div>
-          
+
           <div v-else-if="orderList.length === 0" class="empty-orders">
             <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
             <div class="empty-text">暂无订单记录</div>
           </div>
-          
+
           <div v-else class="orders-list">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
               <div class="order-icon">
@@ -147,7 +147,7 @@
               <div class="order-info">
                 <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
                 <div class="order-phone-number">{{ formatPhoneNumber(item.phone_number) }}</div>
-                <div class="order-date">购买时间: {{ item.created_at.split('T')[0] }}</div>
+                <div class="order-date">购买时间: {{ item.created_at.split("T")[0] }}</div>
               </div>
               <div class="order-status">
                 <div class="status-badge success">已完成</div>
@@ -215,6 +215,7 @@ const getProjectIcon = (projectName) => {
   }
 };
 
+
 // 切换部分
 const toggleSection = async (section) => {
   if (activeSection.value === section) {
@@ -270,7 +271,7 @@ const getFavoriteList = async () => {
 const getOrderList = async () => {
   orderLoading.value = true;
   orderList.value = [];
-  
+
   try {
     const res = await UserOrderService();
     if (res && res.code === 200 && res.data) {
@@ -334,6 +335,12 @@ const saveUserInfo = async () => {
 // 取消编辑
 const cancelEdit = () => {
   activeSection.value = "";
+};
+//注销账号
+const logoutAccount = () => {
+    // 重定向到登录页面
+    message.success("注销成功");
+    window.location.href = '/login';
 };
 
 onMounted(() => {
