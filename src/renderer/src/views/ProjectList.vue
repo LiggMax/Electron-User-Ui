@@ -82,28 +82,23 @@
             <div class="card-icon">
               <img :src="getProjectIcon(card.projectName)" :alt="card.projectName" class="country-flag">
             </div>
-            <div class="quantity-section">
-              <div class="card-count">数量: {{ card.phoneCount }}个</div>
-              <div class="quantity-control">
-                <button class="qty-btn decrease" @click="decreaseQuantity(card)">-</button>
-                <input type="text" v-model="card.quantity" class="qty-input">
-                <button class="qty-btn increase" @click="increaseQuantity(card)">+</button>
-              </div>
-            </div>
           </div>
           <div class="right-section">
             <div class="card-content">
               <div class="card-country">{{ card.projectName }}</div>
-              <div class="card-price">¥ {{ card.projectPrice.toFixed(2) }}</div>
+              <div class="card-price-count">
+                <span class="card-price">¥ {{ card.projectPrice.toFixed(2) }}</span>
+                <span class="card-count">数量: {{ card.phoneCount }}个</span>
+              </div>
             </div>
-            <div class="card-actions">
-              <button class="card-btn collect" @click="collectCard(card)">
-                收藏
-              </button>
-              <button class="card-btn buy-now" @click="buyCard(card)">
-                立即购买
-              </button>
-            </div>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn collect" @click="collectCard(card)">
+              收藏
+            </button>
+            <button class="card-btn buy-now" @click="buyCard(card)">
+              立即购买
+            </button>
           </div>
         </div>
       </div>
@@ -482,7 +477,7 @@ onMounted(() => {
   border-radius: 8px;
   padding: 15px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   background-color: #fff;
   transition: all 0.3s;
 }
@@ -517,11 +512,6 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-.quantity-section {
-  display: flex;
-  flex-direction: column;
-}
-
 .card-content {
   display: flex;
   flex-direction: column;
@@ -534,50 +524,29 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 
-.card-count {
-  font-size: 13px;
-  color: #999;
-  margin-bottom: 8px;
+.card-price-count {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
 }
 
 .card-price {
   font-size: 16px;
   font-weight: bold;
   color: #f56c6c;
-  margin-top: auto;
+  margin-right: 10px;
 }
 
-.quantity-control {
-  display: flex;
-  align-items: center;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.qty-btn {
-  width: 30px;
-  height: 28px;
-  background-color: #f5f7fa;
-  border: none;
-  color: #606266;
-  cursor: pointer;
-}
-
-.qty-input {
-  width: 40px;
-  height: 28px;
-  border: none;
-  border-left: 1px solid #dcdfe6;
-  border-right: 1px solid #dcdfe6;
-  text-align: center;
-  font-size: 14px;
+.card-count {
+  font-size: 13px;
+  color: #999;
 }
 
 .card-actions {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-left: 15px;
 }
 
 .card-btn {
