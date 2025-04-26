@@ -36,7 +36,7 @@
           :class="{ 'active': activeSection === 'my-orders' }"
           @click="toggleSection('my-orders')"
         >
-          <el-icon class="action-icon"><img src="../assets/imgae/prompt.png" alt="我的订单" /></el-icon>
+          <el-icon class="action-icon"><img src="../assets/imgae/orders.png" alt="我的订单" /></el-icon>
           <span class="action-text">我的订单</span>
         </div>
         <div
@@ -46,6 +46,14 @@
         >
           <el-icon class="action-icon"><img src="../assets/imgae/collection.png" alt="我的收藏" /></el-icon>
           <span class="action-text">我的收藏</span>
+        </div>
+        <div
+          class="action-button my-balance"
+          :class="{ 'active': activeSection === 'my-balance' }"
+          @click="showRechargeDialog"
+        >
+          <el-icon class="action-icon"><img src="../assets/imgae/balance.png" alt="余额充值" /></el-icon>
+          <span class="action-text">余额充值</span>
         </div>
         <div
           class="action-button change-password"
@@ -156,6 +164,29 @@
         </div>
       </div>
 
+      <!-- 添加充值对话框 -->
+      <el-dialog
+        v-model="rechargeDialogVisible"
+        title="联系客服进行余额充值："
+        width="400px"
+        :close-on-click-modal="false"
+        center
+      >
+        <div class="recharge-dialog-content">
+          <div class="recharge-info">
+            <H3>1213800123</H3>
+          </div>
+        </div>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="rechargeDialogVisible = false">关闭</el-button>
+            <el-button type="primary" @click="contactCustomerService">
+              确定
+            </el-button>
+          </span>
+        </template>
+      </el-dialog>
+
       <!-- 默认展示内容 -->
       <div v-if="!activeSection" class="empty-data-section">
         <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
@@ -200,6 +231,9 @@ const orderLoading = ref(false);
 
 // 订单数量
 const orderCount = ref(0);
+
+// 余额充值相关
+const rechargeDialogVisible = ref(false);
 
 // 获取项目图标
 const getProjectIcon = (projectName) => {
@@ -345,6 +379,20 @@ const logoutAccount = () => {
     // 重定向到登录页面
     message.success("注销成功");
     window.location.href = '/login';
+};
+
+// 显示充值对话框
+const showRechargeDialog = () => {
+  activeSection.value = "my-balance";
+  rechargeDialogVisible.value = true;
+};
+
+
+// 联系客服
+const contactCustomerService = () => {
+  // message.info("正在打开客服联系方式...");
+  rechargeDialogVisible.value = false;
+  // 这里可以根据实际情况添加联系客服的逻辑，例如打开新窗口或跳转
 };
 
 onMounted(() => {
@@ -813,5 +861,51 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 30px 0;
+}
+
+/* 余额充值样式 */
+.my-balance {
+  background-color: #fff8e8;
+}
+
+.recharge-dialog-content {
+  padding: 10px 0;
+}
+
+.recharge-info {
+  text-align: center;
+}
+
+.account-number {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.account-number .label {
+  font-weight: bold;
+  color: #666;
+}
+
+.account-number .number {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1890ff;
+  margin: 0 5px;
+}
+
+.recharge-notice {
+  color: #909399;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+.recharge-notice p {
+  margin: 5px 0;
 }
 </style>
