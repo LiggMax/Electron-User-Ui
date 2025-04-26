@@ -26,7 +26,12 @@
       <div v-if="regionList.length > 0" class="region-list">
         <div class="region-item" v-for="region in regionList" :key="region.regionId">
           <div class="region-info">
-            <div class="region-name">{{ region.regionName }}</div>
+            <div class="region-header">
+              <div class="region-icon-container">
+                <img :src="getRegionIcon(region.regionMark)" :alt="region.regionName" class="region-icon">
+              </div>
+              <div class="region-name">{{ region.regionName }}</div>
+            </div>
             <div class="region-count">可用数量: {{ region.phoneCount }}</div>
             <div class="region-price">¥{{ region.projectPrice.toFixed(2) }}</div>
           </div>
@@ -68,7 +73,17 @@ import Telegram from '../assets/imgae/project/Telegram.png';
 import facebook from '../assets/imgae/project/facebook.png';
 import TikTok from '../assets/imgae/project/TikTok.webp';
 import Instagram from '../assets/imgae/project/Instagram.webp';
+//导入地区图标
+import Macau from '../assets/imgae/Macau.png'
+import HongKong from '../assets/imgae/HongKong.png'
+import USA from '../assets/imgae/UnitedStates.png'
+
+//默认图标
+import Default from '../assets/svg/default.svg'
+
 import { PhoneBuyService } from "../api/user";
+
+
 
 // 获取URL参数
 let urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
@@ -92,7 +107,26 @@ const getProjectIcon = (name) => {
     case 'Telegram':
       return Telegram;
     default:
-      return facebook; // 默认图片
+      return Default;
+  }
+};
+
+// 获取地区图标
+const getRegionIcon = (regionMark) => {
+  if (!regionMark) return Default;
+  
+  switch (regionMark.toLowerCase()) {
+    case 'macau':
+    case '澳门':
+      return Macau;
+    case 'hongkong':
+    case '香港':
+      return HongKong;
+    case 'usa':
+    case '美国':
+      return USA;
+    default:
+      return Default;
   }
 };
 
@@ -131,7 +165,7 @@ const buyRegion = async (region) => {
     message.error('该地区暂无可用号码');
     return;
   }
-  
+
   try {
     // 构建购买数据对象，确保所有ID和数量字段是数字类型
     const buyData = {
@@ -139,9 +173,9 @@ const buyRegion = async (region) => {
       regionId: Number(region.regionId),   // 确保转换为数字
       quantity: Number(region.quantity || 1) // 确保转换为数字
     };
-    
+
     console.log('发送的购买数据:', buyData); // 调试日志
-    
+
     // 发送购买请求
     const res = await PhoneBuyService(buyData);
     if (res && res.code === 200) {
@@ -314,11 +348,31 @@ const buyNumber = async () => {
   margin-bottom: 15px;
 }
 
+.region-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.region-icon-container {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-right: 10px;
+  background-color: #f5f7fa;
+}
+
+.region-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .region-name {
   font-size: 18px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 5px;
 }
 
 .region-count {
