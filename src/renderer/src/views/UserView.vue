@@ -103,7 +103,7 @@
             <div class="empty-text">暂无收藏项目</div>
           </div>
 
-          <div v-else class="collections-list">
+          <div v-else class="collections-grid">
             <div v-for="(item, index) in favoriteList" :key="index" class="collection-item">
               <div class="collection-icon">
                 <img :src="getProjectIcon(item.project_name)" :alt="item.project_name" class="project-icon">
@@ -115,7 +115,6 @@
               </div>
               <div class="collection-actions">
                 <button class="action-btn view-btn" @click="openProjectDetail(item)">查看</button>
-<!--                <button class="action-btn remove-btn" @click="removeFavorite(item)">移除</button>-->
               </div>
             </div>
           </div>
@@ -139,7 +138,7 @@
             <div class="empty-text">暂无订单记录</div>
           </div>
 
-          <div v-else class="orders-list">
+          <div v-else class="orders-grid">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
               <div class="order-icon">
                 <img :src="getProjectIcon(getProjectName(item.user_project_id))" :alt="getProjectName(item.user_project_id)" class="project-icon">
@@ -590,7 +589,7 @@ onMounted(() => {
 
 /* 我的收藏样式 */
 .collections-section {
-  max-width: 600px;
+  max-width: 800px;
 }
 
 .section-header {
@@ -646,9 +645,9 @@ onMounted(() => {
   padding: 30px 0;
 }
 
-.collections-list {
-  display: flex;
-  flex-direction: column;
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
 }
 
@@ -730,12 +729,12 @@ onMounted(() => {
 
 /* 我的订单样式 */
 .orders-section {
-  max-width: 600px;
+  max-width: 800px;
 }
 
-.orders-list {
-  display: flex;
-  flex-direction: column;
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
 }
 

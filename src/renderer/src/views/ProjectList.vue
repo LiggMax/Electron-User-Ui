@@ -16,19 +16,21 @@
         <div class="search-item">
           <label>项目：</label>
           <select v-model="selectedProject" class="select-input">
-            <option value="请选择项目">请选择项目</option>
-            <option value="项目一">项目一</option>
-            <option value="项目二">项目二</option>
+            <option value="">请选择项目</option>
+            <option v-for="project in projectOptions" :key="project.projectId" :value="project.projectId">
+              {{ project.projectName }}
+            </option>
           </select>
         </div>
-        <div class="search-item">
-          <label>国家：</label>
-          <select v-model="selectedCountry" class="select-input">
-            <option value="请选择国家">请选择国家</option>
-            <option value="中国澳门">中国澳门</option>
-            <option value="中国香港">中国香港</option>
-          </select>
-        </div>
+<!--        <div class="search-item">-->
+<!--          <label>国家：</label>-->
+<!--          <select v-model="selectedCountry" class="select-input">-->
+<!--            <option value="">请选择国家</option>-->
+<!--            <option v-for="country in countryOptions" :key="country" :value="country">-->
+<!--              {{ country }}-->
+<!--            </option>-->
+<!--          </select>-->
+<!--        </div>-->
         <div class="search-item">
           <label>指定号码：</label>
           <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
@@ -130,14 +132,17 @@ import TikTok from '../assets/imgae/project/TikTok.webp'
 import Instagram from '../assets/imgae/project/Instagram.webp'
 
 // 搜索参数
-const selectedProject = ref("请选择项目");
-const selectedCountry = ref("请选择国家");
+const selectedProject = ref("");
+const selectedCountry = ref("");
 const specifiedNumber = ref("");
 const excludedNumbers = ref("");
 const specificCard = ref("");
 
 // 卡片列表
 const cardList = ref([]);
+// 下拉框选项
+const projectOptions = ref([]);
+const countryOptions = ref([]);
 
 // 判断国旗图片
 const getCountryFlag = (projectName) => {
@@ -207,8 +212,8 @@ const getNumber = () => {
 
 // 重置
 const resetAll = () => {
-  selectedProject.value = "请选择项目";
-  selectedCountry.value = "请选择国家";
+  selectedProject.value = "";
+  selectedCountry.value = "";
   specifiedNumber.value = "";
   excludedNumbers.value = "";
   specificCard.value = "";
@@ -249,6 +254,24 @@ const getProjectList = async () => {
       item.quantity = 1;
       return item;
     });
+
+    // 为下拉框提取项目选项
+    const uniqueProjects = new Map();
+    const uniqueCountries = new Set();
+
+    res.data.forEach(item => {
+      // 提取项目
+      uniqueProjects.set(item.projectId, {
+        projectId: item.projectId,
+        projectName: item.projectName
+      });
+
+      // 提取国家/项目名称作为筛选条件
+      uniqueCountries.add(item.projectName);
+    });
+
+    projectOptions.value = Array.from(uniqueProjects.values());
+    countryOptions.value = Array.from(uniqueCountries);
   } catch (error) {
     console.error(error);
   }
