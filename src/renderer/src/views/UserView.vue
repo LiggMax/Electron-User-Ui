@@ -13,11 +13,11 @@
 
       <div class="user-stats">
         <div class="stat-item">
-          <div class="stat-value">{{ userInfo.balance || "546.00" }}</div>
+          <div class="stat-value">{{ userInfo.balance || "0.00" }}</div>
           <div class="stat-label">总余额（元）</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">{{ userInfo.orderCount || "23" }}</div>
+          <div class="stat-value">{{ orderCount }}</div>
           <div class="stat-label">总订单数</div>
         </div>
       </div>
@@ -198,6 +198,9 @@ const loading = ref(false);
 const orderList = ref([]);
 const orderLoading = ref(false);
 
+// 订单数量
+const orderCount = ref(0);
+
 // 获取项目图标
 const getProjectIcon = (projectName) => {
   switch (projectName) {
@@ -275,6 +278,8 @@ const getOrderList = async () => {
     const res = await UserOrderService();
     if (res && res.code === 200 && res.data) {
       orderList.value = res.data;
+      // 更新订单数量
+      orderCount.value = res.data.length;
     }
   } catch (error) {
     console.error('获取订单列表失败:', error);
@@ -344,6 +349,7 @@ const logoutAccount = () => {
 
 onMounted(() => {
   // 初始化操作
+  getOrderList(); // 页面加载时获取订单数量
 });
 </script>
 
