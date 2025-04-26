@@ -118,11 +118,11 @@
 
           <div v-else class="orders-grid">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
-              <div class="order-icon">
-                <img :src="getProjectIcon(getProjectName(item.user_project_id))"
-                     :alt="getProjectName(item.user_project_id)" class="project-icon">
-              </div>
+<!--              <div class="order-icon">-->
+
+<!--              </div>-->
               <div class="order-info">
+                <h4>订单Id:{{ item.user_project_id }}</h4>
                 <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
                 <div class="order-phone-number">{{ formatPhoneNumber(item.phone_number) }}</div>
                 <div class="order-date">购买时间: {{ item.created_at.split("T")[0] }}</div>
@@ -279,7 +279,7 @@ const actionButtons = ref([
     icon: logoutIcon,
     section: "change-password",
     className: "change-password",
-    action: () => showLogoutConfirmDialog(),
+    action: () => showLogoutConfirmDialog()
   }
 ]);
 
@@ -381,8 +381,6 @@ const getProjectName = (projectId) => {
       return "facebook";
     case 4:
       return "Telegram";
-    default:
-      return `项目${projectId}`;
   }
 };
 

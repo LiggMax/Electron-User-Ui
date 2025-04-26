@@ -1,5 +1,30 @@
 <script setup>
-// 窗口控制逻辑
+import { onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+// 监听导航请求
+const handleNavigationRequest = (event, route) => {
+  console.log('收到导航请求：', route);
+  if (route) {
+    router.push(route);
+  }
+};
+
+onMounted(() => {
+  // 添加IPC消息监听
+  if (window.electron && window.electron.ipcRenderer) {
+    window.electron.ipcRenderer.on('navigate-to-route', handleNavigationRequest);
+  }
+});
+
+onBeforeUnmount(() => {
+  // 移除IPC消息监听
+  if (window.electron && window.electron.ipcRenderer) {
+    window.electron.ipcRenderer.removeListener('navigate-to-route', handleNavigationRequest);
+  }
+});
 </script>
 
 <template>

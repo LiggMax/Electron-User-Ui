@@ -180,8 +180,18 @@ const buyRegion = async (region) => {
     const res = await PhoneBuyService(buyData);
     if (res && res.code === 200) {
       message.success(`成功购买${region.regionName}地区${region.quantity || 1}个号码`);
-      // 刷新数据
-      await getProjectGoods();
+      
+      // 通知父窗口跳转到获取短信页面
+      if (window.electron && window.electron.ipcRenderer) {
+        window.electron.ipcRenderer.send('navigate-to-sms');
+      } else if (window.api && window.api.navigate) {
+        window.api.navigate('/sms');
+      }
+      
+      // 关闭当前窗口
+      setTimeout(() => {
+        closeWindow();
+      }, 1000); // 延时1秒关闭，让用户看到成功提示
     }
   } catch (error) {
     console.error('购买失败:', error);

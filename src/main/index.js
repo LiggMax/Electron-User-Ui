@@ -186,3 +186,19 @@ ipcMain.handle('update-project-details', async (_, projectId, projectName) => {
 ipcMain.on('open-project-details', (_, projectId, projectName) => {
   createDetailsWindow(projectId, projectName)
 });
+
+// 监听导航到SMS页面的事件
+ipcMain.on('navigate-to-sms', () => {
+  const mainWindow = BrowserWindow.getAllWindows().find(win => win !== projectDetailsWindow);
+  if (mainWindow) {
+    mainWindow.webContents.send('navigate-to-route', '/sms');
+  }
+});
+
+// 处理直接导航请求
+ipcMain.on('navigate-to-route', (_, route) => {
+  const mainWindow = BrowserWindow.getAllWindows().find(win => win !== projectDetailsWindow);
+  if (mainWindow) {
+    mainWindow.webContents.send('navigate-to-route', route);
+  }
+});

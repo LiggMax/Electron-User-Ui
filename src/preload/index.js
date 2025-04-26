@@ -16,6 +16,10 @@ const api = {
   // 更新项目详情
   updateProjectDetails: (projectId, projectName) => {
     return ipcRenderer.invoke('update-project-details', projectId, projectName)
+  },
+  // 添加导航方法
+  navigate: (route) => {
+    ipcRenderer.send('navigate-to-route', route)
   }
 }
 
