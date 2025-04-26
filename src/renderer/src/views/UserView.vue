@@ -24,45 +24,14 @@
 
       <div class="quick-actions">
         <div
-          class="action-button personal-info"
-          :class="{ 'active': activeSection === 'personal-info' }"
-          @click="toggleSection('personal-info')"
+          v-for="(item, index) in actionButtons"
+          :key="index"
+          class="action-button"
+          :class="{ 'active': activeSection === item.section, [item.className]: true }"
+          @click="item.action"
         >
-          <el-icon class="action-icon"><img src="../assets/imgae/userInfo.png" alt="个人信息" /></el-icon>
-          <span class="action-text">个人信息</span>
-        </div>
-        <div
-          class="action-button my-orders"
-          :class="{ 'active': activeSection === 'my-orders' }"
-          @click="toggleSection('my-orders')"
-        >
-          <el-icon class="action-icon"><img src="../assets/imgae/orders.png" alt="我的订单" /></el-icon>
-          <span class="action-text">我的订单</span>
-        </div>
-        <div
-          class="action-button my-collections"
-          :class="{ 'active': activeSection === 'my-collections' }"
-          @click="toggleSection('my-collections')"
-        >
-          <el-icon class="action-icon"><img src="../assets/imgae/collection.png" alt="我的收藏" /></el-icon>
-          <span class="action-text">我的收藏</span>
-        </div>
-        <div
-          class="action-button my-balance"
-          :class="{ 'active': activeSection === 'my-balance' }"
-          @click="showRechargeDialog"
-        >
-          <el-icon class="action-icon"><img src="../assets/imgae/balance.png" alt="余额充值" /></el-icon>
-          <span class="action-text">余额充值</span>
-        </div>
-        <div
-          class="action-button change-password"
-          :class="{ 'active': activeSection === 'change-password' }"
-          @click="showLogoutConfirmDialog"
-        >
-          <el-icon class="action-icon"><img src="../assets/imgae/logout.png" style="height: 40px;" alt="注销账号" />
-          </el-icon>
-          <span class="action-text">注销账号</span>·
+          <el-icon class="action-icon"><img :src="item.icon" :alt="item.text" style="height: 70px;" /></el-icon>
+          <span class="action-text">{{ item.text }}</span>
         </div>
       </div>
 
@@ -233,6 +202,13 @@ import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
 import { UserUpdateService, UserFavoriteService, UserOrderService, UserLogoutService } from "../api/user";
 
+// 导入按钮图标
+import userInfoIcon from "../assets/imgae/userInfo.png";
+import ordersIcon from "../assets/imgae/orders.png";
+import collectionIcon from "../assets/imgae/collection.png";
+import balanceIcon from "../assets/imgae/balance.png";
+import logoutIcon from "../assets/imgae/logout.png";
+
 // 导入项目图标
 import Telegram from "../assets/imgae/project/Telegram.png";
 import facebook from "../assets/imgae/project/facebook.png";
@@ -268,6 +244,45 @@ const rechargeDialogVisible = ref(false);
 // 注销确认对话框
 const logoutConfirmVisible = ref(false);
 
+// 快捷操作按钮配置
+const actionButtons = ref([
+  {
+    text: "个人信息",
+    icon: userInfoIcon,
+    section: "personal-info",
+    className: "personal-info",
+    action: () => toggleSection("personal-info")
+  },
+  {
+    text: "我的订单",
+    icon: ordersIcon,
+    section: "my-orders",
+    className: "my-orders",
+    action: () => toggleSection("my-orders")
+  },
+  {
+    text: "我的收藏",
+    icon: collectionIcon,
+    section: "my-collections",
+    className: "my-collections",
+    action: () => toggleSection("my-collections")
+  },
+  {
+    text: "余额充值",
+    icon: balanceIcon,
+    section: "my-balance",
+    className: "my-balance",
+    action: () => showRechargeDialog()
+  },
+  {
+    text: "注销账号",
+    icon: logoutIcon,
+    section: "change-password",
+    className: "change-password",
+    action: () => showLogoutConfirmDialog(),
+  }
+]);
+
 // 获取项目图标
 const getProjectIcon = (projectName) => {
   switch (projectName) {
@@ -283,7 +298,6 @@ const getProjectIcon = (projectName) => {
       return Default; // 默认图片
   }
 };
-
 
 // 切换部分
 const toggleSection = async (section) => {
@@ -561,6 +575,7 @@ onMounted(() => {
 .action-icon img {
   width: 50px;
   height: 50px;
+  object-fit: contain;
 }
 
 .action-text {

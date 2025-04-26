@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import projectIcon from '../../assets/menuicon/Project.png';
 import smsIcon from '../../assets/menuicon/SMS.png';
