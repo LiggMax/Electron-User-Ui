@@ -10,60 +10,59 @@
       </div>
     </div>
 
-    <!-- 搜索表单区域 -->
-    <div class="search-area">
-      <div class="search-row">
-        <div class="search-item">
-          <label>项目：</label>
-          <select v-model="selectedProject" class="select-input">
-            <option value="">请选择项目</option>
-            <option v-for="project in projectOptions" :key="project.projectId" :value="project.projectId">
-              {{ project.projectName }}
-            </option>
-          </select>
-        </div>
-<!--        <div class="search-item">-->
-<!--          <label>国家：</label>-->
-<!--          <select v-model="selectedCountry" class="select-input">-->
-<!--            <option value="">请选择国家</option>-->
-<!--            <option v-for="country in countryOptions" :key="country" :value="country">-->
-<!--              {{ country }}-->
-<!--            </option>-->
-<!--          </select>-->
-<!--        </div>-->
-        <div class="search-item">
-          <label>指定号码：</label>
-          <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
-        </div>
+    <!-- 条件搜索区域 -->
+    <div class="search-container">
+      <div class="search-toggle" @click="toggleSearchArea">
+        <span>条件搜索</span>
+        <i :class="['toggle-icon', showSearchArea ? 'expanded' : 'collapsed']"></i>
       </div>
 
-      <div class="search-row">
-        <div class="search-item">
-          <label>排除号码或号段：</label>
-          <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">
+      <!-- 搜索表单区域 -->
+      <div class="search-area" v-show="showSearchArea">
+        <div class="search-row">
+          <div class="search-item">
+            <label>项目：</label>
+            <select v-model="selectedProject" class="select-input">
+              <option value="">请选择项目</option>
+              <option v-for="project in projectOptions" :key="project.projectId" :value="project.projectId">
+                {{ project.projectName }}
+              </option>
+            </select>
+          </div>
+          <div class="search-item">
+            <label>指定号码：</label>
+            <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
+          </div>
         </div>
-        <div class="search-item">
-          <label>只获取此卡商的卡：</label>
-          <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
-        </div>
-      </div>
 
-      <div class="action-buttons">
-        <button class="action-btn single-query" @click="singleQueryNumber">
-          释放全部号码并清空
-        </button>
-        <button class="action-btn batch-query" @click="batchQueryNumbers">
-          拉黑全部号码并清空
-        </button>
-        <button class="action-btn query-specific" @click="querySpecificNumber">
-          释放单个号码
-        </button>
-        <button class="action-btn get-number" @click="getNumber">
-          取号
-        </button>
-        <button class="action-btn reset" @click="resetAll">
-          重置
-        </button>
+        <div class="search-row">
+          <div class="search-item">
+            <label>排除号码或号段：</label>
+            <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">
+          </div>
+          <div class="search-item">
+            <label>只获取此卡商的卡：</label>
+            <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="action-btn single-query" @click="singleQueryNumber">
+            释放全部号码并清空
+          </button>
+          <button class="action-btn batch-query" @click="batchQueryNumbers">
+            拉黑全部号码并清空
+          </button>
+          <button class="action-btn query-specific" @click="querySpecificNumber">
+            释放单个号码
+          </button>
+          <button class="action-btn get-number" @click="getNumber">
+            取号
+          </button>
+          <button class="action-btn reset" @click="resetAll">
+            重置
+          </button>
+        </div>
       </div>
     </div>
 
@@ -138,6 +137,14 @@ const cardList = ref([]);
 // 下拉框选项
 const projectOptions = ref([]);
 const countryOptions = ref([]);
+
+// 控制搜索区域的显示隐藏
+const showSearchArea = ref(false);
+
+// 切换搜索区域显示状态
+const toggleSearchArea = () => {
+  showSearchArea.value = !showSearchArea.value;
+};
 
 // 判断国旗图片
 const getCountryFlag = (projectName) => {
@@ -336,13 +343,34 @@ onMounted(() => {
   border-radius: 50px 0 0 0;
 }
 
-/* 搜索区域样式 */
-.search-area {
+/* 搜索容器 */
+.search-container {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  padding: 15px 20px;
   margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* 搜索切换按钮 */
+.search-toggle {
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #fff;
+}
+
+.search-toggle:hover {
+  background-color: #f5f7fa;
+}
+
+/* 搜索区域样式 */
+.search-area {
+  padding: 15px 20px;
+  border-top: 1px solid #e8e8e8;
 }
 
 .search-row {
@@ -607,5 +635,24 @@ onMounted(() => {
   font-size: 18px;
   font-weight: normal;
   margin: 0;
+}
+
+/* 搜索切换按钮 */
+.toggle-icon {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  transition: transform 0.3s;
+}
+
+.toggle-icon.collapsed {
+  border-top: 6px solid #606266;
+  border-bottom: 0;
+}
+
+.toggle-icon.expanded {
+  border-bottom: 6px solid #606266;
+  border-top: 0;
 }
 </style>
