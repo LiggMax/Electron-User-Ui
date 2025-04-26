@@ -412,9 +412,10 @@ const openProjectDetail = (item) => {
 
 // 保存用户信息
 const saveUserInfo = async () => {
-  // 这里应该调用API保存用户信息
   await UserUpdateService(userForm.value);
   message.success("用户信息更新成功");
+  //返回登录页面
+  window.location.href = "/login";
 };
 
 // 取消编辑
