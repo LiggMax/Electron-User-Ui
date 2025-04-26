@@ -468,7 +468,7 @@ onMounted(() => {
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 20px;
 }
 
@@ -521,7 +521,7 @@ onMounted(() => {
   font-size: 16px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 5px;
+  margin-bottom: 35px;
 }
 
 .card-price-count {
