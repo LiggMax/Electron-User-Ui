@@ -36,3 +36,10 @@ export const ProjectCollectService = (projectId) => {
 export const PhoneBuyService = (phoneData) => {
   return request.post("/user/buy", phoneData)
 }
+
+/**
+ * 获取用户收藏的项目
+ */
+export const UserFavoriteService = () => {
+  return request.get("/user/favorite")
+}

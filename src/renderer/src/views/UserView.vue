@@ -35,11 +35,19 @@
           <el-icon class="action-icon"><img src="../assets/imgae/prompt.png" alt="我的订单" /></el-icon>
           <span class="action-text">我的订单</span>
         </div>
-        <div class="action-button my-collections">
+        <div
+          class="action-button my-collections"
+          :class="{ 'active': activeSection === 'my-collections' }"
+          @click="toggleSection('my-collections')"
+        >
           <el-icon class="action-icon"><img src="../assets/imgae/collection.png" alt="我的收藏" /></el-icon>
           <span class="action-text">我的收藏</span>
         </div>
-        <div class="action-button change-password">
+        <div
+          class="action-button change-password"
+          :class="{ 'active': activeSection === 'change-password' }"
+          @click="toggleSection('change-password')"
+        >
           <el-icon class="action-icon"><img src="../assets/svg/password.svg" alt="修改密码" /></el-icon>
           <span class="action-text">修改密码</span>
         </div>
@@ -74,6 +82,42 @@
         </div>
       </div>
 
+      <!-- 我的收藏内容区域 -->
+      <div v-if="activeSection === 'my-collections'" class="info-section collections-section">
+        <div class="section-header">
+          <span class="section-title">我的收藏</span>
+        </div>
+
+        <div class="section-content">
+          <div v-if="loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <span class="loading-text">正在加载收藏...</span>
+          </div>
+
+          <div v-else-if="favoriteList.length === 0" class="empty-collections">
+            <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无收藏" class="no-data-img" />
+            <div class="empty-text">暂无收藏项目</div>
+          </div>
+
+          <div v-else class="collections-list">
+            <div v-for="(item, index) in favoriteList" :key="index" class="collection-item">
+              <div class="collection-icon">
+                <img :src="getProjectIcon(item.project_name)" :alt="item.project_name" class="project-icon">
+              </div>
+              <div class="collection-info">
+                <div class="collection-name">{{ item.project_name }}</div>
+                <div class="collection-price">¥{{ item.project_price.toFixed(2) }}</div>
+                <div class="collection-date">收藏于: {{ item.created_at.split('T')[0] }}</div>
+              </div>
+              <div class="collection-actions">
+                <button class="action-btn view-btn" @click="openProjectDetail(item)">查看</button>
+<!--                <button class="action-btn remove-btn" @click="removeFavorite(item)">移除</button>-->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 默认展示内容 -->
       <div v-if="!activeSection" class="empty-data-section">
         <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
@@ -88,7 +132,14 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
-import { UserUpdateService } from "../api/user";
+import { UserUpdateService, UserFavoriteService } from "../api/user";
+
+// 导入项目图标
+import Telegram from '../assets/imgae/project/Telegram.png';
+import facebook from '../assets/imgae/project/facebook.png';
+import TikTok from '../assets/imgae/project/TikTok.webp';
+import Instagram from '../assets/imgae/project/Instagram.webp';
+import Default from '../assets/svg/default.svg'
 
 const { userInfo } = userInfoStore();
 const activeSection = ref("");
@@ -100,8 +151,29 @@ const userForm = ref({
   newPassword: "",
 });
 
+// 收藏列表数据
+const favoriteList = ref([]);
+// 加载状态
+const loading = ref(false);
+
+// 获取项目图标
+const getProjectIcon = (projectName) => {
+  switch (projectName) {
+    case "Instagram":
+      return Instagram;
+    case "facebook":
+      return facebook;
+    case "TikTok":
+      return TikTok;
+    case "Telegram":
+      return Telegram;
+    default:
+      return Default; // 默认图片
+  }
+};
+
 // 切换部分
-const toggleSection = (section) => {
+const toggleSection = async (section) => {
   if (activeSection.value === section) {
     activeSection.value = "";
   } else {
@@ -109,8 +181,59 @@ const toggleSection = (section) => {
     if (section === "personal-info") {
       // 初始化表单数据
       userForm.value.nickName = userInfo.nickName || "";
-      userForm.value.phone = userInfo.phone || "";
+      userForm.value.oldPassword = "";
+      userForm.value.newPassword = "";
+    } else if (section === "my-collections") {
+      // 获取收藏列表
+      await getFavoriteList();
+    } else if (section === "change-password") {
+      // 显示个人信息区域，聚焦于密码修改
+      activeSection.value = "personal-info";
+      // 初始化表单数据，清空昵称聚焦于密码
+      userForm.value.nickName = userInfo.nickName || "";
+      userForm.value.oldPassword = "";
+      userForm.value.newPassword = "";
+      // 稍后聚焦密码输入框
+      setTimeout(() => {
+        const passwordInput = document.querySelector('.el-form-item:nth-child(2) .el-input__inner');
+        if (passwordInput) passwordInput.focus();
+      }, 100);
     }
+  }
+};
+
+// 获取收藏列表
+const getFavoriteList = async () => {
+  loading.value = true;
+  favoriteList.value = [];
+
+  try {
+    const res = await UserFavoriteService();
+    if (res && res.code === 200 && res.data) {
+      favoriteList.value = res.data;
+    }
+  } catch (error) {
+    console.error('获取收藏列表失败:', error);
+    message.error('获取收藏列表失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 移除收藏
+const removeFavorite = (item) => {
+  message.success(`已移除收藏: ${item.project_name}`);
+  // 这里可以添加调用移除收藏API的逻辑
+  // 移除后刷新列表
+  getFavoriteList();
+};
+
+// 打开项目详情
+const openProjectDetail = (item) => {
+  if (window.api && window.api.openProjectDetails) {
+    window.api.openProjectDetails(item.project_id, item.project_name);
+  } else {
+    message.info(`查看项目: ${item.project_name}`);
   }
 };
 
@@ -326,6 +449,11 @@ onMounted(() => {
 .action-btn {
   min-width: 80px;
   border-radius: 4px;
+  padding: 6px 12px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .save-btn {
@@ -364,5 +492,145 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 500;
   color: #333;
+}
+
+/* 我的收藏样式 */
+.collections-section {
+  max-width: 600px;
+}
+
+.section-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+  border-radius: 20px 20px 0 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.section-content {
+  padding: 20px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #1890ff;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999;
+}
+
+.empty-collections {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+}
+
+.collections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.collection-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: transform 0.2s;
+}
+
+.collection-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.collection-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 15px;
+  background-color: #fff;
+}
+
+.project-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.collection-info {
+  flex: 1;
+}
+
+.collection-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.collection-price {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f56c6c;
+  margin-bottom: 5px;
+}
+
+.collection-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.collection-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.view-btn {
+  background-color: #1890ff;
+  color: white;
+}
+
+.remove-btn {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.view-btn:hover {
+  background-color: #40a9ff;
+}
+
+.remove-btn:hover {
+  background-color: #f56c6c;
+  color: white;
 }
 </style>
