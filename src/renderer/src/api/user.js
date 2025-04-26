@@ -50,3 +50,10 @@ export const UserFavoriteService = () => {
 export const UserOrderService = () => {
   return request.get("/user/order")
 }
+
+/**
+ * 账号注销
+ */
+export const UserLogoutService = () => {
+  return request.delete("/user/logoutAccount")
+}

@@ -58,9 +58,10 @@
         <div
           class="action-button change-password"
           :class="{ 'active': activeSection === 'change-password' }"
-          @click="logoutAccount"
+          @click="showLogoutConfirmDialog"
         >
-          <el-icon class="action-icon"><img src="../assets/imgae/logout.png" style="height: 40px;" alt="注销账号" /></el-icon>
+          <el-icon class="action-icon"><img src="../assets/imgae/logout.png" style="height: 40px;" alt="注销账号" />
+          </el-icon>
           <span class="action-text">注销账号</span>·
         </div>
       </div>
@@ -149,7 +150,8 @@
           <div v-else class="orders-grid">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
               <div class="order-icon">
-                <img :src="getProjectIcon(getProjectName(item.user_project_id))" :alt="getProjectName(item.user_project_id)" class="project-icon">
+                <img :src="getProjectIcon(getProjectName(item.user_project_id))"
+                     :alt="getProjectName(item.user_project_id)" class="project-icon">
               </div>
               <div class="order-info">
                 <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
@@ -187,6 +189,34 @@
         </template>
       </el-dialog>
 
+      <!-- 添加注销确认对话框 -->
+      <el-dialog
+        v-model="logoutConfirmVisible"
+        title="提示"
+        width="400px"
+        :close-on-click-modal="false"
+        :title-align="'left'"
+      >
+        <div class="logout-confirm-content">
+          <div class="confirm-message-container">
+            <div class="confirm-icon">
+              <el-icon><img src="../assets/imgae/prompt.png" alt="警告" class="warning-icon" /></el-icon>
+            </div>
+            <div class="confirm-message">
+              此操作将永久注销该账号，是否继续？
+            </div>
+          </div>
+        </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="logoutConfirmVisible = false">取消</el-button>
+            <el-button type="primary" @click="confirmLogout" class="confirm-btn">
+              确认
+            </el-button>
+          </div>
+        </template>
+      </el-dialog>
+
       <!-- 默认展示内容 -->
       <div v-if="!activeSection" class="empty-data-section">
         <img src="../assets/imgae/ThereAreNoOrders.jpg" alt="暂无订单" class="no-data-img" />
@@ -201,14 +231,14 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
-import { UserUpdateService, UserFavoriteService, UserOrderService } from "../api/user";
+import { UserUpdateService, UserFavoriteService, UserOrderService, UserLogoutService } from "../api/user";
 
 // 导入项目图标
-import Telegram from '../assets/imgae/project/Telegram.png';
-import facebook from '../assets/imgae/project/facebook.png';
-import TikTok from '../assets/imgae/project/TikTok.webp';
-import Instagram from '../assets/imgae/project/Instagram.webp';
-import Default from '../assets/svg/default.svg'
+import Telegram from "../assets/imgae/project/Telegram.png";
+import facebook from "../assets/imgae/project/facebook.png";
+import TikTok from "../assets/imgae/project/TikTok.webp";
+import Instagram from "../assets/imgae/project/Instagram.webp";
+import Default from "../assets/svg/default.svg";
 
 const { userInfo } = userInfoStore();
 const activeSection = ref("");
@@ -217,7 +247,7 @@ const activeSection = ref("");
 const userForm = ref({
   nickName: "",
   oldPassword: "",
-  newPassword: "",
+  newPassword: ""
 });
 
 // 收藏列表数据
@@ -234,6 +264,9 @@ const orderCount = ref(0);
 
 // 余额充值相关
 const rechargeDialogVisible = ref(false);
+
+// 注销确认对话框
+const logoutConfirmVisible = ref(false);
 
 // 获取项目图标
 const getProjectIcon = (projectName) => {
@@ -278,7 +311,7 @@ const toggleSection = async (section) => {
       userForm.value.newPassword = "";
       // 稍后聚焦密码输入框
       setTimeout(() => {
-        const passwordInput = document.querySelector('.el-form-item:nth-child(2) .el-input__inner');
+        const passwordInput = document.querySelector(".el-form-item:nth-child(2) .el-input__inner");
         if (passwordInput) passwordInput.focus();
       }, 100);
     }
@@ -296,8 +329,8 @@ const getFavoriteList = async () => {
       favoriteList.value = res.data;
     }
   } catch (error) {
-    console.error('获取收藏列表失败:', error);
-    message.error('获取收藏列表失败');
+    console.error("获取收藏列表失败:", error);
+    message.error("获取收藏列表失败");
   } finally {
     loading.value = false;
   }
@@ -316,8 +349,8 @@ const getOrderList = async () => {
       orderCount.value = res.data.length;
     }
   } catch (error) {
-    console.error('获取订单列表失败:', error);
-    message.error('获取订单列表失败');
+    console.error("获取订单列表失败:", error);
+    message.error("获取订单列表失败");
   } finally {
     orderLoading.value = false;
   }
@@ -327,13 +360,13 @@ const getOrderList = async () => {
 const getProjectName = (projectId) => {
   switch (projectId) {
     case 1:
-      return 'Instagram';
+      return "Instagram";
     case 2:
-      return 'TikTok';
+      return "TikTok";
     case 3:
-      return 'facebook';
+      return "facebook";
     case 4:
-      return 'Telegram';
+      return "Telegram";
     default:
       return `项目${projectId}`;
   }
@@ -341,7 +374,7 @@ const getProjectName = (projectId) => {
 
 // 格式化电话号码
 const formatPhoneNumber = (phoneNumber) => {
-  if (!phoneNumber) return '';
+  if (!phoneNumber) return "";
   const numStr = phoneNumber.toString();
   return `${numStr.slice(0, 3)} ${numStr.slice(3, 7)} ${numStr.slice(7)}`;
 };
@@ -367,18 +400,12 @@ const openProjectDetail = (item) => {
 const saveUserInfo = async () => {
   // 这里应该调用API保存用户信息
   await UserUpdateService(userForm.value);
-  message.success("用户信息更新成功")
+  message.success("用户信息更新成功");
 };
 
 // 取消编辑
 const cancelEdit = () => {
   activeSection.value = "";
-};
-//注销账号
-const logoutAccount = () => {
-    // 重定向到登录页面
-    message.success("注销成功");
-    window.location.href = '/login';
 };
 
 // 显示充值对话框
@@ -387,12 +414,31 @@ const showRechargeDialog = () => {
   rechargeDialogVisible.value = true;
 };
 
-
 // 联系客服
 const contactCustomerService = () => {
   // message.info("正在打开客服联系方式...");
   rechargeDialogVisible.value = false;
   // 这里可以根据实际情况添加联系客服的逻辑，例如打开新窗口或跳转
+};
+
+// 显示注销确认对话框
+const showLogoutConfirmDialog = () => {
+  logoutConfirmVisible.value = true;
+};
+
+// 确认注销
+const confirmLogout = async () => {
+  try {
+    await UserLogoutService();
+    message.success("注销成功");
+    // 关闭对话框
+    logoutConfirmVisible.value = false;
+    // 重定向到登录页面
+    window.location.href = "/login";
+  } catch (error) {
+    message.error("注销失败，请稍后再试");
+    console.error("注销失败:", error);
+  }
 };
 
 onMounted(() => {
@@ -682,8 +728,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -907,5 +957,72 @@ onMounted(() => {
 
 .recharge-notice p {
   margin: 5px 0;
+}
+
+/* 注销确认对话框样式 */
+.logout-confirm-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 0;
+}
+
+.confirm-message-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+.confirm-icon {
+  margin-right: 15px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.warning-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.warning-icon {
+  vertical-align: middle;
+}
+
+.confirm-message {
+  font-size: 16px;
+  color: #333;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  gap: 10px;
+}
+
+.confirm-btn {
+  background-color: #2d68ff;
+  border-color: #2d68ff;
+}
+
+.confirm-btn:hover {
+  background-color: #f78989;
+  border-color: #f78989;
+}
+
+/* 添加自定义样式使对话框标题左对齐 */
+:deep(.el-dialog__header) {
+  text-align: left;
+  padding-left: 20px;
+}
+
+:deep(.el-dialog__title) {
+  font-weight: bold;
 }
 </style>
