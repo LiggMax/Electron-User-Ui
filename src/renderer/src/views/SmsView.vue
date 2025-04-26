@@ -23,10 +23,10 @@
         <el-table-column label="序号" width="70">
           <template #default="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
-        <el-table-column prop="project" label="项目" />
+        <el-table-column prop="projectName" label="项目" />
         <el-table-column prop="phoneNumber" label="手机号码" />
         <el-table-column prop="location" label="号码归属地" />
-        <el-table-column prop="registerTime" label="注册时间" />
+        <el-table-column prop="createdAt" label="购买时间" />
         <el-table-column prop="status" label="状态">
           <template #default="scope">
             <el-tag :type="scope.row.status === '已使用' ? 'success' : 'info'">{{ scope.row.status }}</el-tag>
@@ -58,7 +58,9 @@
               <div class="sms-time">{{ sms.time }}</div>
               <div class="sms-actions">
                 <button class="sms-delete" @click="deleteSms(sms)">
-                  <i class="delete-icon"><el-icon><img :src="Delete" alt="删除" style="width: 20px; height: 20px;" /></el-icon></i>
+                  <i class="delete-icon">
+                    <el-icon><img :src="Delete" alt="删除" style="width: 20px; height: 20px;" /></el-icon>
+                  </i>
                 </button>
               </div>
             </div>
@@ -70,57 +72,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import message from '../utils/message';
-import Delete from '../assets/svg/delete.svg'
-const selectedProject = ref('');
+import { onMounted, ref } from "vue";
+import message from "../utils/message";
+import Delete from "../assets/svg/delete.svg";
+import { SmsListService } from "../api/sms";
+
+const selectedProject = ref("");
 const selectedRows = ref([]);
 
 // 项目选项
 const projectOptions = [
-  { value: 'Facebook', label: 'Facebook' },
-  { value: 'YouTube', label: 'YouTube' }
+  { value: "Facebook", label: "Facebook" },
+  { value: "YouTube", label: "YouTube" }
 ];
 
 // 手机号列表
-const phoneList = ref([
-  {
-    id: 1,
-    project: 'Facebook',
-    phoneNumber: '13800138000',
-    location: '中国移动',
-    registerTime: '2023-9-20',
-    status: '已使用'
-  },
-  {
-    id: 2,
-    project: 'Facebook',
-    phoneNumber: 'XXX',
-    location: '中国联通',
-    registerTime: '2023-9-20',
-    status: '未使用'
-  }
-]);
+const phoneList = ref([]);
 
 // 短信列表数据
 const smsList = ref([
   {
     id: 1,
-    project: 'Facebook',
-    time: '2023-10-01 14:30',
-    message: '您的验证码是: 123456'
+    project: "Facebook",
+    time: "2023-10-01 14:30",
+    message: "您的验证码是: 123456"
   },
   {
     id: 2,
-    project: 'Instagram',
-    time: '2023-10-01 09:20',
-    message: '验证码: 654321, 请妥善保管'
+    project: "Instagram",
+    time: "2023-10-01 09:20",
+    message: "验证码: 654321, 请妥善保管"
   },
   {
     id: 3,
-    project: 'YouTube',
-    time: '2023-09-30 18:45',
-    message: '您的验证码是: 789123'
+    project: "YouTube",
+    time: "2023-09-30 18:45",
+    message: "您的验证码是: 789123"
   }
 ]);
 
@@ -129,14 +116,18 @@ const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
 };
 
-// 获取手机号
+// 获取手机号短信
 const getPhone = (phone) => {
-  message.info(`获取: ${phone.phoneNumber}`);
+  message.info(`获取号码ID ${phone.userProjectId} 的短信: ${phone.phoneNumber}`);
+  // 这里应该调用获取短信的API
+  // TODO: 实现获取短信的API调用
 };
 
-// 查看手机号
+// 查看手机号详情
 const View = (phone) => {
-  message.info(`查看: ${phone.phoneNumber}`);
+  message.info(`查看号码ID ${phone.userProjectId} 的详情: ${phone.phoneNumber}`);
+  // 这里应该调用查看手机号详情的API
+  // TODO: 实现查看详情的API调用
 };
 
 // 删除短信
@@ -144,6 +135,52 @@ const deleteSms = (sms) => {
   message.success(`删除短信ID: ${sms.id}`);
   smsList.value = smsList.value.filter(s => s.id !== sms.id);
 };
+
+// 获取号码列表数据
+const getSmsList = async () => {
+  try {
+    const res = await SmsListService();
+    
+    if (res && res.code === 200 && res.data) {
+      // 直接使用API返回的数据格式
+      phoneList.value = res.data.map(item => {
+        return {
+          userProjectId: item.userProjectId,
+          projectName: item.projectName,
+          phoneNumber: item.phoneNumber,
+          location: "美国", // 默认归属地
+          createdAt: formatDate(item.createdAt),
+          status: '未使用' // 默认状态
+        };
+      });
+    } else {
+      message.error('获取短信列表失败');
+    }
+  } catch (error) {
+    console.error('获取短信列表失败:', error);
+    message.error('获取短信列表失败，请稍后重试');
+  }
+};
+
+// 格式化日期
+const formatDate = (dateString) => {
+  try {
+    const date = new Date(dateString);
+    return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}`;
+  } catch (e) {
+    return dateString;
+  }
+};
+
+// 补零函数
+const padZero = (num) => {
+  return num < 10 ? `0${num}` : num;
+};
+
+onMounted(() => {
+    getSmsList();
+  }
+);
 </script>
 
 <style scoped>
@@ -180,7 +217,6 @@ const deleteSms = (sms) => {
   font-size: 16px;
   color: #333;
 }
-
 
 
 /* 自定义表头样式 */
