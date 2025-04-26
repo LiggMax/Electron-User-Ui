@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { UserLoginService } from "../api/user";
 import { userTokenStore } from "../store/token";
@@ -67,33 +67,50 @@ const login = async () => {
     return;
   }
 
-  // 启动进度条前先清除可能存在的token
+  // 清除可能存在的token
   tokenStore.removeToken();
 
-  // 分离API调用和进度条
-  progressBtn.start();
+  // 按钮状态为加载中，但不启动倒计时
+  progressBtn.setLoading(true);
 
-  const res = await UserLoginService(loginForm.value);
-  console.log(res.data);
-  tokenStore.setToken(res.data);
+  try {
+    const res = await UserLoginService(loginForm.value);
 
-  // 显示成功消息
-  message.success("登录成功");
-
-  // 登录成功立即跳转到主页，无需等待倒计时
-  await router.push("/project");
-
-  //如果不勾选 记住用户名，则清除本地存储的 rememberUsername 值
-  if (!rememberUsername.value) {
-    localStorage.removeItem("rememberUsername");
+    // 登录成功
+    if (res && res.code === 200) {
+      console.log(res.data);
+      tokenStore.setToken(res.data);
+      
+      // 显示成功消息
+      message.success("登录成功");
+      
+      // 登录成功立即跳转到主页
+      progressBtn.setLoading(false);
+      await router.push("/project");
+      
+      // 如果不勾选 记住用户名，则清除本地存储
+      if (!rememberUsername.value) {
+        localStorage.removeItem("rememberUsername");
+      }
+    } else {
+      // 登录失败情况
+      message.error(res?.message || "登录失败，请检查账户和密码");
+      // 启动倒计时
+      progressBtn.start();
+    }
+  } catch (error) {
+    console.error("登录请求错误:", error);
+    // 显示错误消息
+    message.error(error?.message || "登录失败，请稍后再试");
+    // 启动倒计时
+    progressBtn.start();
   }
 };
 
 // 确保在组件卸载时清除所有定时器
-defineExpose({
-  onUnmounted() {
-    progressBtn.clearTimers();
-  }
+onBeforeUnmount(() => {
+  progressBtn.clearTimers();
+  progressBtn.reset();
 });
 
 // 窗口状态
@@ -203,10 +220,12 @@ if (window.electron) {
           :class="{ 'loading': progressBtn.isLoading.value }"
         >
           <div class="button-content">
-            {{ progressBtn.isLoading.value ? `登录中 (${progressBtn.countdown.value})` : "登录" }}
+            {{ progressBtn.isLoading.value && progressBtn.progress.value > 0 ?
+              `登录中 (${progressBtn.countdown.value})` :
+              progressBtn.isLoading.value ? "登录中..." : "登录" }}
           </div>
           <div
-            v-if="progressBtn.isLoading.value"
+            v-if="progressBtn.isLoading.value && progressBtn.progress.value > 0"
             class="progress-container"
           >
             <div class="progress-bar" :style="progressBtn.progressStyle"></div>

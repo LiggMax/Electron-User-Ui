@@ -49,7 +49,7 @@ export function useProgressButton(options = {}) {
    * @param {Function} callback 可选的开始时回调
    */
   const start = (callback) => {
-    if (isLoading.value) return;
+    if (isLoading.value && progress.value > 0) return; // 防止重复启动
     
     // 重置状态
     isLoading.value = true;
@@ -78,12 +78,16 @@ export function useProgressButton(options = {}) {
       // 更新倒计时显示
       countdownDisplay.value = Math.ceil(countdown.value);
       
-      // 确保不超过100%
+      // 确保不超过100%并在完成时重置状态
       if (progress.value >= 100) {
         progress.value = 100;
         clearInterval(progressTimer);
-        isLoading.value = false;
-        onComplete();
+        // 添加延迟以确保用户能看到完成状态
+        setTimeout(() => {
+          isLoading.value = false;
+          progress.value = 0;
+          onComplete();
+        }, 300);
       }
     }, updateInterval);
     
@@ -94,6 +98,17 @@ export function useProgressButton(options = {}) {
         clearInterval(countdownTimer);
       }
     }, 1000);
+  };
+
+  /**
+   * 设置加载状态但不启动倒计时
+   * 适用于不需要倒计时的加载状态
+   */
+  const setLoading = (loading = true) => {
+    isLoading.value = loading;
+    if (!loading) {
+      reset();
+    }
   };
 
   /**
@@ -143,6 +158,7 @@ export function useProgressButton(options = {}) {
     progress, // 导出原始进度值，用于调试
     progressStyle,
     start,
+    setLoading,
     complete,
     reset,
     clearTimers
