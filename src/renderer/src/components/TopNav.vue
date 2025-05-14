@@ -76,7 +76,8 @@ const userInfoDate = ref({
   avatar: '',
   email: '',
   userAvatar: '',
-  createdAt: ''
+  createdAt: '',
+  loginTime: ''
 });
 
 // 客服电话弹窗

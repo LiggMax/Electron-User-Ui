@@ -55,6 +55,9 @@
             <el-form-item label="修改密码:">
               <el-input v-model="userForm.newPassword" placeholder="请输入密码"></el-input>
             </el-form-item>
+            <el-form-item label="最后登录:">
+              <div class="login-time">{{ formatDate(userInfo.loginTime)}}</div>
+            </el-form-item>
           </el-form>
 
           <div class="form-actions">
@@ -145,7 +148,7 @@
       >
         <div class="recharge-dialog-content">
           <div class="recharge-info">
-            <H3>1213800123</H3>
+            <h3>1213800123</h3>
           </div>
         </div>
         <template #footer>
@@ -201,6 +204,7 @@ import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
 import { UserUpdateService, UserFavoriteService, UserOrderService, UserLogoutService } from "../api/user";
+import { formatDate } from "../utils/dateUtil"; // 导入时间格式化工具
 
 // 导入按钮图标
 import userInfoIcon from "../assets/imgae/userInfo.png";
@@ -223,7 +227,8 @@ const activeSection = ref("");
 const userForm = ref({
   nickName: "",
   oldPassword: "",
-  newPassword: ""
+  newPassword: "",
+  loginTime: ''
 });
 
 // 收藏列表数据
@@ -363,7 +368,6 @@ const getOrderList = async () => {
       orderCount.value = res.data.length;
     }
   } catch (error) {
-    console.error("获取订单列表失败:", error);
     message.error("获取订单列表失败");
   } finally {
     orderLoading.value = false;
@@ -429,9 +433,7 @@ const showRechargeDialog = () => {
 
 // 联系客服
 const contactCustomerService = () => {
-  // message.info("正在打开客服联系方式...");
   rechargeDialogVisible.value = false;
-  // 这里可以根据实际情况添加联系客服的逻辑，例如打开新窗口或跳转
 };
 
 // 显示注销确认对话框
@@ -1038,5 +1040,10 @@ onMounted(() => {
 
 :deep(.el-dialog__title) {
   font-weight: bold;
+}
+
+.login-time {
+  font-size: 14px;
+  color: #606266;
 }
 </style>
