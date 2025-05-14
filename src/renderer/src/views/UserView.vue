@@ -56,7 +56,9 @@
               <el-input v-model="userForm.newPassword" placeholder="请输入密码"></el-input>
             </el-form-item>
             <el-form-item label="最后登录:">
-              <div class="login-time">{{ formatDate(userInfo.loginTime)}}</div>
+              <div class="login-time">
+                <div class="login-time-text">{{ userInfo.loginTime ? DateFormatter.relativeTime(userInfo.loginTime) : '暂无登录记录' }}</div>
+              </div>
             </el-form-item>
           </el-form>
 
@@ -204,8 +206,7 @@ import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
 import { UserUpdateService, UserFavoriteService, UserOrderService, UserLogoutService } from "../api/user";
-import { formatDate } from "../utils/dateUtil"; // 导入时间格式化工具
-
+import DateFormatter from '../utils/DateFormatter.js';
 // 导入按钮图标
 import userInfoIcon from "../assets/imgae/userInfo.png";
 import ordersIcon from "../assets/imgae/orders.png";
@@ -459,6 +460,8 @@ const confirmLogout = async () => {
 onMounted(() => {
   // 初始化操作
   getOrderList(); // 页面加载时获取订单数量
+  // 默认显示个人信息页面
+  toggleSection('personal-info');
 });
 </script>
 
@@ -1045,5 +1048,10 @@ onMounted(() => {
 .login-time {
   font-size: 14px;
   color: #606266;
+}
+
+.login-time-text {
+  font-size: 15px;
+  color: rgba(61, 116, 255, 0.76);
 }
 </style>

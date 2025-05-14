@@ -86,6 +86,11 @@ const handleMenuClick = (item) => {
   } else if (item.path) {
     // 如果定义了路径，则进行路由跳转
     router.push(item.path);
+    
+    // 如果是个人中心，设置localStorage以便页面加载后显示个人信息
+    if (item.name === 'user') {
+      localStorage.setItem('userDefaultSection', 'personal-info');
+    }
   }
 };
 </script>
