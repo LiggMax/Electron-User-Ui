@@ -6,7 +6,7 @@ import message from "./message";
 const baseURL = 'http://127.0.0.1:8899/api'
 const instance = axios.create({
   baseURL,
-  timeout: 5000,
+  timeout: 10000,
 })
 
 // 请求拦截器
