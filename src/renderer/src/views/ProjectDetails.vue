@@ -178,7 +178,6 @@ const buyRegion = async (region) => {
 
     // 发送购买请求
     const res = await PhoneBuyService(buyData);
-    if (res && res.code === 200) {
       message.success(`成功购买${region.regionName}地区${region.quantity || 1}个号码`);
       
       // 通知父窗口跳转到获取短信页面
@@ -192,7 +191,6 @@ const buyRegion = async (region) => {
       setTimeout(() => {
         closeWindow();
       }, 1000); // 延时1秒关闭，让用户看到成功提示
-    }
   } catch (error) {
     console.error('购买失败:', error);
     message.error('购买失败，请稍后再试');

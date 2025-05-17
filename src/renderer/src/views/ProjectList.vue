@@ -250,11 +250,15 @@ const buyCard = async (card) => {
 const getProjectList = async () => {
   try {
     const res = await ProjectListService();
-    // 直接使用后端返回的数据格式，为每个项目添加quantity字段
+    console.log('获取到的项目列表数据:', res.data);
+    
+    // 确保返回的数据有正确的格式，适配新的数据库结构
     cardList.value = res.data.map(item => {
       // 添加quantity字段用于前端操作
-      item.quantity = 1;
-      return item;
+      return {
+        ...item,
+        quantity: 1
+      };
     });
 
     // 为下拉框提取项目选项
@@ -275,7 +279,8 @@ const getProjectList = async () => {
     projectOptions.value = Array.from(uniqueProjects.values());
     countryOptions.value = Array.from(uniqueCountries);
   } catch (error) {
-    console.error(error);
+    console.error('获取项目列表失败:', error);
+    message.error('获取项目列表失败');
   }
 };
 
