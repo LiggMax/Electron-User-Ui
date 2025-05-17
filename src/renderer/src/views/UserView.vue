@@ -55,9 +55,12 @@
             <el-form-item label="修改密码:">
               <el-input v-model="userForm.newPassword" placeholder="请输入密码"></el-input>
             </el-form-item>
-            <el-form-item label="最后登录:">
-              <div class="login-time">
-                <div class="login-time-text">{{ userInfo.loginTime ? DateFormatter.relativeTime(userInfo.loginTime) : '暂无登录记录' }}</div>
+            <el-form-item label="邀请码:">
+              <div class="invitation-code">
+                <div class="invitation-code-text">{{ userInfo.invitationCode }}</div>
+                <el-button type="primary" size="small" class="copy-btn" @click="copyInvitationCode">
+                  复制
+                </el-button>
               </div>
             </el-form-item>
           </el-form>
@@ -454,6 +457,19 @@ const confirmLogout = async () => {
   } catch (error) {
     message.error("注销失败，请稍后再试");
     console.error("注销失败:", error);
+  }
+};
+
+// 复制邀请码
+const copyInvitationCode = () => {
+  if (userInfo.invitationCode) {
+    navigator.clipboard.writeText(userInfo.invitationCode)
+      .then(() => {
+        message.success("邀请码已复制到剪贴板");
+      })
+      .catch(() => {
+        message.error("复制失败，请手动复制");
+      });
   }
 };
 
@@ -1045,13 +1061,24 @@ onMounted(() => {
   font-weight: bold;
 }
 
-.login-time {
+.invitation-code {
   font-size: 14px;
   color: #606266;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.login-time-text {
-  font-size: 15px;
+.invitation-code-text {
+  font-size: 18px;
   color: rgba(61, 116, 255, 0.76);
+  cursor: pointer;
+}
+
+.copy-btn {
+  margin-left: 10px;
+  font-size: 12px;
+  padding: 4px 10px;
+  height: auto;
 }
 </style>
