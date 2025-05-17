@@ -89,9 +89,9 @@ const handleRegisterInput = (field) => {
   if (registerErrors.value[field]) {
     registerErrors.value[field] = false;
   }
-  
+
   // 清除密码不匹配的错误
-  if (field === 'password' || field === 'confirmPassword') {
+  if (field === "password" || field === "confirmPassword") {
     registerErrors.value.passwordMatch = false;
   }
 };
@@ -223,23 +223,16 @@ const register = async () => {
     };
 
     // 调用注册API，只发送必要的数据
-    const res = await UserRegisterService(registerData);
-    
+    await UserRegisterService(registerData);
     // 只有在服务器返回成功状态码时才处理成功逻辑
-    if (res && res.code === 200) {
-      message.success("注册成功，请登录");
-      
-      // 将注册账号自动填入登录表单
-      loginForm.value.account = registerForm.value.account;
-      loginForm.value.password = "";
-      
-      // 切换到登录模式
-      switchToLogin();
-    } else {
-      // 服务器返回了错误消息
-      message.error(res?.message || "注册失败，请稍后重试");
-      progressBtn.start();
-    }
+    message.success("注册成功，请登录");
+
+    // 将注册账号自动填入登录表单
+    loginForm.value.account = registerForm.value.account;
+    loginForm.value.password = "";
+
+    // 切换到登录模式
+    switchToLogin();
   } catch (error) {
     message.error(error?.message || "注册失败，请稍后重试");
     progressBtn.start();
@@ -378,8 +371,8 @@ if (window.electron) {
           >
             <div class="button-content">
               {{ progressBtn.isLoading.value && progressBtn.progress.value > 0 ?
-                `登录中 (${progressBtn.countdown.value})` :
-                progressBtn.isLoading.value ? "登录中..." : "登录" }}
+              `登录中 (${progressBtn.countdown.value})` :
+              progressBtn.isLoading.value ? "登录中..." : "登录" }}
             </div>
             <div
               v-if="progressBtn.isLoading.value && progressBtn.progress.value > 0"
@@ -424,7 +417,8 @@ if (window.electron) {
           </div>
         </div>
         <div class="form-item">
-          <div class="input-icon" :class="{ 'error-input': registerErrors.confirmPassword || registerErrors.passwordMatch, 'shake': registerErrors.confirmPassword || registerErrors.passwordMatch }">
+          <div class="input-icon"
+               :class="{ 'error-input': registerErrors.confirmPassword || registerErrors.passwordMatch, 'shake': registerErrors.confirmPassword || registerErrors.passwordMatch }">
             <img src="../assets/icon/passwordIcon.png" class="icon-img" alt="确认密码" />
             <input
               type="password"
@@ -439,7 +433,8 @@ if (window.electron) {
           </div>
         </div>
         <div class="form-item">
-          <div class="input-icon" :class="{ 'error-input': registerErrors.invitationCode, 'shake': registerErrors.invitationCode }">
+          <div class="input-icon"
+               :class="{ 'error-input': registerErrors.invitationCode, 'shake': registerErrors.invitationCode }">
             <img src="../assets/icon/invitationCode.svg" class="icon-img" alt="邀请码" />
             <input
               type="text"
@@ -459,10 +454,12 @@ if (window.electron) {
             :class="{ 'loading': progressBtn.isLoading.value }"
           >
             <div class="button-content">
-              {{ progressBtn.isLoading.value ? "注册中..." : "注册" }}
+              {{ progressBtn.isLoading.value && progressBtn.progress.value > 0 ?
+                `注册中 (${progressBtn.countdown.value})` :
+                progressBtn.isLoading.value ? "注册中..." : "注册" }}
             </div>
             <div
-              v-if="progressBtn.isLoading.value"
+              v-if="progressBtn.isLoading.value && progressBtn.progress.value > 0"
               class="progress-container"
             >
               <div class="progress-bar" :style="progressBtn.progressStyle"></div>
