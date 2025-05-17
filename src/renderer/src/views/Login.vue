@@ -21,7 +21,8 @@ const loginForm = ref({
 const registerForm = ref({
   account: "",
   password: "",
-  confirmPassword: ""
+  confirmPassword: "",
+  invitationCode: ""
 });
 
 const rememberUsername = ref(false); // 默认选中
@@ -37,7 +38,8 @@ const registerErrors = ref({
   account: false,
   password: false,
   confirmPassword: false,
-  passwordMatch: false
+  passwordMatch: false,
+  invitationCode: false
 });
 
 // 使用进度按钮控制器
@@ -72,6 +74,7 @@ const resetRegisterErrors = () => {
   registerErrors.value.password = false;
   registerErrors.value.confirmPassword = false;
   registerErrors.value.passwordMatch = false;
+  registerErrors.value.invitationCode = false;
 };
 
 // 输入时自动清除对应字段的错误状态
@@ -192,6 +195,11 @@ const register = async () => {
     hasError = true;
   }
 
+  if (!registerForm.value.invitationCode) {
+    registerErrors.value.invitationCode = true;
+    hasError = true;
+  }
+
   // 检查密码是否匹配
   if (registerForm.value.password !== registerForm.value.confirmPassword) {
     registerErrors.value.passwordMatch = true;
@@ -207,11 +215,11 @@ const register = async () => {
   progressBtn.setLoading(true);
 
   try {
-    // 创建一个新对象，只包含需要发送的字段（账号和密码）
+    // 创建一个新对象，只包含需要发送的字段（账号、密码、邀请码）
     const registerData = {
       account: registerForm.value.account,
-      password: registerForm.value.password
-      // 不包含 confirmPassword 字段
+      password: registerForm.value.password,
+      invitationCode: registerForm.value.invitationCode
     };
 
     // 调用注册API，只发送必要的数据
@@ -428,6 +436,20 @@ if (window.electron) {
             />
             <div v-if="registerErrors.confirmPassword" class="error-message">请再次输入密码</div>
             <div v-if="registerErrors.passwordMatch" class="error-message">两次密码输入不一致</div>
+          </div>
+        </div>
+        <div class="form-item">
+          <div class="input-icon" :class="{ 'error-input': registerErrors.invitationCode, 'shake': registerErrors.invitationCode }">
+            <img src="../assets/icon/invitationCode.svg" class="icon-img" alt="邀请码" />
+            <input
+              type="text"
+              id="invitation-code"
+              v-model="registerForm.invitationCode"
+              placeholder="请输入邀请码(选填)"
+              @input="handleRegisterInput('invitationCode')"
+              :class="{ 'error-border': registerErrors.invitationCode }"
+            />
+            <div v-if="registerErrors.invitationCode" class="error-message">请输入邀请码</div>
           </div>
         </div>
         <div class="form-item">
