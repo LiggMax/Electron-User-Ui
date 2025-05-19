@@ -348,12 +348,7 @@ const getFavoriteList = async () => {
 
   try {
     const res = await UserFavoriteService();
-    if (res && res.code === 200 && res.data) {
       favoriteList.value = res.data;
-    }
-  } catch (error) {
-    console.error("获取收藏列表失败:", error);
-    message.error("获取收藏列表失败");
   } finally {
     loading.value = false;
   }
@@ -366,13 +361,9 @@ const getOrderList = async () => {
 
   try {
     const res = await UserOrderService();
-    if (res && res.code === 200 && res.data) {
       orderList.value = res.data;
       // 更新订单数量
       orderCount.value = res.data.length;
-    }
-  } catch (error) {
-    message.error("获取订单列表失败");
   } finally {
     orderLoading.value = false;
   }
