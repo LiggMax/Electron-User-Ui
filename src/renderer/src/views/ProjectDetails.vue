@@ -1,63 +1,67 @@
 <template>
   <!-- 项目详情弹窗 -->
-  <div class="project-details-modal" v-if="visible" @click.self="closeModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{{ project.projectName }} 详情</h2>
-        <button class="close-btn" @click="closeModal">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="project-header">
-          <div class="project-icon">
-            <img :src="getProjectIcon(project.projectName)" :alt="project.projectName">
+  <Transition name="fade">
+    <div class="project-details-modal" v-if="visible" @click.self="closeModal">
+      <Transition name="slide-up">
+        <div class="modal-content" v-if="visible">
+          <div class="modal-header">
+            <h2>{{ project.projectName }} 详情</h2>
+            <button class="close-btn" @click="closeModal">×</button>
           </div>
-          <div class="project-title">{{ project.projectName }}</div>
-        </div>
-        
-        <!-- 地区列表 -->
-        <div v-if="regionList.length > 0" class="region-list">
-          <div class="region-item" v-for="region in regionList" :key="region.regionId">
-            <div class="region-info">
-              <div class="region-header">
-                <div class="region-icon-container">
-                  <img :src="getRegionIcon(region.regionMark)" :alt="region.regionName" class="region-icon">
+          <div class="modal-body">
+            <div class="project-header">
+              <div class="project-icon">
+                <img :src="getProjectIcon(project.projectName)" :alt="project.projectName">
+              </div>
+              <div class="project-title">{{ project.projectName }}</div>
+            </div>
+            
+            <!-- 地区列表 -->
+            <div v-if="regionList.length > 0" class="region-list">
+              <div class="region-item" v-for="region in regionList" :key="region.regionId">
+                <div class="region-info">
+                  <div class="region-header">
+                    <div class="region-icon-container">
+                      <img :src="getRegionIcon(region.regionMark)" :alt="region.regionName" class="region-icon">
+                    </div>
+                    <div class="region-name">{{ region.regionName }}</div>
+                  </div>
+                  <div class="region-count">可用数量: {{ region.phoneCount }}</div>
+                  <div class="region-price">¥{{ region.projectPrice.toFixed(2) }}</div>
                 </div>
-                <div class="region-name">{{ region.regionName }}</div>
+                <div class="region-actions">
+                  <div class="quantity-control">
+                    <button class="qty-btn decrease" @click="decreaseQuantity(region)">-</button>
+                    <input type="text" v-model="region.quantity" class="qty-input" disabled>
+                    <button class="qty-btn increase" @click="increaseQuantity(region)">+</button>
+                  </div>
+                  <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
+                        :disabled="region.phoneCount <= 0"
+                        @click="buyRegion(region)">
+                    立即购买
+                  </button>
+                </div>
               </div>
-              <div class="region-count">可用数量: {{ region.phoneCount }}</div>
-              <div class="region-price">¥{{ region.projectPrice.toFixed(2) }}</div>
             </div>
-            <div class="region-actions">
-              <div class="quantity-control">
-                <button class="qty-btn decrease" @click="decreaseQuantity(region)">-</button>
-                <input type="text" v-model="region.quantity" class="qty-input" disabled>
-                <button class="qty-btn increase" @click="increaseQuantity(region)">+</button>
-              </div>
-              <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
-                    :disabled="region.phoneCount <= 0"
-                    @click="buyRegion(region)">
-                立即购买
-              </button>
+            
+            <div v-else-if="loading" class="loading-section">
+              <div class="loading-spinner"></div>
+              <div class="loading-text">加载中...</div>
+            </div>
+            
+            <div v-else class="empty-section">
+              <div class="empty-icon">🔍</div>
+              <div class="empty-text">暂无可用地区</div>
             </div>
           </div>
         </div>
-        
-        <div v-else-if="loading" class="loading-section">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">加载中...</div>
-        </div>
-        
-        <div v-else class="empty-section">
-          <div class="empty-icon">🔍</div>
-          <div class="empty-text">暂无可用地区</div>
-        </div>
-      </div>
+      </Transition>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, watch } from "vue";
 import message from "../utils/message";
 import macauFlag from "../assets/imgae/Macau.png";
 import hongkongFlag from "../assets/imgae/HongKong.png";
@@ -257,6 +261,28 @@ const getProjectRegions = async (projectId) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(30px);
+  opacity: 0;
 }
 
 .modal-header {

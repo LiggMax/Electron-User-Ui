@@ -119,9 +119,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import message from "../utils/message";
-import hongkongFlag from "../assets/imgae/HongKong.png";
 import { ProjectListService } from "../api/project";
 import { ProjectCollectService } from "../api/user";
 import ProjectDetails from "./ProjectDetails.vue";
@@ -233,9 +232,13 @@ const handleBuySuccess = (buyData) => {
 
 // 购买
 const buyCard = (card) => {
-  // 设置当前项目并显示弹窗
+  // 先设置当前项目
   currentProject.value = { ...card };
-  showProjectModal.value = true;
+  
+  // 使用 nextTick 确保 DOM 更新后再显示弹窗，使动画效果更流畅
+  nextTick(() => {
+    showProjectModal.value = true;
+  });
 };
 
 /**
