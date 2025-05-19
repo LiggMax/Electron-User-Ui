@@ -126,17 +126,15 @@
 
           <div v-else class="orders-grid">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
-<!--              <div class="order-icon">-->
-
-<!--              </div>-->
               <div class="order-info">
-                <h4>订单Id:{{ item.user_project_id }}</h4>
+                <h4>订单Id：{{ item.user_project_id }}</h4>
                 <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
-                <div class="order-phone-number">{{ formatPhoneNumber(item.phone_number) }}</div>
-                <div class="order-date">购买时间: {{ item.created_at.split("T")[0] }}</div>
+                <div class="order-phone-number">号码：{{ formatPhoneNumber(item.phone_number) }}</div>
+                <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at ) }}</div>
               </div>
               <div class="order-status">
                 <div class="status-badge success">已完成</div>
+                <div class="order-money">￥{{ item.money?.toFixed(2) || '0.00' }}</div>
               </div>
             </div>
           </div>
@@ -916,6 +914,10 @@ onMounted(() => {
 
 .order-status {
   margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
 }
 
 .status-badge {
@@ -924,11 +926,19 @@ onMounted(() => {
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .status-badge.success {
   background-color: #e6fff1;
   color: #52c41a;
+}
+
+.order-money {
+  font-size: 16px;
+  font-weight: bold;
+  color: #f56c6c;
+  margin-top: 8px;
 }
 
 .empty-orders {

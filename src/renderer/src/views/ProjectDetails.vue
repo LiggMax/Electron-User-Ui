@@ -191,7 +191,6 @@ const buyRegion = async (region) => {
     // 调用购买API
     const res = await PhoneBuyService(buyData);
     
-    if (res.code === 200) {
       message.success(`成功购买${region.regionName}地区${region.quantity || 1}个号码`);
       
       // 通知父组件购买成功
@@ -202,12 +201,6 @@ const buyRegion = async (region) => {
       
       // 关闭弹窗
       closeModal();
-    } else {
-      message.error(res.message || '购买失败，请稍后再试');
-    }
-  } catch (error) {
-    console.error('购买失败:', error);
-    message.error('购买失败，请稍后再试');
   } finally {
     loading.value = false;
   }
