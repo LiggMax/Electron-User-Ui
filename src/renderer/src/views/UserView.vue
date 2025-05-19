@@ -13,7 +13,7 @@
 
       <div class="user-stats">
         <div class="stat-item">
-          <div class="stat-value">{{ userInfo.balance || "0.00" }}</div>
+          <div class="stat-value">{{ userInfo.money || "0.00" }}</div>
           <div class="stat-label">总余额（元）</div>
         </div>
         <div class="stat-item">

@@ -38,8 +38,7 @@ const registerErrors = ref({
   account: false,
   password: false,
   confirmPassword: false,
-  passwordMatch: false,
-  invitationCode: false
+  passwordMatch: false
 });
 
 // 使用进度按钮控制器
@@ -74,7 +73,6 @@ const resetRegisterErrors = () => {
   registerErrors.value.password = false;
   registerErrors.value.confirmPassword = false;
   registerErrors.value.passwordMatch = false;
-  registerErrors.value.invitationCode = false;
 };
 
 // 输入时自动清除对应字段的错误状态
@@ -192,11 +190,6 @@ const register = async () => {
 
   if (!registerForm.value.confirmPassword) {
     registerErrors.value.confirmPassword = true;
-    hasError = true;
-  }
-
-  if (!registerForm.value.invitationCode) {
-    registerErrors.value.invitationCode = true;
     hasError = true;
   }
 
@@ -444,7 +437,6 @@ if (window.electron) {
               @input="handleRegisterInput('invitationCode')"
               :class="{ 'error-border': registerErrors.invitationCode }"
             />
-            <div v-if="registerErrors.invitationCode" class="error-message">请输入邀请码</div>
           </div>
         </div>
         <div class="form-item">

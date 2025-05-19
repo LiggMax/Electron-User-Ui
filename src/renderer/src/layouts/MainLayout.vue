@@ -25,7 +25,7 @@ import { useRoute } from 'vue-router';
 import SideMenu from '../components/menu/SideMenu.vue';
 import TopNav from '../components/TopNav.vue';
 
-// 获取当前路由
+// 路由
 const route = useRoute();
 
 // 根据路由meta获取标题
