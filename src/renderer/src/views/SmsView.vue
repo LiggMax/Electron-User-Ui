@@ -23,10 +23,10 @@
         <el-table-column label="序号" width="70">
           <template #default="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
-        <el-table-column prop="projectName" label="项目" />
-        <el-table-column prop="phoneNumber" label="手机号码" />
-        <el-table-column prop="location" label="号码归属地" />
-        <el-table-column prop="createdAt" label="购买时间" />
+        <el-table-column prop="projectName" width="90" label="项目" />
+        <el-table-column prop="phoneNumber" width="120" label="手机号码" />
+        <el-table-column prop="location" width="100" label="号码归属地" />
+        <el-table-column prop="createdAt" width="150" label="购买时间" />
         <el-table-column prop="status" label="状态">
           <template #default="scope">
             <el-tag :type="scope.row.status === '已使用' ? 'success' : 'info'">{{ scope.row.status }}</el-tag>
