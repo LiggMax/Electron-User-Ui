@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeUnmount } from "vue";
 import message from "../utils/message";
 import Delete from "../assets/svg/delete.svg";
 import { SmsListService, SmsCodeService } from "../api/sms";
@@ -103,6 +103,11 @@ const smsList = ref([]);
 // 添加loading状态
 const smsLoading = ref(false);
 
+// 轮询定时器
+let pollingTimer = null;
+// 轮询间隔时间(毫秒)
+const POLLING_INTERVAL = 5000;
+
 // 多选变化
 const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
@@ -111,29 +116,52 @@ const handleSelectionChange = (rows) => {
 // 获取验证码
 const getVerificationCodes = async () => {
   try {
-    smsLoading.value = true;
+    // 首次加载时显示加载状态，后续轮询时不显示加载状态
+    if (smsList.value.length === 0) {
+      smsLoading.value = true;
+    }
+    
     const res = await SmsCodeService();
     
-      // 将API返回的数据转换为短信列表格式
-      const newSmsList = res.data.map(item => {
-        return {
-          id: Math.random().toString(36).substr(2, 9), // 生成随机ID
-          project: getProjectByPhone(item.phoneNumber.toString()),
-          time: new Date().toLocaleString(),
-          message: `您的验证码是: ${item.code}`,
-          phoneNumber: item.phoneNumber,
-          code: item.code
-        };
-      });
-      
-      // 替换短信列表
-      smsList.value = newSmsList;
-      console.log('获取到验证码数据:', newSmsList.length);
+    // 将API返回的数据转换为短信列表格式
+    const newSmsList = res.data.map(item => {
+      return {
+        id: Math.random().toString(36).substr(2, 9), // 生成随机ID
+        time: new Date().toLocaleString(),
+        message: `您的验证码是: ${item.code}`,
+        phoneNumber: item.phoneNumber,
+        code: item.code
+      };
+    });
+    
+    // 替换短信列表
+    smsList.value = newSmsList;
+    console.log('获取到验证码数据:', newSmsList.length);
   } catch (error) {
     console.error('获取验证码失败:', error);
     message.error('获取验证码失败，请稍后重试');
   } finally {
     smsLoading.value = false;
+  }
+};
+
+// 开始轮询获取验证码
+const startPolling = () => {
+  // 确保不会创建多个定时器
+  stopPolling();
+  
+  // 创建新的轮询定时器
+  pollingTimer = setInterval(async () => {
+    console.log('轮询获取验证码数据...');
+    await getVerificationCodes();
+  }, POLLING_INTERVAL);
+};
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
   }
 };
 
@@ -201,6 +229,13 @@ onMounted(async () => {
   await getSmsList();
   // 页面加载时自动获取验证码
   await getVerificationCodes();
+  // 开始轮询
+  startPolling();
+});
+
+// 组件卸载前清除定时器
+onBeforeUnmount(() => {
+  stopPolling();
 });
 </script>
 
