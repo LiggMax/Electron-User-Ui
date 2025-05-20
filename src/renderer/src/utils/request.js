@@ -3,7 +3,7 @@ import { ElMessage } from "element-plus";
 import { userTokenStore } from "../store/token";
 import router from "../router";
 import message from "./message";
-const baseURL = 'http://123.51.208.249:8563/api'
+const baseURL = 'http://ka.kydb.vip/api/'
 const instance = axios.create({
   baseURL,
   timeout: 30000,
