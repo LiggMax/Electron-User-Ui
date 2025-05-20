@@ -80,13 +80,18 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onBeforeUnmount } from "vue";
+import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 import message from "../utils/message";
 import Delete from "../assets/svg/delete.svg";
 import { SmsListService, SmsCodeService } from "../api/sms";
+import { useRoute } from "vue-router";
 
 const selectedProject = ref("");
 const selectedRows = ref([]);
+const route = useRoute();
+
+// 添加页面可见性状态
+const isPageVisible = ref(true);
 
 // 项目选项
 const projectOptions = [
@@ -107,6 +112,22 @@ const smsLoading = ref(false);
 let pollingTimer = null;
 // 轮询间隔时间(毫秒)
 const POLLING_INTERVAL = 5000;
+
+// 监听页面可见性变化
+const handleVisibilityChange = () => {
+  isPageVisible.value = document.visibilityState === 'visible';
+  console.log('页面可见性:', isPageVisible.value ? '可见' : '不可见');
+  
+  if (isPageVisible.value) {
+    // 页面可见时，开始轮询
+    startPolling();
+    // 立即获取一次最新数据
+    getVerificationCodes();
+  } else {
+    // 页面不可见时，停止轮询
+    stopPolling();
+  }
+};
 
 // 多选变化
 const handleSelectionChange = (rows) => {
@@ -152,8 +173,11 @@ const startPolling = () => {
   
   // 创建新的轮询定时器
   pollingTimer = setInterval(async () => {
-    console.log('轮询获取验证码数据...');
-    await getVerificationCodes();
+    // 只有在页面可见时才进行轮询
+    if (isPageVisible.value && isCurrentRoute()) {
+      console.log('轮询获取验证码数据...');
+      await getVerificationCodes();
+    }
   }, POLLING_INTERVAL);
 };
 
@@ -163,6 +187,11 @@ const stopPolling = () => {
     clearInterval(pollingTimer);
     pollingTimer = null;
   }
+};
+
+// 检查当前是否为短信页面
+const isCurrentRoute = () => {
+  return route.path === '/sms';
 };
 
 // 根据手机号获取项目名称
@@ -226,6 +255,9 @@ const padZero = (num) => {
 };
 
 onMounted(async () => {
+  // 注册页面可见性变化事件
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
   await getSmsList();
   // 页面加载时自动获取验证码
   await getVerificationCodes();
@@ -233,9 +265,24 @@ onMounted(async () => {
   startPolling();
 });
 
-// 组件卸载前清除定时器
+// 组件卸载前清除定时器和事件监听
 onBeforeUnmount(() => {
   stopPolling();
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+});
+
+// 监听路由变化
+watch(() => route.path, (newPath) => {
+  if (newPath === '/sms') {
+    // 当切换到短信页面时，开始轮询
+    isPageVisible.value = true;
+    getVerificationCodes();
+    startPolling();
+  } else {
+    // 当离开短信页面时，停止轮询
+    isPageVisible.value = false;
+    stopPolling();
+  }
 });
 </script>
 

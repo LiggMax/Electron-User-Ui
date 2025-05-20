@@ -11,60 +11,60 @@
     </div>
 
     <!-- 条件搜索区域 -->
-    <div class="search-container">
-      <div class="search-toggle" @click="toggleSearchArea">
-        <span>条件搜索</span>
-        <i :class="['toggle-icon', showSearchArea ? 'expanded' : 'collapsed']"></i>
-      </div>
+<!--    <div class="search-container">-->
+<!--      <div class="search-toggle" @click="toggleSearchArea">-->
+<!--        <span>条件搜索</span>-->
+<!--        <i :class="['toggle-icon', showSearchArea ? 'expanded' : 'collapsed']"></i>-->
+<!--      </div>-->
 
-      <!-- 搜索表单区域 -->
-      <div class="search-area" v-show="showSearchArea">
-        <div class="search-row">
-          <div class="search-item">
-            <label>项目：</label>
-            <select v-model="selectedProject" class="select-input">
-              <option value="">请选择项目</option>
-              <option v-for="project in projectOptions" :key="project.projectId" :value="project.projectId">
-                {{ project.projectName }}
-              </option>
-            </select>
-          </div>
-          <div class="search-item">
-            <label>指定号码：</label>
-            <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">
-          </div>
-        </div>
+<!--      &lt;!&ndash; 搜索表单区域 &ndash;&gt;-->
+<!--      <div class="search-area" v-show="showSearchArea">-->
+<!--        <div class="search-row">-->
+<!--          <div class="search-item">-->
+<!--            <label>项目：</label>-->
+<!--            <select v-model="selectedProject" class="select-input">-->
+<!--              <option value="">请选择项目</option>-->
+<!--              <option v-for="project in projectOptions" :key="project.projectId" :value="project.projectId">-->
+<!--                {{ project.projectName }}-->
+<!--              </option>-->
+<!--            </select>-->
+<!--          </div>-->
+<!--          <div class="search-item">-->
+<!--            <label>指定号码：</label>-->
+<!--            <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">-->
+<!--          </div>-->
+<!--        </div>-->
 
-        <div class="search-row">
-          <div class="search-item">
-            <label>排除号码或号段：</label>
-            <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">
-          </div>
-          <div class="search-item">
-            <label>只获取此卡商的卡：</label>
-            <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">
-          </div>
-        </div>
+<!--        <div class="search-row">-->
+<!--          <div class="search-item">-->
+<!--            <label>排除号码或号段：</label>-->
+<!--            <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">-->
+<!--          </div>-->
+<!--          <div class="search-item">-->
+<!--            <label>只获取此卡商的卡：</label>-->
+<!--            <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">-->
+<!--          </div>-->
+<!--        </div>-->
 
-        <div class="action-buttons">
-          <button class="action-btn single-query" @click="singleQueryNumber">
-            释放全部号码并清空
-          </button>
-          <button class="action-btn batch-query" @click="batchQueryNumbers">
-            拉黑全部号码并清空
-          </button>
-          <button class="action-btn query-specific" @click="querySpecificNumber">
-            释放单个号码
-          </button>
-          <button class="action-btn get-number" @click="getNumber">
-            取号
-          </button>
-          <button class="action-btn reset" @click="resetAll">
-            重置
-          </button>
-        </div>
-      </div>
-    </div>
+<!--        <div class="action-buttons">-->
+<!--          <button class="action-btn single-query" @click="singleQueryNumber">-->
+<!--            释放全部号码并清空-->
+<!--          </button>-->
+<!--          <button class="action-btn batch-query" @click="batchQueryNumbers">-->
+<!--            拉黑全部号码并清空-->
+<!--          </button>-->
+<!--          <button class="action-btn query-specific" @click="querySpecificNumber">-->
+<!--            释放单个号码-->
+<!--          </button>-->
+<!--          <button class="action-btn get-number" @click="getNumber">-->
+<!--            取号-->
+<!--          </button>-->
+<!--          <button class="action-btn reset" @click="resetAll">-->
+<!--            重置-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
 
     <!-- 智能查询按钮 -->
     <div class="smart-query-section">
