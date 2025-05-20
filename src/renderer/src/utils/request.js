@@ -3,10 +3,10 @@ import { ElMessage } from "element-plus";
 import { userTokenStore } from "../store/token";
 import router from "../router";
 import message from "./message";
-const baseURL = 'http://127.0.0.1:8899/api'
+const baseURL = 'http://123.51.208.249:8563/api'
 const instance = axios.create({
   baseURL,
-  timeout: 10000,
+  timeout: 30000,
 })
 
 // 请求拦截器

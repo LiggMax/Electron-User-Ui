@@ -1,7 +1,53 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+
+// 修改utils导入方式，使用try/catch处理可能的导入错误
+let electronApp, optimizer, is;
+try {
+  // 优先尝试从node_modules正常导入
+  const utils = require('@electron-toolkit/utils');
+  electronApp = utils.electronApp;
+  optimizer = utils.optimizer;
+  is = utils.is;
+} catch (error) {
+  console.error('Failed to load @electron-toolkit/utils from normal path, trying alternative path');
+  try {
+    // 如果正常导入失败，尝试从extraResources中导入
+    const path = require('path');
+    const appPath = app.getAppPath();
+    const utilsPath = path.join(appPath, '../node_modules/@electron-toolkit/utils');
+    const utils = require(utilsPath);
+    electronApp = utils.electronApp;
+    optimizer = utils.optimizer;
+    is = utils.is;
+  } catch (secondError) {
+    // 兜底方案：自定义实现简化版的功能
+    console.error('Failed to load @electron-toolkit/utils from alternative path, using fallback implementation', secondError);
+    
+    // 简化版的工具实现
+    electronApp = {
+      setAppUserModelId: (id) => {
+        if (process.platform === 'win32') {
+          app.setAppUserModelId(id);
+        }
+      }
+    };
+    
+    optimizer = {
+      watchWindowShortcuts: (window) => {
+        // 简化版的快捷键处理
+      }
+    };
+    
+    is = {
+      dev: !app.isPackaged,
+      windows: process.platform === 'win32',
+      macos: process.platform === 'darwin',
+      linux: process.platform === 'linux'
+    };
+  }
+}
 
 function createWindow() {
   // Create the browser window.
