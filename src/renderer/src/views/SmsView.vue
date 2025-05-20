@@ -24,7 +24,7 @@
           <template #default="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
         <el-table-column prop="projectName" width="90" label="项目" />
-        <el-table-column prop="phoneNumber" width="120" label="手机号码" />
+        <el-table-column prop="phoneNumber" width="140" label="手机号码" />
         <el-table-column prop="location" width="100" label="号码归属地" />
         <el-table-column prop="createdAt" width="150" label="购买时间" />
         <el-table-column prop="status" label="状态">
@@ -34,7 +34,6 @@
         </el-table-column>
         <el-table-column label="操作" width="180">
           <template #default="scope">
-            <el-button size="small" type="primary" @click="getPhone(scope.row)">获取</el-button>
             <el-button size="small" type="danger" @click="View(scope.row)">查看</el-button>
           </template>
         </el-table-column>
@@ -42,16 +41,25 @@
 
       <!-- 用户信息栏 -->
       <div class="user-info-section">
-        <span class="user-phone">用户号码: +8613800138000</span>
-        <span class="sms-counter">获取短信次数: 3</span>
+        <span class="user-phone">已购买号码: {{ phoneList.length }}</span>
+        <span class="sms-counter">验证码数量: {{ smsList.length }}</span>
       </div>
 
       <!-- 短信内容区域 -->
       <div class="sms-content-area">
-        <div class="sms-list">
+        <div v-if="smsLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <span class="loading-text">正在获取短信验证码...</span>
+        </div>
+        <div v-else-if="smsList.length === 0" class="empty-sms">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">暂无短信验证码</div>
+          <div class="empty-hint">请稍后再试或联系客服</div>
+        </div>
+        <div v-else class="sms-list">
           <div class="sms-item" v-for="(sms, index) in smsList" :key="index">
             <div class="sms-meta">
-              <div class="sms-project">项目来源：{{ sms.project }}</div>
+              <div class="sms-phone">手机号：{{ sms.phoneNumber }}</div>
             </div>
             <div class="sms-message">{{ sms.message }}</div>
             <div class="sms-footer">
@@ -75,7 +83,7 @@
 import { onMounted, ref } from "vue";
 import message from "../utils/message";
 import Delete from "../assets/svg/delete.svg";
-import { SmsListService } from "../api/sms";
+import { SmsListService, SmsCodeService } from "../api/sms";
 
 const selectedProject = ref("");
 const selectedRows = ref([]);
@@ -90,37 +98,49 @@ const projectOptions = [
 const phoneList = ref([]);
 
 // 短信列表数据
-const smsList = ref([
-  {
-    id: 1,
-    project: "Facebook",
-    time: "2023-10-01 14:30",
-    message: "您的验证码是: 123456"
-  },
-  {
-    id: 2,
-    project: "Instagram",
-    time: "2023-10-01 09:20",
-    message: "验证码: 654321, 请妥善保管"
-  },
-  {
-    id: 3,
-    project: "YouTube",
-    time: "2023-09-30 18:45",
-    message: "您的验证码是: 789123"
-  }
-]);
+const smsList = ref([]);
+
+// 添加loading状态
+const smsLoading = ref(false);
 
 // 多选变化
 const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
 };
 
-// 获取手机号短信
-const getPhone = (phone) => {
-  message.info(`获取号码ID ${phone.userProjectId} 的短信: ${phone.phoneNumber}`);
-  // 这里应该调用获取短信的API
-  // TODO: 实现获取短信的API调用
+// 获取验证码
+const getVerificationCodes = async () => {
+  try {
+    smsLoading.value = true;
+    const res = await SmsCodeService();
+    
+      // 将API返回的数据转换为短信列表格式
+      const newSmsList = res.data.map(item => {
+        return {
+          id: Math.random().toString(36).substr(2, 9), // 生成随机ID
+          project: getProjectByPhone(item.phoneNumber.toString()),
+          time: new Date().toLocaleString(),
+          message: `您的验证码是: ${item.code}`,
+          phoneNumber: item.phoneNumber,
+          code: item.code
+        };
+      });
+      
+      // 替换短信列表
+      smsList.value = newSmsList;
+      console.log('获取到验证码数据:', newSmsList.length);
+  } catch (error) {
+    console.error('获取验证码失败:', error);
+    message.error('获取验证码失败，请稍后重试');
+  } finally {
+    smsLoading.value = false;
+  }
+};
+
+// 根据手机号获取项目名称
+const getProjectByPhone = (phoneNumber) => {
+  const phone = phoneList.value.find(p => p.phoneNumber.toString() === phoneNumber);
+  return phone ? phone.projectName : "未知项目";
 };
 
 // 查看手机号详情
@@ -132,7 +152,7 @@ const View = (phone) => {
 
 // 删除短信
 const deleteSms = (sms) => {
-  message.success(`删除短信ID: ${sms.id}`);
+  message.success(`删除短信: ${sms.code}`);
   smsList.value = smsList.value.filter(s => s.id !== sms.id);
 };
 
@@ -177,10 +197,11 @@ const padZero = (num) => {
   return num < 10 ? `0${num}` : num;
 };
 
-onMounted(() => {
-    getSmsList();
-  }
-);
+onMounted(async () => {
+  await getSmsList();
+  // 页面加载时自动获取验证码
+  await getVerificationCodes();
+});
 </script>
 
 <style scoped>
@@ -273,6 +294,10 @@ onMounted(() => {
   font-weight: bold;
 }
 
+.sms-phone {
+  color: #409EFF;
+}
+
 .sms-message {
   padding: 8px 0;
   color: #303133;
@@ -308,5 +333,59 @@ onMounted(() => {
 
 .sms-delete:hover {
   opacity: 1;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #409EFF;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #909399;
+}
+
+/* 空状态 */
+.empty-sms {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: #909399;
+}
+
+.empty-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+}
+
+.empty-text {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: #c0c4cc;
 }
 </style>
