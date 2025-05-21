@@ -14,7 +14,7 @@
           <div class="announcement-title-section">
             <h2 class="announcement-title">{{ announcement.title || '公告' + announcement.id }}</h2>
             <div class="announcement-meta">
-              <span class="announcement-time">发布时间: {{ formatDate(announcement.createTime) }}</span>
+              <span class="announcement-time">发布时间: {{ DateFormatter.format(announcement.createTime) }}</span>
             </div>
           </div>
           
@@ -39,6 +39,7 @@ import { ref, onMounted, watch, defineProps, defineEmits } from 'vue';
 import { Close } from '@element-plus/icons-vue'
 import { getAnnouncement } from '../../api/message';
 import message from '../../utils/message';
+import DateFormatter from '../../utils/DateFormatter.js'
 
 const props = defineProps({
   visible: {
@@ -51,13 +52,6 @@ const emit = defineEmits(['update:visible']);
 
 const announcements = ref([]);
 const error = ref('');
-
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-};
 
 // 获取公告详情
 const fetchAnnouncementDetail = async () => {
