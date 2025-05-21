@@ -9,16 +9,20 @@
         <h1 class="page-title">公告详情</h1>
       </div>
       
-      <div v-if="announcement" class="announcement-content">
-        <div class="announcement-title-section">
-          <h2 class="announcement-title">{{ announcement.title }}</h2>
-          <div class="announcement-meta">
-            <span class="announcement-time">发布时间: {{ formatDate(announcement.createTime) }}</span>
+      <div v-if="announcements && announcements.length > 0" class="announcement-content">
+        <div v-for="(announcement, index) in announcements" :key="announcement.id" class="announcement-item">
+          <div class="announcement-title-section">
+            <h2 class="announcement-title">{{ announcement.title || '公告' + announcement.id }}</h2>
+            <div class="announcement-meta">
+              <span class="announcement-time">发布时间: {{ formatDate(announcement.createTime) }}</span>
+            </div>
           </div>
-        </div>
-        
-        <div class="announcement-body">
-          <p class="announcement-text">{{ announcement.content }}</p>
+          
+          <div class="announcement-body">
+            <p class="announcement-text">{{ announcement.content }}</p>
+          </div>
+          
+          <div class="announcement-divider" v-if="index < announcements.length - 1"></div>
         </div>
       </div>
       
@@ -45,7 +49,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible']);
 
-const announcement = ref(null);
+const announcements = ref([]);
 const error = ref('');
 
 // 格式化日期
@@ -60,7 +64,7 @@ const fetchAnnouncementDetail = async () => {
   try {
     const res = await getAnnouncement();
     if (res.code === 200 && res.data) {
-      announcement.value = res.data;
+      announcements.value = res.data;
     } else {
       error.value = '获取公告详情失败';
       message.error('获取公告详情失败');
@@ -124,6 +128,8 @@ onMounted(() => {
   position: relative;
   display: flex;
   align-items: center;
+  background-color: #fff;
+  z-index: 2;
 }
 
 .back-button {
@@ -136,32 +142,38 @@ onMounted(() => {
   right: 20px;
 }
 
-.back-icon {
-  margin-right: 5px;
-  font-size: 24px;
-}
-
 .page-title {
   flex: 1;
   font-size: 20px;
   color: #333;
   margin: 0;
+  text-align: center;
 }
 
 .announcement-content {
-  padding: 20px 30px 40px;
+  padding: 0;
   overflow-y: auto;
   max-height: calc(80vh - 60px);
 }
 
+.announcement-item {
+  padding: 20px 30px;
+}
+
+.announcement-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 0 30px;
+}
+
 .announcement-title-section {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
   border-bottom: 1px dashed #e8e8e8;
 }
 
 .announcement-title {
-  font-size: 24px;
+  font-size: 22px;
   color: #333;
   margin: 0 0 15px 0;
   text-align: center;
@@ -178,11 +190,13 @@ onMounted(() => {
   font-size: 16px;
   line-height: 1.8;
   color: #333;
+  margin-bottom: 20px;
 }
 
 .announcement-text {
   white-space: pre-wrap;
   word-break: break-word;
+  margin: 0;
 }
 
 .loading-container {
