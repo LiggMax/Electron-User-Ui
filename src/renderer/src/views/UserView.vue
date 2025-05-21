@@ -9,6 +9,12 @@
           <div class="username">{{ userInfo.nickName || "用户昵称" }}</div>
           <div class="user-id">ID: {{ userInfo.userId }}</div>
         </div>
+        <!--刷新-->
+        <div class="refresh-button" @click="refreshUserInfo">
+          <el-icon class="refresh-icon">
+            <Refresh />
+          </el-icon>
+        </div>
       </div>
 
       <div class="user-stats">
@@ -130,11 +136,11 @@
                 <h4>订单Id：{{ item.user_project_id }}</h4>
                 <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
                 <div class="order-phone-number">号码：{{ formatPhoneNumber(item.phone_number) }}</div>
-                <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at ) }}</div>
+                <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at) }}</div>
               </div>
               <div class="order-status">
                 <div class="status-badge success">已完成</div>
-                <div class="order-money">￥{{ item.money?.toFixed(2) || '0.00' }}</div>
+                <div class="order-money">￥{{ item.money?.toFixed(2) || "0.00" }}</div>
               </div>
             </div>
           </div>
@@ -206,8 +212,15 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
-import { UserUpdateService, UserFavoriteService, UserOrderService, UserLogoutService } from "../api/user";
-import DateFormatter from '../utils/DateFormatter.js';
+import { Refresh } from "@element-plus/icons-vue";
+import {
+  UserUpdateService,
+  UserFavoriteService,
+  UserOrderService,
+  UserLogoutService,
+  UserInfoService
+} from "../api/user";
+import DateFormatter from "../utils/DateFormatter.js";
 // 导入按钮图标
 import userInfoIcon from "../assets/imgae/userInfo.png";
 import ordersIcon from "../assets/imgae/orders.png";
@@ -222,7 +235,7 @@ import TikTok from "../assets/imgae/project/TikTok.webp";
 import Instagram from "../assets/imgae/project/Instagram.webp";
 import Default from "../assets/svg/default.svg";
 
-const { userInfo } = userInfoStore();
+const { userInfo, setUserInfo } = userInfoStore();
 const activeSection = ref("");
 
 // 用户表单数据
@@ -230,7 +243,7 @@ const userForm = ref({
   nickName: "",
   oldPassword: "",
   newPassword: "",
-  loginTime: ''
+  loginTime: ""
 });
 
 // 收藏列表数据
@@ -346,7 +359,7 @@ const getFavoriteList = async () => {
 
   try {
     const res = await UserFavoriteService();
-      favoriteList.value = res.data;
+    favoriteList.value = res.data;
   } finally {
     loading.value = false;
   }
@@ -359,9 +372,9 @@ const getOrderList = async () => {
 
   try {
     const res = await UserOrderService();
-      orderList.value = res.data;
-      // 更新订单数量
-      orderCount.value = res.data.length;
+    orderList.value = res.data;
+    // 更新订单数量
+    orderCount.value = res.data.length;
   } finally {
     orderLoading.value = false;
   }
@@ -462,15 +475,28 @@ const copyInvitationCode = () => {
   }
 };
 
+// 刷新用户信息
+const refreshUserInfo = async () => {
+  try {
+    const res = await UserInfoService();
+      setUserInfo(res.data);
+      message.success("刷新用户信息成功");
+  } catch (error) {
+    console.error("刷新用户信息出错:", error);
+    message.error("刷新用户信息失败，请稍后再试");
+  }
+};
+
 onMounted(() => {
   // 初始化操作
   getOrderList(); // 页面加载时获取订单数量
   // 默认显示个人信息页面
-  toggleSection('personal-info');
+  toggleSection("personal-info");
 });
 </script>
 
 <style scoped>
+/* 用户中心内容样式 */
 .user-center-content {
   background-color: #f0f2f5;
   min-height: 100%;
@@ -1081,5 +1107,28 @@ onMounted(() => {
   font-size: 12px;
   padding: 4px 10px;
   height: auto;
+}
+
+.refresh-button {
+  cursor: pointer;
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f2f5;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+  background-color: #e6f7ff;
+  transform: rotate(180deg);
+}
+
+.refresh-icon {
+  font-size: 20px;
+  color: #1890ff;
 }
 </style>

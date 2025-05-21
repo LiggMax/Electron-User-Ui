@@ -27,7 +27,7 @@
                     <div class="region-name">{{ region.regionName }}</div>
                   </div>
                   <div class="region-count">可用数量: {{ region.phoneCount }}</div>
-                  <div class="region-price">¥{{ region.projectPrice.toFixed(2) }}</div>
+                  <div class="region-price">¥ 0.2</div>
                 </div>
                 <div class="region-actions">
                   <div class="quantity-control">
