@@ -1,7 +1,7 @@
 <template>
   <div class="project-content">
     <!-- 公告组件 -->
-    <Announcement />
+    <Announcement @show-detail-modal="showAnnouncementModal = true" />
 
     <!-- 智能查询按钮 -->
     <div class="smart-query-section">
@@ -52,6 +52,9 @@
       :project="currentProject"
       @buy-success="handleBuySuccess"
     />
+    
+    <!-- 公告详情弹窗 -->
+    <AnnouncementDetail v-model:visible="showAnnouncementModal" />
   </div>
 </template>
 
@@ -62,6 +65,7 @@ import { ProjectListService } from "../api/project";
 import { ProjectCollectService } from "../api/user";
 import ProjectDetails from "./ProjectDetails.vue";
 import Announcement from "./announcement/Announcement.vue";
+import AnnouncementDetail from "./announcement/AnnouncementDetail.vue";
 
 //导入项目图标
 import Telegram from '../assets/imgae/project/Telegram.png'
@@ -87,6 +91,7 @@ const showSearchArea = ref(false);
 
 // 弹窗控制
 const showProjectModal = ref(false);
+const showAnnouncementModal = ref(false);
 const currentProject = ref({});
 
 // 获取项目图标

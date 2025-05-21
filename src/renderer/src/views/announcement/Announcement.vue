@@ -5,14 +5,11 @@
       <div v-if="announcement">
         <div class="announcement-header">
           <h2 class="announcement-title">{{ announcement.title }}</h2>
-          <span class="announcement-time">{{ formatDate(announcement.createTime) }}</span>
-        </div>
-        <div v-if="showAnnouncementDetail" class="announcement-detail">
-          {{ announcement.content }}
+          <span class="announcement-time">{{ DateFormatter.format(announcement.createTime) }}</span>
         </div>
         <div class="announcement-action">
-          <button class="detail-btn" @click="toggleAnnouncementDetail">
-            {{ showAnnouncementDetail ? '收起' : '查看详情' }}
+          <button class="view-all-btn" @click="showDetailModal">
+            查看详情
           </button>
         </div>
       </div>
@@ -22,35 +19,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineEmits } from 'vue';
 import { getAnnouncement } from '../../api/message';
+import DateFormatter from '../../utils/DateFormatter.js'
+const emit = defineEmits(['show-detail-modal']);
 
 // 公告内容
 const announcement = ref(null);
-const showAnnouncementDetail = ref(false);
 
-// 切换公告详情显示状态
-const toggleAnnouncementDetail = () => {
-  showAnnouncementDetail.value = !showAnnouncementDetail.value;
-};
 
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+// 显示详情弹窗
+const showDetailModal = () => {
+  emit('show-detail-modal');
 };
 
 // 获取公告内容
 const fetchAnnouncement = async () => {
-  try {
     const res = await getAnnouncement();
-    if (res.code === 200 && res.data) {
       announcement.value = res.data;
-    }
-  } catch (error) {
-    console.error('获取公告内容失败:', error);
-  }
 };
 
 onMounted(() => {
@@ -84,7 +70,7 @@ onMounted(() => {
 }
 
 .announcement-title {
-  font-size: 18px;
+  font-size: 25px;
   color: #333;
   margin: 0;
 }
@@ -94,30 +80,37 @@ onMounted(() => {
   color: #999;
 }
 
-.announcement-detail {
-  background-color: #f8f8f8;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
 .announcement-action {
   text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
 }
 
-.detail-btn {
-  background: none;
-  border: none;
-  color: #4085f6;
-  cursor: pointer;
+.view-all-btn {
+  color: #fff;
+  background-color: #4085f6;
+  border-radius: 4px;
+  padding: 8px 16px;
   font-size: 14px;
-  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(64, 133, 246, 0.3);
 }
 
-.detail-btn:hover {
-  text-decoration: underline;
+.view-all-btn:hover {
+  background-color: #3a77e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(64, 133, 246, 0.4);
+}
+
+.view-all-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 3px rgba(64, 133, 246, 0.3);
 }
 
 /* 侧边标题 */

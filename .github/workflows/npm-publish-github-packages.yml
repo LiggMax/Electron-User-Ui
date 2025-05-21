@@ -16,6 +16,9 @@ on:
         description: '发布说明'
         required: false
         default: '新版本发布'
+  push:
+    branches:
+      - mian
 
 jobs:
   build:
@@ -24,19 +27,19 @@ jobs:
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
-        
+
       - name: 设置Node.js环境
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-          
+
       - name: 安装依赖
         run: npm ci
-        
+
       - name: 构建应用程序
         run: npm run build:win
-        
+
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
@@ -44,7 +47,7 @@ jobs:
           path: |
             dist/*.exe
           retention-days: 5
-          
+
   publish-release:
     needs: build
     runs-on: ubuntu-latest
@@ -57,11 +60,11 @@ jobs:
         with:
           name: electron-app-windows
           path: dist
-          
+
       - name: 显示构建产物结构
         run: |
           ls -la dist/
-      
+
       - name: 创建发布
         uses: ncipollo/release-action@v1
         with:

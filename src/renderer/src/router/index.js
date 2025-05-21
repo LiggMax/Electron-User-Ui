@@ -17,6 +17,11 @@ const routes = [
     component: () => import('../views/ProjectDetails.vue')
   },
   {
+    path: '/announcement-detail',
+    name: 'AnnouncementDetail',
+    component: () => import('../views/announcement/AnnouncementDetail.vue')
+  },
+  {
     path: '/',
     component: MainLayout,
     children: [
