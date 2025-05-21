@@ -1,70 +1,7 @@
 <template>
   <div class="project-content">
-    <!-- 公告栏卡片 -->
-    <div class="announcement-board">
-      <div class="sidebar-title">公告栏</div>
-      <div class="announcement-content">
-        <!-- 公告内容将在这里 -->
-        <H1>公告标题</H1>
-        <p>公告内容............................</p>
-      </div>
-    </div>
-
-    <!-- 条件搜索区域 -->
-<!--    <div class="search-container">-->
-<!--      <div class="search-toggle" @click="toggleSearchArea">-->
-<!--        <span>条件搜索</span>-->
-<!--        <i :class="['toggle-icon', showSearchArea ? 'expanded' : 'collapsed']"></i>-->
-<!--      </div>-->
-
-<!--      &lt;!&ndash; 搜索表单区域 &ndash;&gt;-->
-<!--      <div class="search-area" v-show="showSearchArea">-->
-<!--        <div class="search-row">-->
-<!--          <div class="search-item">-->
-<!--            <label>项目：</label>-->
-<!--            <select v-model="selectedProject" class="select-input">-->
-<!--              <option value="">请选择项目</option>-->
-<!--              <option v-for="project in projectOptions" :key="project.projectId" :value="project.projectId">-->
-<!--                {{ project.projectName }}-->
-<!--              </option>-->
-<!--            </select>-->
-<!--          </div>-->
-<!--          <div class="search-item">-->
-<!--            <label>指定号码：</label>-->
-<!--            <input type="text" v-model="specifiedNumber" placeholder="指定号码或前五位" class="text-input">-->
-<!--          </div>-->
-<!--        </div>-->
-
-<!--        <div class="search-row">-->
-<!--          <div class="search-item">-->
-<!--            <label>排除号码或号段：</label>-->
-<!--            <input type="text" v-model="excludedNumbers" placeholder="排除号段(前五位)" class="text-input">-->
-<!--          </div>-->
-<!--          <div class="search-item">-->
-<!--            <label>只获取此卡商的卡：</label>-->
-<!--            <input type="text" v-model="specificCard" placeholder="输入卡商ID" class="text-input">-->
-<!--          </div>-->
-<!--        </div>-->
-
-<!--        <div class="action-buttons">-->
-<!--          <button class="action-btn single-query" @click="singleQueryNumber">-->
-<!--            释放全部号码并清空-->
-<!--          </button>-->
-<!--          <button class="action-btn batch-query" @click="batchQueryNumbers">-->
-<!--            拉黑全部号码并清空-->
-<!--          </button>-->
-<!--          <button class="action-btn query-specific" @click="querySpecificNumber">-->
-<!--            释放单个号码-->
-<!--          </button>-->
-<!--          <button class="action-btn get-number" @click="getNumber">-->
-<!--            取号-->
-<!--          </button>-->
-<!--          <button class="action-btn reset" @click="resetAll">-->
-<!--            重置-->
-<!--          </button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
+    <!-- 公告组件 -->
+    <Announcement />
 
     <!-- 智能查询按钮 -->
     <div class="smart-query-section">
@@ -124,6 +61,7 @@ import message from "../utils/message";
 import { ProjectListService } from "../api/project";
 import { ProjectCollectService } from "../api/user";
 import ProjectDetails from "./ProjectDetails.vue";
+import Announcement from "./announcement/Announcement.vue";
 
 //导入项目图标
 import Telegram from '../assets/imgae/project/Telegram.png'
@@ -150,11 +88,6 @@ const showSearchArea = ref(false);
 // 弹窗控制
 const showProjectModal = ref(false);
 const currentProject = ref({});
-
-// 切换搜索区域显示状态
-const toggleSearchArea = () => {
-  showSearchArea.value = !showSearchArea.value;
-};
 
 // 获取项目图标
 const getProjectIcon = (projectName) => {
@@ -281,189 +214,19 @@ const getProjectList = async () => {
   }
 };
 
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+};
+
 onMounted(() => {
   getProjectList();
 });
 </script>
 
 <style scoped>
-/* 公告板样式 */
-.announcement-board {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  display: flex;
-  height: 120px;
-  position: relative;
-  overflow: hidden;
-}
-
-.announcement-content {
-  flex: 1;
-  padding: 15px 20px;
-}
-
-/* 侧边标题 */
-.sidebar-title {
-  background-color: #d3756c;
-  color: white;
-  writing-mode: vertical-lr;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 15px 0;
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 10px;
-  text-align: center;
-  width: 50px;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-title::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50px;
-  height: 50px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 0 0 50px 0;
-}
-
-.sidebar-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 50px;
-  height: 50px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 50px 0 0 0;
-}
-
-/* 搜索容器 */
-.search-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-/* 搜索切换按钮 */
-.search-toggle {
-  padding: 12px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  background-color: #fff;
-}
-
-.search-toggle:hover {
-  background-color: #f5f7fa;
-}
-
-/* 搜索区域样式 */
-.search-area {
-  padding: 15px 20px;
-  border-top: 1px solid #e8e8e8;
-}
-
-.search-row {
-  display: flex;
-  margin-bottom: 15px;
-  flex-wrap: nowrap;
-}
-
-.search-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
-  min-width: 0;
-}
-
-.search-item:last-child {
-  margin-right: 0;
-}
-
-.search-item label {
-  width: auto;
-  min-width: 50px;
-  font-size: 14px;
-  color: #333;
-  margin-right: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.select-input, .text-input {
-  flex: 1;
-  min-width: 0;
-  height: 36px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  padding: 0 12px;
-  font-size: 14px;
-  color: #606266;
-  background-color: #fff;
-}
-
-.select-input:focus, .text-input:focus {
-  border-color: #409eff;
-  outline: none;
-}
-
-/* 按钮样式 */
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.action-btn {
-  padding: 9px 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s;
-  color: white;
-}
-
-.single-query {
-  background-color: #f06057;
-}
-
-.batch-query {
-  background-color: #34c3c3;
-}
-
-.query-specific {
-  background-color: #f3a447;
-}
-
-.get-number {
-  background-color: #4085f6;
-}
-
-.reset {
-  background-color: #f5f7fa;
-  color: #4085f6;
-  border: 1px solid #4085f6;
-}
-
-.action-btn:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
-}
-
 /* 智能匹配标签 */
 .smart-query-section {
   padding: 0;
