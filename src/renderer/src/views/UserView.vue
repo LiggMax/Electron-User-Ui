@@ -140,7 +140,7 @@
               </div>
               <div class="order-status">
                 <div class="status-badge success">已完成</div>
-                <div class="order-money">￥{{ item.money?.toFixed(2) || "0.00" }}</div>
+                <div class="order-money">￥{{ item.project_money + item.phone_money || "0.00" }}</div>
               </div>
             </div>
           </div>

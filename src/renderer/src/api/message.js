@@ -1,4 +1,4 @@
-import request from "../utils/request";
+import request from "../utils/http/request";
 
 /**
  * 获取公告内容

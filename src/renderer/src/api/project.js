@@ -1,4 +1,4 @@
-import request from "../utils/request";
+import request from "../utils/http/request";
 
 /**
  * 获取项目列表数据
