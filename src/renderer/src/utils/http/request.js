@@ -4,7 +4,7 @@ import { userTokenStore } from "../../store/token";
 import router from "../../router";
 import message from "../message";
 
-const baseURL = 'http://127.0.0.1:8899/api/'
+const baseURL = 'http://ka.kydb.vip/api/'
 const instance = axios.create({
   baseURL,
   timeout: 30000,
