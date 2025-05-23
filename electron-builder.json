@@ -53,5 +53,7 @@
       "private": false,
       "releaseType": "release"
     }
-  ]
+  ],
+  "npmRebuild": true,
+  "buildDependenciesFromSource": true
 } 

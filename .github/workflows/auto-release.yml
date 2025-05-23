@@ -75,6 +75,7 @@ jobs:
           name: 长虹国际管理介面 v${{ env.APP_VERSION }}
           body: |
             ### 版本 ${{ env.APP_VERSION }} 发布
+            更新内容: 添加软件自动更新功能
             发布时间: ${{ github.event.head_commit.timestamp }}
             提交: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
