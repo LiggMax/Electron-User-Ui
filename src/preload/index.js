@@ -13,14 +13,12 @@ const api = {
   openProjectDetails: (projectId, projectName) => {
     ipcRenderer.send('open-project-details', projectId, projectName)
   },
-  // 更新项目详情
-  updateProjectDetails: (projectId, projectName) => {
-    return ipcRenderer.invoke('update-project-details', projectId, projectName)
-  },
-  // 添加导航方法
-  navigate: (route) => {
-    ipcRenderer.send('navigate-to-route', route)
-  }
+}
+
+// 添加electronAPI对象，包含apiRequest方法
+const myElectronAPI = {
+  ...electronAPI,
+  apiRequest: (options) => ipcRenderer.invoke('api-request', options)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -30,10 +28,12 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('electronAPI', myElectronAPI)
   } catch (error) {
     console.error(error)
   }
 } else {
   window.electron = electronAPI
   window.api = api
+  window.electronAPI = myElectronAPI
 }

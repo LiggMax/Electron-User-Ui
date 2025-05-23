@@ -106,7 +106,7 @@
                 <div class="collection-date">收藏于: {{ item.created_at.split("T")[0] }}</div>
               </div>
               <div class="collection-actions">
-                <button class="action-btn view-btn" @click="openProjectDetail(item)">查看</button>
+                <button class="action-btn view-btn" >查看</button>
               </div>
             </div>
           </div>
@@ -409,14 +409,6 @@ const removeFavorite = (item) => {
   getFavoriteList();
 };
 
-// 打开项目详情
-const openProjectDetail = (item) => {
-  if (window.api && window.api.openProjectDetails) {
-    window.api.openProjectDetails(item.project_id, item.project_name);
-  } else {
-    message.info(`查看项目: ${item.project_name}`);
-  }
-};
 
 // 保存用户信息
 const saveUserInfo = async () => {

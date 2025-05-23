@@ -4,11 +4,79 @@ import { userTokenStore } from "../../store/token";
 import router from "../../router";
 import message from "../message";
 
-const baseURL = '/api'
+const baseURL = '/api';
 const instance = axios.create({
   baseURL,
   timeout: 30000,
 })
+
+// 判断是否为生产环境
+const isProd = import.meta.env.PROD;
+
+// 创建适配器，用于在生产环境中通过主进程代理发送请求
+const electronAdapter = async (config) => {
+  if (!isProd) {
+    // 开发环境直接使用axios默认适配器
+    return axios.defaults.adapter(config);
+  }
+
+  try {
+    // 从config中提取需要的参数
+    const { url, method, data, headers } = config;
+    
+    // 处理URL路径
+    // 如果是完整URL，直接使用；否则构建相对路径
+    let apiUrl;
+    if (url.startsWith('http')) {
+      apiUrl = url;
+    } else {
+      // 移除baseURL前缀，确保路径格式正确
+      apiUrl = url.startsWith(baseURL) 
+        ? url 
+        : `${baseURL}${url.startsWith('/') ? url : '/' + url}`;
+    }
+    
+    console.log(`[请求] ${method} ${apiUrl}`);
+    console.log(`[请求数据]`, data);
+    
+    // 通过预加载脚本暴露的API发送请求
+    const response = await window.electronAPI.apiRequest({
+      url: apiUrl,
+      method,
+      data,
+      headers
+    });
+    
+    console.log(`[响应]`, response);
+    
+    if (!response.success) {
+      // 请求失败
+      return Promise.reject({
+        response: {
+          status: response.status,
+          data: response.data
+        },
+        message: response.message
+      });
+    }
+    
+    // 构造axios响应格式
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {}
+    };
+  } catch (error) {
+    console.error(`[请求错误]`, error);
+    return Promise.reject(error);
+  }
+};
+
+// 设置适配器
+instance.defaults.adapter = electronAdapter;
 
 // 请求拦截器
 instance.interceptors.request.use(
