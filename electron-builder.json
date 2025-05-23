@@ -1,0 +1,57 @@
+{
+  "appId": "com.changhong.app",
+  "productName": "ChangHong",
+  "asar": true,
+  "directories": {
+    "output": "release/${version}"
+  },
+  "files": [
+    "out"
+  ],
+  "mac": {
+    "artifactName": "${productName}_${version}.${ext}",
+    "target": [
+      "dmg",
+      "zip"
+    ]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}_${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "artifactName": "${productName}_${version}.${ext}"
+  },
+  "extraResources": [
+    {
+      "from": "node_modules/@electron-toolkit/utils",
+      "to": "node_modules/@electron-toolkit/utils",
+      "filter": ["**/*"]
+    }
+  ],
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "LiggMax",
+      "repo": "Electron-User-Ui",
+      "private": false,
+      "releaseType": "release"
+    }
+  ]
+} 

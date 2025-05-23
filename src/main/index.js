@@ -1,7 +1,12 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, dialog } from "electron";
 import { join } from "path";
 import icon from "../../resources/icon.png?asset";
 import * as url from "node:url";
+import { autoUpdater } from "electron-updater";
+
+// 配置自动更新
+autoUpdater.autoDownload = true;  // 自动下载更新
+autoUpdater.autoInstallOnAppQuit = true;  // 应用退出时自动安装
 
 // 修改utils导入方式，使用try/catch处理可能的导入错误
 let electronApp, optimizer, is;
@@ -89,6 +94,62 @@ function createWindow() {
   }
 }
 
+// 设置自动更新事件处理
+function setupAutoUpdater() {
+  // 检查更新出错
+  autoUpdater.on('error', (error) => {
+    console.error('更新检查失败:', error);
+  });
+
+  // 检查到新版本
+  autoUpdater.on('update-available', (info) => {
+    console.log('发现新版本:', info.version);
+    // 发送消息到渲染进程
+    BrowserWindow.getAllWindows().forEach(win => {
+      if (!win.isDestroyed()) win.webContents.send('update-available', info);
+    });
+  });
+
+  // 没有新版本
+  autoUpdater.on('update-not-available', () => {
+    console.log('当前已是最新版本');
+  });
+
+  // 下载进度
+  autoUpdater.on('download-progress', (progressObj) => {
+    console.log(`下载进度: ${progressObj.percent.toFixed(2)}%`);
+    // 发送下载进度到渲染进程
+    BrowserWindow.getAllWindows().forEach(win => {
+      if (!win.isDestroyed()) win.webContents.send('download-progress', progressObj);
+    });
+  });
+
+  // 更新下载完成
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('更新已下载，将在退出时安装');
+    
+    // 提示用户是否立即重启应用
+    dialog.showMessageBox({
+      type: 'info',
+      title: '应用更新',
+      message: `发现新版本 ${info.version}，已下载完成`,
+      detail: '点击"立即重启"按钮重启应用并安装更新',
+      buttons: ['立即重启', '稍后重启'],
+      cancelId: 1
+    }).then(result => {
+      if (result.response === 0) {
+        // 用户点击了立即重启，安装更新并重启应用
+        autoUpdater.quitAndInstall(false, true);
+      }
+    });
+    
+    // 发送消息到渲染进程
+    BrowserWindow.getAllWindows().forEach(win => {
+      if (!win.isDestroyed()) win.webContents.send('update-downloaded', info);
+    });
+  });
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -125,7 +186,36 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on("ping", () => console.log("pong"));
 
+  // 设置自动更新
+  setupAutoUpdater();
+  
+  // 添加IPC处理程序，允许渲染进程请求检查更新
+  ipcMain.on('check-for-updates', () => {
+    // 仅在打包后的应用中检查更新
+    if (!app.isPackaged) {
+      console.log('开发环境中不检查更新');
+      return;
+    }
+    console.log('手动检查更新...');
+    autoUpdater.checkForUpdates();
+  });
+
+  // 添加IPC处理程序，允许渲染进程请求退出并安装更新
+  ipcMain.on('quit-and-install', () => {
+    console.log('退出并安装更新...');
+    autoUpdater.quitAndInstall(false, true);
+  });
+
   createWindow();
+
+  // 应用启动后自动检查更新
+  if (app.isPackaged) {
+    // 延迟几秒检查，确保应用已完全启动
+    setTimeout(() => {
+      console.log('自动检查更新...');
+      autoUpdater.checkForUpdates();
+    }, 3000);
+  }
 
   app.on("activate", function() {
     // On macOS it's common to re-create a window in the app when the
