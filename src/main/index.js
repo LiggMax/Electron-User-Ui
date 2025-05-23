@@ -225,7 +225,7 @@ function createDetailsWindow(projectId, projectName) {
 const axios = require("axios");
 
 // 配置API基础URL
-const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:8899';  // API服务器地址
+const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:8899/api';  // API服务器地址
 
 ipcMain.handle("api-request", async (_event, { url, method = "GET", data, headers }) => {
   try {
@@ -239,15 +239,26 @@ ipcMain.handle("api-request", async (_event, { url, method = "GET", data, header
     console.log(`[主进程API代理] 请求: ${method} ${apiUrl}`);
     console.log(`[主进程API代理] 数据:`, data);
     
-    // 发送请求
-    const response = await axios({
+    // 构建请求配置
+    const requestConfig = {
       url: apiUrl,
       method,
-      data,
       headers,
-      // 增加超时设置
       timeout: 30000
-    });
+    };
+    
+    // 根据请求方法处理数据
+    if (method.toUpperCase() === 'GET' && data) {
+      // GET请求，将数据作为URL参数
+      requestConfig.params = data;
+      console.log(`[主进程API代理] GET参数:`, requestConfig.params);
+    } else if (data) {
+      // 其他请求方法，将数据放在请求体中
+      requestConfig.data = data;
+    }
+    
+    // 发送请求
+    const response = await axios(requestConfig);
     
     console.log(`[主进程API代理] 响应状态: ${response.status}`);
     console.log(`[主进程API代理] 响应数据:`, response.data);

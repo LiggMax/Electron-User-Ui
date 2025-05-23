@@ -15,35 +15,24 @@ const isProd = import.meta.env.PROD;
 
 // 创建适配器，用于在生产环境中通过主进程代理发送请求
 const electronAdapter = async (config) => {
+  // 开发环境直接使用axios默认适配器
   if (!isProd) {
-    // 开发环境直接使用axios默认适配器
     return axios.defaults.adapter(config);
   }
 
   try {
     // 从config中提取需要的参数
-    const { url, method, data, headers } = config;
+    const { url, method, data, params, headers } = config;
     
-    // 处理URL路径
-    // 如果是完整URL，直接使用；否则构建相对路径
-    let apiUrl;
-    if (url.startsWith('http')) {
-      apiUrl = url;
-    } else {
-      // 移除baseURL前缀，确保路径格式正确
-      apiUrl = url.startsWith(baseURL) 
-        ? url 
-        : `${baseURL}${url.startsWith('/') ? url : '/' + url}`;
-    }
-    
-    console.log(`[请求] ${method} ${apiUrl}`);
-    console.log(`[请求数据]`, data);
+    console.log(`[请求] ${method} ${url}`);
+    console.log(`[请求数据]`, method.toUpperCase() === 'GET' ? params : data);
     
     // 通过预加载脚本暴露的API发送请求
     const response = await window.electronAPI.apiRequest({
-      url: apiUrl,
+      url: url,
       method,
-      data,
+      // 对于GET请求，使用params作为data传递
+      data: method.toUpperCase() === 'GET' ? params : data,
       headers
     });
     
@@ -75,8 +64,10 @@ const electronAdapter = async (config) => {
   }
 };
 
-// 设置适配器
-instance.defaults.adapter = electronAdapter;
+// 仅在生产环境中设置适配器
+if (isProd) {
+  instance.defaults.adapter = electronAdapter;
+}
 
 // 请求拦截器
 instance.interceptors.request.use(
