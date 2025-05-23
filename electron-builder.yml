@@ -1,5 +1,5 @@
 appId: com.ligg.kh
-productName: "客户端"
+productName: "长虹国际接码平台"
 directories:
   buildResources: build
 files:
@@ -11,14 +11,15 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: electron-app
+  executableName: 长虹国际接码平台
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
-  allowToChangeInstallationDirectory: true   # 允许用户更改安装路径
-  oneClick: false # 禁用一键安装
+  artifactName: ${name}-${version}.${ext}  # 安装包文件名格式，使用变量name(产品名)、version(版本号)和ext(扩展名)
+  shortcutName: ${productName}                  # 快捷方式名称，使用productName变量(产品名)
+  uninstallDisplayName: ${productName}          # 控制面板中显示的卸载程序名称
+  createDesktopShortcut: always                 # 总是创建桌面快捷方式
+  allowToChangeInstallationDirectory: true      # 允许用户在安装时更改安装路径
+  oneClick: false                              # 禁用一键安装模式，显示完整安装向导
+
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:

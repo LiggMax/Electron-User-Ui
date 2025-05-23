@@ -1,0 +1,83 @@
+name: 自动构建与发布
+
+on:
+  push:
+    tags:
+      - 'v*'  # 匹配所有以v开头的标签，例如v1.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 获取项目版本号
+        id: package_version
+        run: |
+          $version = (Get-Content -Raw -Path package.json | ConvertFrom-Json).version
+          echo "APP_VERSION=$version" >> $env:GITHUB_ENV
+          echo "版本号: $version"
+
+      - name: 构建应用程序
+        run: npm run build:win
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-app-windows
+          path: |
+            dist/*.exe
+          retention-days: 5
+
+  publish-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 获取项目版本号
+        id: package_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "版本号: $VERSION"
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: electron-app-windows
+          path: dist
+
+      - name: 显示构建产物结构
+        run: |
+          ls -la dist/
+
+      - name: 创建发布
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.exe"
+          tag: v${{ env.APP_VERSION }}
+          name: 长虹国际管理介面 v${{ env.APP_VERSION }}
+          body: |
+            ### 版本 ${{ env.APP_VERSION }} 发布
+            发布时间: ${{ github.event.head_commit.timestamp }}
+            提交: ${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          draft: false
+          prerelease: false
