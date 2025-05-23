@@ -4,14 +4,21 @@ import { userTokenStore } from "../../store/token";
 import router from "../../router";
 import message from "../message";
 
-const baseURL = '/api';
+// 从环境变量中获取API基础URL
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+console.log(`[渲染进程] API基础URL: ${baseURL}`);
+
+// 判断是否为生产环境
+const isProd = import.meta.env.PROD;
+// 是否启用API日志 - 开发环境默认启用，生产环境根据配置
+const enableLogs = isProd 
+  ? import.meta.env.VITE_ENABLE_API_LOGS === 'true'
+  : true;
+
 const instance = axios.create({
   baseURL,
   timeout: 30000,
 })
-
-// 判断是否为生产环境
-const isProd = import.meta.env.PROD;
 
 // 创建适配器，用于在生产环境中通过主进程代理发送请求
 const electronAdapter = async (config) => {
@@ -24,8 +31,10 @@ const electronAdapter = async (config) => {
     // 从config中提取需要的参数
     const { url, method, data, params, headers } = config;
     
-    console.log(`[请求] ${method} ${url}`);
-    console.log(`[请求数据]`, method.toUpperCase() === 'GET' ? params : data);
+    if (enableLogs) {
+      console.log(`[请求] ${method} ${url}`);
+      console.log(`[请求数据]`, method.toUpperCase() === 'GET' ? params : data);
+    }
     
     // 通过预加载脚本暴露的API发送请求
     const response = await window.electronAPI.apiRequest({
@@ -36,7 +45,9 @@ const electronAdapter = async (config) => {
       headers
     });
     
-    console.log(`[响应]`, response);
+    if (enableLogs) {
+      console.log(`[响应]`, response);
+    }
     
     if (!response.success) {
       // 请求失败

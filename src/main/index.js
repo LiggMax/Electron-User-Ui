@@ -224,8 +224,12 @@ function createDetailsWindow(projectId, projectName) {
  */
 const axios = require("axios");
 
-// 配置API基础URL
-const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:8899/api';  // API服务器地址
+// 配置API基础URL，只使用生产环境配置
+const API_BASE_URL = process.env.VITE_API_BASE_URL;  // 生产环境API服务器地址
+console.log(`[主进程] API基础URL: ${API_BASE_URL}`);
+
+// 是否启用API请求日志
+const ENABLE_API_LOGS = process.env.VITE_ENABLE_API_LOGS === 'true';
 
 ipcMain.handle("api-request", async (_event, { url, method = "GET", data, headers }) => {
   try {
@@ -236,8 +240,10 @@ ipcMain.handle("api-request", async (_event, { url, method = "GET", data, header
       apiUrl = `${API_BASE_URL}${url}`;
     }
     
-    console.log(`[主进程API代理] 请求: ${method} ${apiUrl}`);
-    console.log(`[主进程API代理] 数据:`, data);
+    if (ENABLE_API_LOGS) {
+      console.log(`[主进程API代理] 请求: ${method} ${apiUrl}`);
+      console.log(`[主进程API代理] 数据:`, data);
+    }
     
     // 构建请求配置
     const requestConfig = {
@@ -251,7 +257,9 @@ ipcMain.handle("api-request", async (_event, { url, method = "GET", data, header
     if (method.toUpperCase() === 'GET' && data) {
       // GET请求，将数据作为URL参数
       requestConfig.params = data;
-      console.log(`[主进程API代理] GET参数:`, requestConfig.params);
+      if (ENABLE_API_LOGS) {
+        console.log(`[主进程API代理] GET参数:`, requestConfig.params);
+      }
     } else if (data) {
       // 其他请求方法，将数据放在请求体中
       requestConfig.data = data;
@@ -260,8 +268,10 @@ ipcMain.handle("api-request", async (_event, { url, method = "GET", data, header
     // 发送请求
     const response = await axios(requestConfig);
     
-    console.log(`[主进程API代理] 响应状态: ${response.status}`);
-    console.log(`[主进程API代理] 响应数据:`, response.data);
+    if (ENABLE_API_LOGS) {
+      console.log(`[主进程API代理] 响应状态: ${response.status}`);
+      console.log(`[主进程API代理] 响应数据:`, response.data);
+    }
     
     return { 
       success: true, 
