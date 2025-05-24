@@ -26,10 +26,12 @@
         <el-table-column prop="projectName" width="90" label="项目" />
         <el-table-column prop="phoneNumber" width="140" label="手机号码" />
         <el-table-column prop="location" width="100" label="号码归属地" />
-        <el-table-column prop="createdAt" width="150" label="购买时间" />
+        <el-table-column prop="createdAt" width="180" label="购买时间" />
         <el-table-column prop="status" label="状态">
           <template #default="scope">
-            <el-tag :type="scope.row.status === '已使用' ? 'success' : 'info'">{{ scope.row.status }}</el-tag>
+            <el-tag :type="scope.row.status === 0 ? 'info' : 'success'">
+              {{ scope.row.status === 0 ? '未使用' : '已使用' }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="180">
@@ -249,9 +251,9 @@ const getSmsList = async () => {
         userProjectId: item.userProjectId,
         projectName: item.projectName,
         phoneNumber: item.phoneNumber,
-        location: "美国", // 默认归属地
-        createdAt: formatDate(item.createdAt),
-        status: "未使用" // 默认状态
+        location: item.regionName || "未知",
+        createdAt: DateFormatter.format(item.createdAt),
+        status: item.state, // 直接使用原始状态值，不转换
       };
     });
   } catch (error) {
@@ -259,20 +261,6 @@ const getSmsList = async () => {
   }
 };
 
-// 格式化日期
-const formatDate = (dateString) => {
-  try {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}`;
-  } catch (e) {
-    return dateString;
-  }
-};
-
-// 补零函数
-const padZero = (num) => {
-  return num < 10 ? `0${num}` : num;
-};
 
 onMounted(async () => {
   // 注册页面可见性变化事件
