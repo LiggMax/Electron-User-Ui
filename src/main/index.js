@@ -128,15 +128,15 @@ app.whenReady().then(() => {
 
 
   // 添加IPC处理程序，允许渲染进程请求检查更新
-  ipcMain.on('check-for-updates', () => {
-    // 仅在打包后的应用中检查更新
-    if (!app.isPackaged) {
-      console.log('开发环境中不检查更新');
-      return;
-    }
-    console.log('手动检查更新...');
-    autoUpdater.checkForUpdates();
-  });
+  // ipcMain.on('check-for-updates', () => {
+  //   // 仅在打包后的应用中检查更新
+  //   if (!app.isPackaged) {
+  //     console.log('开发环境中不检查更新');
+  //     return;
+  //   }
+  //   console.log('手动检查更新...');
+  //   autoUpdater.checkForUpdates();
+  // });
 
   // 添加IPC处理程序，允许渲染进程请求退出并安装更新
   ipcMain.on('quit-and-install', () => {

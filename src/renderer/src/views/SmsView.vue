@@ -85,6 +85,7 @@ import message from "../utils/message";
 import Delete from "../assets/svg/delete.svg";
 import { SmsListService, SmsCodeService } from "../api/sms";
 import { useRoute } from "vue-router";
+import DateFormatter from '../utils/DateFormatter.js'
 
 const selectedProject = ref("");
 const selectedRows = ref([]);
@@ -111,7 +112,7 @@ const smsLoading = ref(false);
 // 轮询定时器
 let pollingTimer = null;
 // 轮询间隔时间(毫秒)
-const POLLING_INTERVAL = 5000;
+const POLLING_INTERVAL = 6000;
 
 // 监听页面可见性变化
 const handleVisibilityChange = () => {
@@ -147,8 +148,8 @@ const getVerificationCodes = async () => {
     // 将API返回的数据转换为短信列表格式
     const newSmsList = res.data.map(item => {
       return {
-        id: Math.random().toString(36).substr(2, 9), // 生成随机ID
-        time: new Date().toLocaleString(),
+        id: item.id,
+        time: DateFormatter.format(item.createdAt),
         message: `您的验证码是: ${item.code}`,
         phoneNumber: item.phoneNumber,
         code: item.code

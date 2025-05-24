@@ -13,7 +13,7 @@ const getConfig = ({ mode }) => {
   const proxyTarget = apiBaseUrl.replace(/\/api$/, '');
   
   console.log(`[Vite配置] 环境: ${mode}`);
-  console.log(`[Vite配置] API代理目标: ${proxyTarget}`);
+  console.log(`[Vite配置] API代理目标: ${!proxyTarget}`);
   
   // 生产环境配置
   const prodEnv = mode === 'production' ? env : {};
