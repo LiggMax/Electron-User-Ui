@@ -1,9 +1,9 @@
 # This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
 # For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
-# 这个工作流在代码推送或手动触发时构建并发布Electron应用程序
+# 这个工作流在代码推送或手动触发时构建Electron应用程序
 
-name: Build and Publish Electron App
+name: Build Electron App
 
 on:
   workflow_dispatch:
@@ -68,32 +68,3 @@ jobs:
       - name: 显示构建产物结构
         run: |
           ls -la dist/
-
-      - name: 获取版本号
-        id: get_version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-            echo "RELEASE_NOTES=${{ github.event.inputs.release_notes }}" >> $GITHUB_ENV
-          else
-            # 从标签中提取版本号，去掉v前缀
-            VERSION=${GITHUB_REF#refs/tags/v}
-            echo "VERSION=$VERSION" >> $GITHUB_ENV
-            echo "RELEASE_NOTES=自动发布版本 $VERSION" >> $GITHUB_ENV
-          fi
-
-      - name: 创建发布
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "dist/*.exe"
-          tag: v${{ env.VERSION }}
-          name: 版本 ${{ env.VERSION }}
-          body: |
-            ${{ env.RELEASE_NOTES }}
-            
-            构建时间: ${{ github.event.created_at || github.event.head_commit.timestamp }}
-            提交: ${{ github.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
-          draft: false
-          prerelease: false
