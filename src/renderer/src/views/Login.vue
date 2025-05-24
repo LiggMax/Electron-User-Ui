@@ -321,7 +321,7 @@ if (window.electron) {
     <transition name="form-transition" mode="out-in">
       <!-- 登录表单 -->
       <div class="login-form" v-if="!isRegisterMode" key="login">
-        <h1>欢迎使用客户端平台</h1>
+        <h1>长虹国际接码平台</h1>
         <div class="form-item">
           <div class="input-icon" :class="{ 'error-input': formErrors.account, 'shake': formErrors.account }">
             <img src="../assets/icon/userIcon.png" class="icon-img" alt="用户" />

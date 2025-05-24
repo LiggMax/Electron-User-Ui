@@ -7,7 +7,7 @@
         </div>
         <div class="user-basic-info">
           <div class="username">{{ userInfo.nickName || "用户昵称" }}</div>
-          <div class="user-id">ID: {{ userInfo.userId }}</div>
+          <div class="user-id">账号: {{ userInfo.account }}</div>
         </div>
         <!--刷新-->
         <div class="refresh-button" @click="refreshUserInfo">
@@ -116,7 +116,7 @@
       <!-- 我的订单内容区域 -->
       <div v-if="activeSection === 'my-orders'" class="info-section orders-section">
         <div class="section-header">
-          <span class="section-title">我的订单</span>
+          <span class="section-title">全部订单</span>
         </div>
 
         <div class="section-content">
@@ -274,7 +274,7 @@ const actionButtons = ref([
     action: () => toggleSection("personal-info")
   },
   {
-    text: "我的订单",
+    text: "历史订单",
     icon: ordersIcon,
     section: "my-orders",
     className: "my-orders",
