@@ -60,6 +60,13 @@
           <div class="sms-item" v-for="(sms, index) in smsList" :key="index">
             <div class="sms-meta">
               <div class="sms-phone">手机号：{{ sms.phoneNumber }}</div>
+              <div class="sms-actions">
+                <button class="sms-copy" @click="copySmsCode(sms.code)" title="复制验证码">
+                  <i class="copy-icon">
+                    <el-icon :size="25"><CopyDocument /></el-icon>
+                  </i>
+                </button>
+              </div>
             </div>
             <div class="sms-message">{{ sms.message }}</div>
             <div class="sms-footer">
@@ -67,7 +74,7 @@
               <div class="sms-actions">
                 <button class="sms-delete" @click="deleteSms(sms)">
                   <i class="delete-icon">
-                    <el-icon><img :src="Delete" alt="删除" style="width: 20px; height: 20px;" /></el-icon>
+                    <el-icon :size="25"><Delete /></el-icon>
                   </i>
                 </button>
               </div>
@@ -82,10 +89,10 @@
 <script setup>
 import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 import message from "../utils/message";
-import Delete from "../assets/svg/delete.svg";
+import { CopyDocument ,Delete } from "@element-plus/icons-vue";
 import { SmsListService, SmsCodeService } from "../api/sms";
 import { useRoute } from "vue-router";
-import DateFormatter from '../utils/DateFormatter.js'
+import DateFormatter from "../utils/DateFormatter.js";
 
 const selectedProject = ref("");
 const selectedRows = ref([]);
@@ -116,9 +123,9 @@ const POLLING_INTERVAL = 6000;
 
 // 监听页面可见性变化
 const handleVisibilityChange = () => {
-  isPageVisible.value = document.visibilityState === 'visible';
-  console.log('页面可见性:', isPageVisible.value ? '可见' : '不可见');
-  
+  isPageVisible.value = document.visibilityState === "visible";
+  console.log("页面可见性:", isPageVisible.value ? "可见" : "不可见");
+
   if (isPageVisible.value) {
     // 页面可见时，开始轮询
     startPolling();
@@ -142,9 +149,9 @@ const getVerificationCodes = async () => {
     if (smsList.value.length === 0) {
       smsLoading.value = true;
     }
-    
+
     const res = await SmsCodeService();
-    
+
     // 将API返回的数据转换为短信列表格式
     const newSmsList = res.data.map(item => {
       return {
@@ -155,13 +162,13 @@ const getVerificationCodes = async () => {
         code: item.code
       };
     });
-    
+
     // 替换短信列表
     smsList.value = newSmsList;
-    console.log('获取到验证码数据:', newSmsList.length);
+    console.log("获取到验证码数据:", newSmsList.length);
   } catch (error) {
-    console.error('获取验证码失败:', error);
-    message.error('获取验证码失败，请稍后重试');
+    console.error("获取验证码失败:", error);
+    message.error("获取验证码失败，请稍后重试");
   } finally {
     smsLoading.value = false;
   }
@@ -171,12 +178,12 @@ const getVerificationCodes = async () => {
 const startPolling = () => {
   // 确保不会创建多个定时器
   stopPolling();
-  
+
   // 创建新的轮询定时器
   pollingTimer = setInterval(async () => {
     // 只有在页面可见时才进行轮询
     if (isPageVisible.value && isCurrentRoute()) {
-      console.log('轮询获取验证码数据...');
+      console.log("轮询获取验证码数据...");
       await getVerificationCodes();
     }
   }, POLLING_INTERVAL);
@@ -192,7 +199,7 @@ const stopPolling = () => {
 
 // 检查当前是否为短信页面
 const isCurrentRoute = () => {
-  return route.path === '/sms';
+  return route.path === "/sms";
 };
 
 // 根据手机号获取项目名称
@@ -214,29 +221,41 @@ const deleteSms = (sms) => {
   smsList.value = smsList.value.filter(s => s.id !== sms.id);
 };
 
+// 复制短信验证码
+const copySmsCode = (code) => {
+  if (!code) {
+    message.error("验证码为空");
+    return;
+  }
+
+  // 使用clipboard API复制文本
+  navigator.clipboard.writeText(code)
+    .then(() => {
+      message.success("验证码已复制到剪贴板");
+    })
+    .catch(err => {
+      console.error("复制失败:", err);
+    });
+};
+
 // 获取号码列表数据
 const getSmsList = async () => {
   try {
     const res = await SmsListService();
-    
-    if (res && res.code === 200 && res.data) {
-      // 直接使用API返回的数据格式
-      phoneList.value = res.data.map(item => {
-        return {
-          userProjectId: item.userProjectId,
-          projectName: item.projectName,
-          phoneNumber: item.phoneNumber,
-          location: "美国", // 默认归属地
-          createdAt: formatDate(item.createdAt),
-          status: '未使用' // 默认状态
-        };
-      });
-    } else {
-      message.error('获取短信列表失败');
-    }
+
+    // 直接使用API返回的数据格式
+    phoneList.value = res.data.map(item => {
+      return {
+        userProjectId: item.userProjectId,
+        projectName: item.projectName,
+        phoneNumber: item.phoneNumber,
+        location: "美国", // 默认归属地
+        createdAt: formatDate(item.createdAt),
+        status: "未使用" // 默认状态
+      };
+    });
   } catch (error) {
-    console.error('获取短信列表失败:', error);
-    message.error('获取短信列表失败，请稍后重试');
+    console.error("获取短信列表失败:", error);
   }
 };
 
@@ -257,8 +276,8 @@ const padZero = (num) => {
 
 onMounted(async () => {
   // 注册页面可见性变化事件
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
   await getSmsList();
   // 页面加载时自动获取验证码
   await getVerificationCodes();
@@ -269,12 +288,12 @@ onMounted(async () => {
 // 组件卸载前清除定时器和事件监听
 onBeforeUnmount(() => {
   stopPolling();
-  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
 
 // 监听路由变化
 watch(() => route.path, (newPath) => {
-  if (newPath === '/sms') {
+  if (newPath === "/sms") {
     // 当切换到短信页面时，开始轮询
     isPageVisible.value = true;
     getVerificationCodes();
@@ -375,6 +394,7 @@ watch(() => route.path, (newPath) => {
   font-size: 13px;
   color: #606266;
   font-weight: bold;
+  align-items: center;
 }
 
 .sms-phone {
@@ -403,17 +423,27 @@ watch(() => route.path, (newPath) => {
   justify-content: flex-end;
 }
 
+.sms-copy,
 .sms-delete {
   background: none;
   border: none;
-  color: #f56c6c;
   cursor: pointer;
   padding: 0;
   font-size: 16px;
   opacity: 0.6;
   transition: opacity 0.2s;
+  margin-left: 10px;
 }
 
+.sms-copy {
+  color: #409EFF;
+}
+
+.sms-delete {
+  color: #f56c6c;
+}
+
+.sms-copy:hover,
 .sms-delete:hover {
   opacity: 1;
 }
@@ -438,8 +468,12 @@ watch(() => route.path, (newPath) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
