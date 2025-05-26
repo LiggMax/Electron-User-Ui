@@ -681,22 +681,6 @@ onMounted(() => {
   color: #333;
 }
 
-.personal-info {
-  background-color: #e6f4ff;
-}
-
-.my-orders {
-  background-color: #ffece6;
-}
-
-.my-collections {
-  background-color: #e6fff1;
-}
-
-.change-password {
-  background-color: #fff5e6;
-}
-
 .empty-data-section {
   display: flex;
   flex-direction: column;
@@ -1074,16 +1058,6 @@ onMounted(() => {
   text-align: center;
 }
 
-.account-number {
-  margin: 20px 0;
-  padding: 15px;
-  background-color: #f8f8f8;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
 
 .account-number .label {
   font-weight: bold;

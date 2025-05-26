@@ -384,8 +384,5 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.service-time {
-  color: #909399;
-  font-size: 14px;
-}
+
 </style>
