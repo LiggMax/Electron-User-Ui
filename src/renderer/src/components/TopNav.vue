@@ -9,6 +9,7 @@
     </div>
     <div class="nav-right non-draggable">
       <div class="user-controls-container">
+       
         <!-- 窗口控制按钮 -->
         <div class="window-controls">
           <div class="control-btn minimize" @click="minimizeWindow">
@@ -26,6 +27,12 @@
 
         <!-- 用户信息 -->
         <div class="user-profile">
+          <!--刷新-->
+          <div class="refresh-button" @click="refreshUserInfo">
+            <el-icon class="refresh-icon">
+              <Refresh />
+            </el-icon>
+          </div>
           <div class="profile-icon" @click="showCustomerService">
             <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="客服" />
           </div>
@@ -68,7 +75,8 @@ import { onMounted, ref } from "vue";
 import { UserInfoService } from "../api/user";
 import Avatar from '../assets/svg/avatar.svg'
 import userInfoStore from "../store/userInfoStore";
-import { ElMessage } from 'element-plus';
+import { Refresh } from "@element-plus/icons-vue";
+import Message from "../utils/message";
 const isMaximized = ref(false);
 const userInfoDate = ref({
   account: '',
@@ -79,6 +87,19 @@ const userInfoDate = ref({
   createdAt: '',
   loginTime: ''
 });
+
+// 刷新用户信息
+const refreshUserInfo = async () => {
+  try {
+    const res = await UserInfoService();
+    userInfoDate.value = res.data;
+    Message.success("刷新用户信息成功");
+  } catch (error) {
+    console.error("刷新用户信息出错:", error);
+    Message.error("刷新用户信息失败，请稍后再试");
+  }
+};
+
 
 // 客服电话弹窗
 const customerServiceDialogVisible = ref(false);
@@ -102,14 +123,14 @@ const copyPhoneNumber = () => {
   const phoneNumber = '1213800123';
   navigator.clipboard.writeText(phoneNumber).then(() => {
     // 使用Element Plus的消息提示
-    ElMessage({
+    Message({
       message: '电话号码已复制到剪贴板',
       type: 'success',
       duration: 2000
     });
   }).catch(err => {
     console.error('复制失败:', err);
-    ElMessage({
+    Message({
       message: '复制失败，请手动复制',
       type: 'error',
       duration: 2000
@@ -222,6 +243,29 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 15px;
+}
+
+.refresh-icon {
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.refresh-button {
+  cursor: pointer;
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f2f5;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+  background-color: #e6f7ff;
+  transform: rotate(180deg);
 }
 
 .profile-icon {

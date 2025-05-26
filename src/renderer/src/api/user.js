@@ -44,6 +44,19 @@ export const PhoneBuyService = (phoneData) => {
 }
 
 /**
+ * 上传头像
+ */
+export const UserAvatarService = (avatarFile) => {
+  const formData = new FormData();
+  formData.append('avatar', avatarFile);
+  
+  return request.post("/user/uploadAvatar", formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
+/**
  * 获取用户收藏的项目
  */
 export const UserFavoriteService = () => {

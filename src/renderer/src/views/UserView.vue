@@ -9,12 +9,6 @@
           <div class="username">{{ userInfo.nickName || "用户昵称" }}</div>
           <div class="user-id">账号: {{ userInfo.account }}</div>
         </div>
-        <!--刷新-->
-        <div class="refresh-button" @click="refreshUserInfo">
-          <el-icon class="refresh-icon">
-            <Refresh />
-          </el-icon>
-        </div>
       </div>
 
       <div class="user-stats">
@@ -47,8 +41,28 @@
           <div class="user-info-header">
             <span class="avatar-label">头像</span>
             <div class="avatar-wrapper">
-              <img :src="userInfo.userAvatar || userAvatar" alt="用户头像" class="profile-avatar" />
+              <img :src="previewAvatar || userInfo.userAvatar || userAvatar" alt="用户头像" class="profile-avatar" />
+              <div class="avatar-upload-overlay" @click="triggerFileInput">
+                <span>更换头像</span>
+              </div>
+              <input 
+                type="file" 
+                ref="fileInput" 
+                style="display: none" 
+                accept="image/*" 
+                @change="handleFileChange" 
+              />
             </div>
+            <el-button 
+              v-if="selectedFile" 
+              type="primary" 
+              size="small" 
+              class="upload-avatar-btn"
+              :loading="uploadingAvatar"
+              @click="uploadAvatar"
+            >
+              上传头像
+            </el-button>
           </div>
 
           <el-form :model="userForm" label-width="80px">
@@ -218,7 +232,8 @@ import {
   UserFavoriteService,
   UserOrderService,
   UserLogoutService,
-  UserInfoService
+  UserInfoService,
+  UserAvatarService
 } from "../api/user";
 import DateFormatter from "../utils/DateFormatter.js";
 // 导入按钮图标
@@ -237,6 +252,72 @@ import Default from "../assets/svg/default.svg";
 
 const { userInfo, setUserInfo } = userInfoStore();
 const activeSection = ref("");
+
+// 头像上传相关
+const fileInput = ref(null);
+const selectedFile = ref(null);
+const previewAvatar = ref(null);
+const uploadingAvatar = ref(false);
+
+// 触发文件选择
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+// 处理文件选择变化
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // 验证文件类型
+  if (!file.type.startsWith('image/')) {
+    message.error('请选择图片文件');
+    return;
+  }
+  
+  // 验证文件大小（限制为2MB）
+  if (file.size > 5 * 1024 * 1024) {
+    message.error('图片大小不能超过5MB');
+    return;
+  }
+  
+  selectedFile.value = file;
+  
+  // 创建预览
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewAvatar.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// 上传头像
+const uploadAvatar = async () => {
+  if (!selectedFile.value) return;
+  
+  uploadingAvatar.value = true;
+  
+  try {
+    // 直接使用文件对象上传
+    await UserAvatarService(selectedFile.value);
+    
+    message.success('头像上传成功');
+    
+    // 刷新用户信息
+    const res = await UserInfoService();
+    setUserInfo(res.data);
+    
+    // 清除选择的文件
+    selectedFile.value = null;
+    previewAvatar.value = null;
+    fileInput.value.value = '';
+  } catch (error) {
+    console.error('上传头像失败:', error);
+    message.error('上传头像失败，请稍后再试');
+  } finally {
+    uploadingAvatar.value = false;
+  }
+};
 
 // 用户表单数据
 const userForm = ref({
@@ -467,17 +548,6 @@ const copyInvitationCode = () => {
   }
 };
 
-// 刷新用户信息
-const refreshUserInfo = async () => {
-  try {
-    const res = await UserInfoService();
-      setUserInfo(res.data);
-      message.success("刷新用户信息成功");
-  } catch (error) {
-    console.error("刷新用户信息出错:", error);
-    message.error("刷新用户信息失败，请稍后再试");
-  }
-};
 
 onMounted(() => {
   // 初始化操作
@@ -715,12 +785,44 @@ onMounted(() => {
   overflow: hidden;
   background-color: #f0f2f5;
   margin-right: 15px;
+  position: relative;
 }
 
 .profile-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  cursor: pointer;
+}
+
+.avatar-upload-overlay span {
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+
+.avatar-wrapper:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
+.upload-avatar-btn {
+  margin-left: 10px;
+  height: 32px;
+  padding: 0 15px;
 }
 
 .avatar-label {
@@ -898,14 +1000,6 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.order-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-right: 15px;
-  background-color: #fff;
-}
 
 .order-info {
   flex: 1;
@@ -1003,11 +1097,6 @@ onMounted(() => {
   margin: 0 5px;
 }
 
-.recharge-notice {
-  color: #909399;
-  font-size: 14px;
-  margin-top: 15px;
-}
 
 .recharge-notice p {
   margin: 5px 0;
@@ -1099,28 +1188,5 @@ onMounted(() => {
   font-size: 12px;
   padding: 4px 10px;
   height: auto;
-}
-
-.refresh-button {
-  cursor: pointer;
-  margin-left: auto;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f0f2f5;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.refresh-button:hover {
-  background-color: #e6f7ff;
-  transform: rotate(180deg);
-}
-
-.refresh-icon {
-  font-size: 20px;
-  color: #1890ff;
 }
 </style>
