@@ -34,10 +34,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="110" fixed="right">
           <template #default="scope">
             <el-button size="small" type="primary" @click="copyPhoneNumber(scope.row.phoneNumber)" style="margin-right: 8px;">复制号码</el-button>
-            <el-button size="small" type="danger" @click="View(scope.row)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -203,13 +202,6 @@ const stopPolling = () => {
 // 检查当前是否为短信页面
 const isCurrentRoute = () => {
   return route.path === "/sms";
-};
-
-// 查看手机号详情
-const View = (phone) => {
-  message.info(`查看号码ID ${phone.userProjectId} 的详情: ${phone.phoneNumber}`);
-  // 这里应该调用查看手机号详情的API
-  // TODO: 实现查看详情的API调用
 };
 
 // 删除短信
