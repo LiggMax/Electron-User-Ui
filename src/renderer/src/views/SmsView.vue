@@ -27,15 +27,16 @@
         <el-table-column prop="phoneNumber" width="140" label="手机号码" />
         <el-table-column prop="location" width="100" label="号码归属地" />
         <el-table-column prop="createdAt" width="180" label="购买时间" />
-        <el-table-column prop="status" label="状态">
+        <el-table-column prop="status" label="状态" min-width="90">
           <template #default="scope">
             <el-tag :type="scope.row.status === 0 ? 'info' : 'success'">
               {{ scope.row.status === 0 ? '未使用' : '已使用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
+            <el-button size="small" type="primary" @click="copyPhoneNumber(scope.row.phoneNumber)" style="margin-right: 8px;">复制号码</el-button>
             <el-button size="small" type="danger" @click="View(scope.row)">查看</el-button>
           </template>
         </el-table-column>
@@ -204,12 +205,6 @@ const isCurrentRoute = () => {
   return route.path === "/sms";
 };
 
-// 根据手机号获取项目名称
-const getProjectByPhone = (phoneNumber) => {
-  const phone = phoneList.value.find(p => p.phoneNumber.toString() === phoneNumber);
-  return phone ? phone.projectName : "未知项目";
-};
-
 // 查看手机号详情
 const View = (phone) => {
   message.info(`查看号码ID ${phone.userProjectId} 的详情: ${phone.phoneNumber}`);
@@ -234,6 +229,23 @@ const copySmsCode = (code) => {
   navigator.clipboard.writeText(code)
     .then(() => {
       message.success("验证码已复制到剪贴板");
+    })
+    .catch(err => {
+      console.error("复制失败:", err);
+    });
+};
+
+// 复制手机号码
+const copyPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber) {
+    message.error("手机号码为空");
+    return;
+  }
+
+  // 使用clipboard API复制文本
+  navigator.clipboard.writeText(phoneNumber)
+    .then(() => {
+      message.success("手机号码已复制到剪贴板");
     })
     .catch(err => {
       console.error("复制失败:", err);
@@ -331,19 +343,8 @@ watch(() => route.path, (newPath) => {
 
 
 /* 自定义表头样式 */
-:deep(.el-table__header) {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-}
 
-:deep(.el-table th.el-table__cell) {
-  background-color: rgba(97, 97, 97, 0.2) !important;
-  color: #606266;
-  font-weight: bold;
-}
-
-:deep(.el-table--border th.el-table__cell) {
-  border-color: #ebeef5;
-}
+/* 固定列样式 */
 
 /* 用户信息区域 */
 .user-info-section {
