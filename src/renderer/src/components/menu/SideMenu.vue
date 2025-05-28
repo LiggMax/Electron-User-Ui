@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <div class="logo draggable">
-      <span>客户端平台</span>
+      <span class="logo-text">长虹国际接码平台</span>
     </div>
     <div class="menu-items">
       <div
@@ -130,7 +130,9 @@ const handleMenuClick = (item) => {
   text-align: center;
   margin-bottom: 10px;
 }
-
+.logo-text{
+  font-size: 16px;
+}
 .menu-items {
   display: flex;
   flex-direction: column;
