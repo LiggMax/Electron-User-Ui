@@ -59,7 +59,7 @@
       </div>
       <div class="service-phone">
         <div class="phone-container">
-          <h3>1213800123</h3>
+          <h3>886917446962</h3>
           <el-button type="primary" size="small" class="copy-btn" @click="copyPhoneNumber">
             <el-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M4 16V4a2 2 0 0 1 2-2h10"></path></svg></el-icon>
             复制
@@ -120,21 +120,14 @@ const showCustomerService = () => {
 
 // 复制电话号码
 const copyPhoneNumber = () => {
-  const phoneNumber = '1213800123';
+  const phoneNumber = '+886917446962';
   navigator.clipboard.writeText(phoneNumber).then(() => {
     // 使用Element Plus的消息提示
-    Message({
-      message: '电话号码已复制到剪贴板',
-      type: 'success',
-      duration: 2000
-    });
-  }).catch(err => {
-    console.error('复制失败:', err);
-    Message({
-      message: '复制失败，请手动复制',
-      type: 'error',
-      duration: 2000
-    });
+    Message.success("电话号码已复制到剪贴板");
+    // 可选：关闭弹窗
+    setTimeout(() => {
+      customerServiceDialogVisible.value = false;
+    }, 1000);
   });
 };
 
@@ -368,21 +361,65 @@ onMounted(() => {
   font-size: 24px;
   color: #409EFF;
   margin: 0;
+  font-weight: 500;
+  letter-spacing: 1px;
 }
 
 .phone-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
+  padding: 15px 25px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e6f0ff 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
 }
 
 .copy-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #409EFF 0%, #53a8ff 100%);
+  border: none;
+  box-shadow: 0 2px 6px rgba(64, 158, 255, 0.3);
 }
 
+.copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+}
+
+.copy-btn:active {
+  transform: translateY(0);
+}
+
+/* 优化弹窗样式 */
+:deep(.el-dialog) {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  background: linear-gradient(135deg, #409EFF 0%, #53a8ff 100%);
+  padding: 16px 20px;
+}
+
+:deep(.el-dialog__title) {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+:deep(.el-dialog__headerbtn .el-dialog__close) {
+  color: white;
+}
+
+:deep(.el-dialog__body) {
+  padding: 30px 20px;
+}
 
 </style>
