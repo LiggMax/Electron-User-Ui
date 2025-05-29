@@ -30,11 +30,6 @@
                   <div class="region-price">¥ 0.2</div>
                 </div>
                 <div class="region-actions">
-                  <div class="quantity-control">
-                    <button class="qty-btn decrease" @click="decreaseQuantity(region)">-</button>
-                    <input type="text" v-model="region.quantity" class="qty-input" disabled>
-                    <button class="qty-btn increase" @click="increaseQuantity(region)">+</button>
-                  </div>
                   <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
                         :disabled="region.phoneCount <= 0"
                         @click="buyRegion(region)">
@@ -256,28 +251,6 @@ const getProjectRegions = async (projectId) => {
   flex-direction: column;
 }
 
-/* 过渡动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(30px);
-  opacity: 0;
-}
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -412,33 +385,6 @@ const getProjectRegions = async (projectId) => {
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
-}
-
-.quantity-control {
-  display: flex;
-  align-items: center;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.qty-btn {
-  width: 30px;
-  height: 28px;
-  background-color: #f5f7fa;
-  border: none;
-  color: #606266;
-  cursor: pointer;
-}
-
-.qty-input {
-  width: 40px;
-  height: 28px;
-  border: none;
-  border-left: 1px solid #dcdfe6;
-  border-right: 1px solid #dcdfe6;
-  text-align: center;
-  font-size: 14px;
 }
 
 .buy-btn {
