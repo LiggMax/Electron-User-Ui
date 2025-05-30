@@ -23,8 +23,8 @@
         <el-table-column label="序号" width="70">
           <template #default="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
-        <el-table-column prop="projectName" width="90" label="项目" />
         <el-table-column prop="phoneNumber" width="140" label="手机号码" />
+        <el-table-column prop="projectName" width="90" label="项目" />
         <el-table-column prop="location" width="100" label="号码归属地" />
         <el-table-column prop="createdAt" width="180" label="购买时间" />
         <el-table-column prop="status" label="状态" min-width="90">

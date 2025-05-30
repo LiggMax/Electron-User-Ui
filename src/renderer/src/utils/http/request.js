@@ -115,7 +115,6 @@ instance.interceptors.response.use(
       if (err.response.status === 429) {
         message.error('请求过于频繁，请稍后再试');
       } else if (err.response.status === 401) {
-        // ElMessage.error('请先登录');
         //清除token
         userTokenStore().removeToken();
         //跳转到登录页面
