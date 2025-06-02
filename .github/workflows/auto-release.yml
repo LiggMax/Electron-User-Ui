@@ -83,16 +83,42 @@ jobs:
             exit 1
           fi
           
+          echo "开始准备上传文件..."
+          echo "原文件: ${{ env.EXE_FILE }}"
+          
+          # 检查文件大小
+          file_size=$(stat -f%z "${{ env.EXE_FILE }}" 2>/dev/null || stat -c%s "${{ env.EXE_FILE }}")
+          echo "文件大小: $file_size bytes ($(($file_size / 1024 / 1024)) MB)"
+          
+          # 如果文件大于100MB，进行压缩
+          if [ $file_size -gt 104857600 ]; then
+            echo "文件较大，正在压缩..."
+            original_file="${{ env.EXE_FILE }}"
+            compressed_file="${original_file}.gz"
+            gzip -c "$original_file" > "$compressed_file"
+            upload_file="$compressed_file"
+            echo "压缩后文件: $upload_file"
+            
+            # 检查压缩后大小
+            compressed_size=$(stat -f%z "$compressed_file" 2>/dev/null || stat -c%s "$compressed_file")
+            echo "压缩后大小: $compressed_size bytes ($(($compressed_size / 1024 / 1024)) MB)"
+          else
+            upload_file="${{ env.EXE_FILE }}"
+          fi
+          
           echo "开始上传文件到后端服务器..."
           echo "服务器地址: ${{ vars.BACKEND_SERVER_URL }}"
           echo "版本号: ${{ env.APP_VERSION }}"
           echo "更新信息: ${{ env.RELEASE_NOTES }}"
+          echo "上传文件: $upload_file"
           
-          # 使用curl上传文件到后端接口
+          # 使用curl上传文件到后端接口，增加超时时间
           response=$(curl -s -w "%{http_code}" \
+            --connect-timeout 30 \
+            --max-time 600 \
             -X POST \
             -H "Authorization: ${{ secrets.BACKEND_AUTH_TOKEN }}" \
-            -F "appFile=@${{ env.EXE_FILE }}" \
+            -F "appFile=@$upload_file" \
             -F "version=${{ env.APP_VERSION }}" \
             -F "releaseNotes=${{ env.RELEASE_NOTES }}" \
             "${{ vars.BACKEND_SERVER_URL }}/api/version/upload")
@@ -108,6 +134,16 @@ jobs:
           else
             echo "❌ 文件上传失败，HTTP状态码: $http_code"
             echo "响应内容: $response_body"
+            
+            # 如果是413错误，给出详细说明
+            if [ "$http_code" -eq 413 ]; then
+              echo ""
+              echo "📋 413错误解决方案："
+              echo "1. 检查nginx配置中的client_max_body_size设置"
+              echo "2. 确保服务器支持大文件上传"
+              echo "3. 文件大小: $(($file_size / 1024 / 1024)) MB"
+            fi
+            
             exit 1
           fi
 

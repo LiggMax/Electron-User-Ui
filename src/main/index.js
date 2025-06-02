@@ -1,8 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, autoUpdater, dialog } from "electron";
 import { join } from "path";
 import icon from "../../resources/icon.png?asset";
-import { autoUpdater } from "electron-updater";
 
+// 移除update-electron-app，使用自定义的autoUpdater
+// 配置更新服务器（调用后端API）
+const server = process.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 // 修改utils导入方式，使用try/catch处理可能的导入错误
 let electronApp, optimizer, is;
@@ -12,7 +14,7 @@ try {
   electronApp = utils.electronApp;
   optimizer = utils.optimizer;
   is = utils.is;
-} catch (error) {
+} catch {
   console.error("Failed to load @electron-toolkit/utils from normal path, trying alternative path");
   try {
     // 如果正常导入失败，尝试从extraResources中导入
@@ -37,7 +39,7 @@ try {
     };
 
     optimizer = {
-      watchWindowShortcuts: (window) => {
+      watchWindowShortcuts: () => {
         // 简化版的快捷键处理
       }
     };
@@ -126,34 +128,26 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on("ping", () => console.log("pong"));
 
-
-  // 添加IPC处理程序，允许渲染进程请求检查更新
-  // ipcMain.on('check-for-updates', () => {
-  //   // 仅在打包后的应用中检查更新
-  //   if (!app.isPackaged) {
-  //     console.log('开发环境中不检查更新');
-  //     return;
-  //   }
-  //   console.log('手动检查更新...');
-  //   autoUpdater.checkForUpdates();
-  // });
-
-  // 添加IPC处理程序，允许渲染进程请求退出并安装更新
-  ipcMain.on('quit-and-install', () => {
-    console.log('退出并安装更新...');
-    autoUpdater.quitAndInstall(false, true);
+  // 手动检查更新（调用后端API）
+  ipcMain.on('check-for-updates', () => {
+    console.log('手动检查更新请求');
+    checkForUpdatesFromAPI();
   });
 
-  createWindow();
+  // 设置自动更新器
+  setupAutoUpdater();
 
-  // 应用启动后自动检查更新
-  if (app.isPackaged) {
-    // 延迟几秒检查，确保应用已完全启动
-    setTimeout(() => {
-      console.log('自动检查更新...');
-      autoUpdater.checkForUpdates();
-    }, 3000);
-  }
+  // 启动时检查更新（延迟5秒，避免影响启动速度）
+  setTimeout(() => {
+    checkForUpdatesFromAPI();
+  }, 5000);
+
+  // 每小时自动检查一次更新
+  setInterval(() => {
+    checkForUpdatesFromAPI();
+  }, 60 * 60 * 1000); // 1小时
+
+  createWindow();
 
   app.on("activate", function() {
     // On macOS it's common to re-create a window in the app when the
@@ -245,3 +239,366 @@ ipcMain.handle("api-request", async (_event, { url, method = "GET", data, header
     };
   }
 });
+
+// 自动更新配置和逻辑
+function setupAutoUpdater() {
+  // 只在生产环境启用自动更新
+  if (is.dev) {
+    console.log('开发环境，跳过自动更新配置');
+    return;
+  }
+
+  // autoUpdater事件监听
+  autoUpdater.on('checking-for-update', () => {
+    console.log('正在检查更新...');
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('发现新版本:', info);
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('已是最新版本:', info);
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('自动更新错误:', err);
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "下载速度: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - 已下载 ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    console.log(log_message);
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('更新下载完成:', info);
+    
+    // 显示更新对话框
+    const dialogOpts = {
+      type: 'info',
+      buttons: ['立即重启', '稍后'],
+      title: '应用程序更新',
+      message: '新版本已下载完成',
+      detail: '新版本已经下载完成，重启应用程序以应用更新。'
+    };
+
+    dialog.showMessageBox(dialogOpts).then((returnValue) => {
+      if (returnValue.response === 0) {
+        autoUpdater.quitAndInstall();
+      }
+    });
+  });
+}
+
+// 调用后端API检查更新
+async function checkForUpdatesFromAPI() {
+  try {
+    const currentVersion = app.getVersion();
+    console.log('当前版本:', currentVersion);
+    
+    // 通知渲染进程开始检查更新
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-checking');
+    });
+    
+    const axios = require("axios");
+    const response = await axios.get(`${server}/version/check`, {
+      params: { version: currentVersion },
+      timeout: 10000
+    });
+
+    if (response.data && response.data.code === 200 && response.data.data && response.data.data.length > 0) {
+      const latestVersion = response.data.data[0];
+      console.log('检查到新版本:', latestVersion);
+      
+      // 比较版本号
+      if (isVersionNewer(latestVersion.version, currentVersion)) {
+        console.log('发现新版本，准备下载更新');
+        
+        // 通知渲染进程发现新版本
+        BrowserWindow.getAllWindows().forEach(win => {
+          win.webContents.send('update-available', latestVersion);
+        });
+        
+        // 显示更新提示
+        const dialogOpts = {
+          type: 'info',
+          buttons: ['立即更新', '稍后提醒'],
+          title: '发现新版本',
+          message: `发现新版本 ${latestVersion.version}`,
+          detail: `更新内容：\n${latestVersion.releaseNotes}\n\n是否立即下载并安装更新？`
+        };
+
+        const result = await dialog.showMessageBox(dialogOpts);
+        if (result.response === 0) {
+          // 用户选择立即更新，开始下载
+          await downloadAndInstallUpdate(latestVersion);
+        }
+      } else {
+        console.log('当前已是最新版本');
+        // 通知渲染进程没有更新
+        BrowserWindow.getAllWindows().forEach(win => {
+          win.webContents.send('update-not-available');
+        });
+      }
+    } else {
+      console.log('没有发现新版本');
+      // 通知渲染进程没有更新
+      BrowserWindow.getAllWindows().forEach(win => {
+        win.webContents.send('update-not-available');
+      });
+    }
+  } catch (error) {
+    console.error('检查更新失败:', error);
+    // 通知渲染进程更新检查失败
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-error', error.message);
+    });
+  }
+}
+
+// 下载并安装更新
+async function downloadAndInstallUpdate(versionInfo) {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const axios = require('axios');
+    
+    // 创建下载目录
+    const downloadDir = path.join(app.getPath('temp'), 'app-updates');
+    if (!fs.existsSync(downloadDir)) {
+      fs.mkdirSync(downloadDir, { recursive: true });
+    }
+    
+    // 根据平台确定文件扩展名
+    const platform = process.platform;
+    let fileName = `update-${versionInfo.version}`;
+    if (platform === 'win32') {
+      fileName += '.exe';
+    } else if (platform === 'darwin') {
+      fileName += '.dmg';
+    } else {
+      fileName += '.AppImage';
+    }
+    
+    const filePath = path.join(downloadDir, fileName);
+    
+    // 显示下载进度对话框
+    let progressWindow = new BrowserWindow({
+      width: 400,
+      height: 200,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      alwaysOnTop: true,
+      frame: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false
+      }
+    });
+    
+    // 加载进度页面HTML
+    await progressWindow.loadURL(`data:text/html;charset=utf-8,
+      <html>
+        <head>
+          <title>下载更新</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+            .progress-container { margin: 20px 0; }
+            .progress-bar { width: 100%; height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden; }
+            .progress-fill { height: 100%; background: #4CAF50; width: 0%; transition: width 0.3s; }
+            .status { margin: 10px 0; color: #666; }
+          </style>
+        </head>
+        <body>
+          <h2>正在下载更新...</h2>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress"></div>
+            </div>
+          </div>
+          <div class="status" id="status">准备下载...</div>
+          <div id="speed"></div>
+        </body>
+      </html>
+    `);
+    
+    console.log('开始下载更新文件:', versionInfo.downloadUrl);
+    
+    // 创建文件写入流
+    const writer = fs.createWriteStream(filePath);
+    
+    // 下载文件
+    const response = await axios({
+      method: 'GET',
+      url: versionInfo.downloadUrl,
+      responseType: 'stream',
+      timeout: 300000, // 5分钟超时
+    });
+    
+    const totalLength = parseInt(response.headers['content-length'] || '0');
+    let downloadedLength = 0;
+    let startTime = Date.now();
+    
+    response.data.on('data', (chunk) => {
+      downloadedLength += chunk.length;
+      const progress = totalLength > 0 ? (downloadedLength / totalLength * 100) : 0;
+      const elapsed = (Date.now() - startTime) / 1000;
+      const speed = downloadedLength / elapsed;
+      
+      const progressInfo = {
+        percent: progress,
+        downloadedBytes: downloadedLength,
+        totalBytes: totalLength,
+        bytesPerSecond: speed
+      };
+      
+      // 通知渲染进程下载进度
+      BrowserWindow.getAllWindows().forEach(win => {
+        win.webContents.send('update-download-progress', progressInfo);
+      });
+      
+      // 更新进度窗口
+      progressWindow.webContents.executeJavaScript(`
+        document.getElementById('progress').style.width = '${progress.toFixed(1)}%';
+        document.getElementById('status').textContent = '已下载: ${(downloadedLength / 1024 / 1024).toFixed(1)} MB / ${(totalLength / 1024 / 1024).toFixed(1)} MB (${progress.toFixed(1)}%)';
+        document.getElementById('speed').textContent = '下载速度: ${(speed / 1024 / 1024).toFixed(1)} MB/s';
+      `).catch(() => {
+        // 忽略窗口已关闭的错误
+      });
+    });
+    
+    response.data.pipe(writer);
+    
+    await new Promise((resolve, reject) => {
+      writer.on('finish', resolve);
+      writer.on('error', reject);
+    });
+    
+    console.log('下载完成:', filePath);
+    
+    // 通知渲染进程下载完成
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-downloaded', { 
+        filePath: filePath, 
+        version: versionInfo.version 
+      });
+    });
+    
+    // 更新进度窗口
+    await progressWindow.webContents.executeJavaScript(`
+      document.querySelector('h2').textContent = '下载完成！';
+      document.getElementById('status').textContent = '正在准备安装...';
+    `);
+    
+    setTimeout(() => {
+      progressWindow.close();
+    }, 2000);
+    
+    // 安装更新
+    await installUpdate(filePath);
+    
+  } catch (error) {
+    console.error('下载更新失败:', error);
+    
+    // 通知渲染进程下载失败
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-error', error.message);
+    });
+    
+    dialog.showErrorBox('更新失败', `下载更新时发生错误: ${error.message}`);
+  }
+}
+
+// 安装更新
+async function installUpdate(filePath) {
+  try {
+    const { execFile, spawn } = require('child_process');
+    const platform = process.platform;
+    
+    console.log('开始安装更新:', filePath);
+    
+    // 显示安装确认对话框
+    const confirmResult = await dialog.showMessageBox({
+      type: 'question',
+      buttons: ['立即安装', '取消'],
+      title: '准备安装更新',
+      message: '更新文件已下载完成',
+      detail: '应用程序将会关闭并安装新版本。是否继续？'
+    });
+    
+    if (confirmResult.response !== 0) {
+      return;
+    }
+    
+    if (platform === 'win32') {
+      // Windows: 启动安装程序
+      spawn(filePath, ['/S'], { 
+        detached: true, 
+        stdio: 'ignore' 
+      });
+      
+      // 关闭当前应用
+      setTimeout(() => {
+        app.quit();
+      }, 1000);
+      
+    } else if (platform === 'darwin') {
+      // macOS: 打开DMG文件
+      const { exec } = require('child_process');
+      exec(`open "${filePath}"`, (error) => {
+        if (error) {
+          console.error('打开DMG失败:', error);
+          dialog.showErrorBox('安装失败', '无法打开安装文件');
+        } else {
+          dialog.showMessageBox({
+            type: 'info',
+            title: '请手动安装',
+            message: '已打开安装文件，请手动完成安装过程'
+          });
+        }
+      });
+      
+    } else {
+      // Linux: 启动AppImage
+      execFile('chmod', ['+x', filePath], (error) => {
+        if (error) {
+          console.error('设置执行权限失败:', error);
+          return;
+        }
+        
+        spawn(filePath, [], { 
+          detached: true, 
+          stdio: 'ignore' 
+        });
+        
+        setTimeout(() => {
+          app.quit();
+        }, 1000);
+      });
+    }
+    
+  } catch (error) {
+    console.error('安装更新失败:', error);
+    dialog.showErrorBox('安装失败', `安装更新时发生错误: ${error.message}`);
+  }
+}
+
+// 版本比较函数
+function isVersionNewer(newVersion, currentVersion) {
+  const newParts = newVersion.split('.').map(Number);
+  const currentParts = currentVersion.split('.').map(Number);
+  
+  for (let i = 0; i < Math.max(newParts.length, currentParts.length); i++) {
+    const newPart = newParts[i] || 0;
+    const currentPart = currentParts[i] || 0;
+    
+    if (newPart > currentPart) return true;
+    if (newPart < currentPart) return false;
+  }
+  
+  return false;
+}
