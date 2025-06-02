@@ -215,7 +215,6 @@ const getProjectList = async () => {
     countryOptions.value = Array.from(uniqueCountries);
   } catch (error) {
     console.error('获取项目列表失败:', error);
-    message.error('获取项目列表失败');
   }
 };
 

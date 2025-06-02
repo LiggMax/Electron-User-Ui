@@ -40,8 +40,79 @@ jobs:
             dist/*.exe
           retention-days: 5
 
-  publish-release:
+  upload-to-backend:
     needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 获取项目版本号和更新信息
+        id: get_info
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "版本号: $VERSION"
+          
+          # 获取最新的提交信息作为更新内容
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          # 限制长度并处理特殊字符
+          RELEASE_NOTES=$(echo "$COMMIT_MESSAGE" | head -c 100 | tr -d '"' | tr -d "'")
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "更新信息: $RELEASE_NOTES"
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: electron-app-windows
+          path: dist
+
+      - name: 显示构建产物结构
+        run: |
+          ls -la dist/
+          # 获取exe文件名
+          EXE_FILE=$(find dist/ -name "*.exe" -type f | head -n 1)
+          echo "EXE_FILE=$EXE_FILE" >> $GITHUB_ENV
+          echo "找到的执行文件: $EXE_FILE"
+
+      - name: 上传到后端服务器
+        run: |
+          if [ -z "${{ env.EXE_FILE }}" ]; then
+            echo "错误: 未找到exe文件"
+            exit 1
+          fi
+          
+          echo "开始上传文件到后端服务器..."
+          echo "服务器地址: ${{ vars.BACKEND_SERVER_URL }}"
+          echo "版本号: ${{ env.APP_VERSION }}"
+          echo "更新信息: ${{ env.RELEASE_NOTES }}"
+          
+          # 使用curl上传文件到后端接口
+          response=$(curl -s -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: ${{ secrets.BACKEND_AUTH_TOKEN }}" \
+            -F "appFile=@${{ env.EXE_FILE }}" \
+            -F "version=${{ env.APP_VERSION }}" \
+            -F "releaseNotes=${{ env.RELEASE_NOTES }}" \
+            "${{ vars.BACKEND_SERVER_URL }}/api/version/upload")
+          
+          http_code="${response: -3}"
+          response_body="${response%???}"
+          
+          echo "HTTP状态码: $http_code"
+          echo "响应内容: $response_body"
+          
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ 文件上传成功！"
+          else
+            echo "❌ 文件上传失败，HTTP状态码: $http_code"
+            echo "响应内容: $response_body"
+            exit 1
+          fi
+
+  publish-release:
+    needs: [build, upload-to-backend]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -78,6 +149,8 @@ jobs:
             更新内容: 添加软件自动更新功能
             发布时间: ${{ github.event.head_commit.timestamp }}
             提交: ${{ github.sha }}
+            
+            **注意**: 此版本已自动上传到更新服务器，支持应用内自动更新。
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           draft: false
