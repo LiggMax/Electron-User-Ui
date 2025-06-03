@@ -1,4 +1,3 @@
-import request from "../utils/http/request";
 /**
  * 手动触发检查更新（调用主进程）
  * 使用自定义的更新功能

@@ -1,32 +1,33 @@
 <template>
-  <div v-if="visible" class="simple-update-notification">
-    <div class="update-header">
-      <span class="update-title">{{ title }}</span>
-      <button @click="close" class="close-btn">×</button>
-    </div>
-    <div class="update-content">
-      <p class="update-message">{{ message }}</p>
+  <transition name="notification" appear>
+    <div v-if="visible" class="simple-update-notification">
+      <div class="update-header">
+        <span class="update-title">{{ title }}</span>
+        <button @click="close" class="close-btn">×</button>
+      </div>
+      <div class="update-content">
+        <p class="update-message">{{ message }}</p>
+        
+        <!-- 下载进度条 -->
+        <div v-if="showProgress" class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+          </div>
+          <div class="progress-info">
+            <span class="progress-text">{{ progress.toFixed(1) }}%</span>
+            <span v-if="downloadSpeed" class="download-speed">{{ downloadSpeed }}</span>
+          </div>
+        </div>
+      </div>
       
-      <!-- 下载进度条 -->
-      <div v-if="showProgress" class="progress-container">
-        <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: progress + '%' }"></div>
-        </div>
-        <div class="progress-info">
-          <span class="progress-text">{{ progress.toFixed(1) }}%</span>
-          <span v-if="downloadSpeed" class="download-speed">{{ downloadSpeed }}</span>
-        </div>
-        <div v-if="downloadSize" class="download-size">{{ downloadSize }}</div>
+      <!-- 操作按钮 -->
+      <div v-if="showButton" class="update-actions">
+        <button @click="handleAction" class="action-btn" :class="actionType">
+          {{ buttonText }}
+        </button>
       </div>
     </div>
-    
-    <!-- 操作按钮 -->
-    <div v-if="showButton" class="update-actions">
-      <button @click="handleAction" class="action-btn" :class="actionType">
-        {{ buttonText }}
-      </button>
-    </div>
-  </div>
+  </transition>
 </template>
 
 <script>
@@ -96,8 +97,7 @@ export default {
       
       // 没有更新
       ipc.on('update-not-available', () => {
-        this.showNotification('已是最新版本', '当前已是最新版本', false, false)
-        setTimeout(() => this.visible = false, 3000)
+        this.showNotification('已是最新版本', '当前已是最新版本', false, true, '知道了', 'close')
       })
       
       // 开始下载
@@ -123,8 +123,7 @@ export default {
       
       // 下载完成
       ipc.on('update-downloaded', () => {
-        this.showNotification('下载完成', '更新下载完成，正在准备安装...', false, false)
-        setTimeout(() => this.visible = false, 3000)
+        this.showNotification('下载完成', '更新下载完成，正在准备安装...', false, true, '知道了', 'close')
       })
       
       // 准备安装
@@ -134,8 +133,7 @@ export default {
       
       // 手动安装（macOS）
       ipc.on('update-manual-install', (event, data) => {
-        this.showNotification('请手动安装', data.message, false, false)
-        setTimeout(() => this.visible = false, 5000)
+        this.showNotification('请手动安装', data.message, false, true, '知道了', 'close')
       })
       
       // 更新错误
@@ -152,19 +150,19 @@ export default {
       this.buttonText = buttonText
       this.actionType = actionType
       this.visible = true
-      
-      // 自动隐藏逻辑
-      if (!showProgress && !showButton && actionType !== 'start-update') {
-        setTimeout(() => this.visible = false, 5000)
-      }
     },
     
     close() {
-      this.visible = false
-      this.progress = 0
-      this.updateInfo = null
-      this.downloadSpeed = ''
-      this.downloadSize = ''
+      // 立即隐藏，让Vue transition处理动画
+      this.visible = false;
+      
+      // 动画完成后清理数据
+      setTimeout(() => {
+        this.progress = 0;
+        this.updateInfo = null;
+        this.downloadSpeed = '';
+        this.downloadSize = '';
+      }, 300); // 等待动画完成
     },
     
     handleAction() {
@@ -186,14 +184,15 @@ export default {
         // 开始下载更新
         startDownloadUpdate(this.updateInfo);
         
-        // 延迟关闭，让用户看到反馈
-        setTimeout(() => {
-          this.close();
-        }, 1000);
+        // 不自动关闭，让用户看到下载进度
+        
       } else if (this.actionType === 'retry') {
         console.log('重试检查更新');
         // 重试检查更新
         triggerUpdateCheck();
+        this.close();
+      } else if (this.actionType === 'close') {
+        console.log('用户手动关闭通知');
         this.close();
       } else {
         console.log('未匹配的操作类型或缺少更新信息', {
@@ -229,9 +228,18 @@ export default {
 </script>
 
 <style scoped>
+/* Vue Transition 动画 */
+.notification-enter-active {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.notification-leave-active {
+  animation: slideOutToBottom 0.3s ease-in;
+}
+
 .simple-update-notification {
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
   width: 360px;
   max-width: 90vw;
@@ -239,18 +247,28 @@ export default {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   z-index: 9999;
-  animation: slideIn 0.3s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-@keyframes slideIn {
+@keyframes slideInFromBottom {
   from { 
-    transform: translateX(100%); 
+    transform: translateY(100%); 
     opacity: 0; 
   }
   to { 
-    transform: translateX(0); 
+    transform: translateY(0); 
     opacity: 1; 
+  }
+}
+
+@keyframes slideOutToBottom {
+  from { 
+    transform: translateY(0); 
+    opacity: 1; 
+  }
+  to { 
+    transform: translateY(100%); 
+    opacity: 0; 
   }
 }
 
@@ -372,12 +390,4 @@ export default {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-.action-btn.retry {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
-}
-
-.action-btn.retry:hover {
-  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-}
-</style> 
+</style>
