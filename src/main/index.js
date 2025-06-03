@@ -361,6 +361,8 @@ async function checkForUpdatesFromAPI() {
 
 // 下载并安装更新
 async function downloadAndInstallUpdate(versionInfo) {
+  let progressWindow = null; // 声明在函数顶部
+  
   try {
     const fs = require('fs');
     const path = require('path');
@@ -386,7 +388,7 @@ async function downloadAndInstallUpdate(versionInfo) {
     const filePath = path.join(downloadDir, fileName);
     
     // 显示下载进度对话框
-    let progressWindow = new BrowserWindow({
+    progressWindow = new BrowserWindow({
       width: 400,
       height: 200,
       resizable: false,
@@ -462,13 +464,23 @@ async function downloadAndInstallUpdate(versionInfo) {
       });
       
       // 更新进度窗口
-      progressWindow.webContents.executeJavaScript(`
-        document.getElementById('progress').style.width = '${progress.toFixed(1)}%';
-        document.getElementById('status').textContent = '已下载: ${(downloadedLength / 1024 / 1024).toFixed(1)} MB / ${(totalLength / 1024 / 1024).toFixed(1)} MB (${progress.toFixed(1)}%)';
-        document.getElementById('speed').textContent = '下载速度: ${(speed / 1024 / 1024).toFixed(1)} MB/s';
-      `).catch(() => {
-        // 忽略窗口已关闭的错误
-      });
+      if (progressWindow && !progressWindow.isDestroyed()) {
+        progressWindow.webContents.executeJavaScript(`
+          try {
+            const progressEl = document.getElementById('progress');
+            const statusEl = document.getElementById('status');
+            const speedEl = document.getElementById('speed');
+            
+            if (progressEl) progressEl.style.width = '${progress.toFixed(1)}%';
+            if (statusEl) statusEl.textContent = '已下载: ${(downloadedLength / 1024 / 1024).toFixed(1)} MB / ${(totalLength / 1024 / 1024).toFixed(1)} MB (${progress.toFixed(1)}%)';
+            if (speedEl) speedEl.textContent = '下载速度: ${(speed / 1024 / 1024).toFixed(1)} MB/s';
+          } catch (e) {
+            console.error('更新进度显示失败:', e);
+          }
+        `).catch((error) => {
+          console.error('执行进度更新脚本失败:', error);
+        });
+      }
     });
     
     response.data.pipe(writer);
@@ -488,21 +500,48 @@ async function downloadAndInstallUpdate(versionInfo) {
       });
     });
     
-    // 更新进度窗口
-    await progressWindow.webContents.executeJavaScript(`
-      document.querySelector('h2').textContent = '下载完成！';
-      document.getElementById('status').textContent = '正在准备安装...';
-    `);
-    
-    setTimeout(() => {
-      progressWindow.close();
-    }, 2000);
+    // 更新进度窗口（如果窗口还存在的话）
+    try {
+      if (progressWindow && !progressWindow.isDestroyed()) {
+        await progressWindow.webContents.executeJavaScript(`
+          try {
+            const h2 = document.querySelector('h2');
+            const status = document.getElementById('status');
+            if (h2) h2.textContent = '下载完成！';
+            if (status) status.textContent = '正在准备安装...';
+          } catch (e) {
+            console.error('更新进度窗口内容失败:', e);
+          }
+        `);
+        
+        // 延迟关闭窗口
+        setTimeout(() => {
+          if (progressWindow && !progressWindow.isDestroyed()) {
+            progressWindow.close();
+            progressWindow = null;
+          }
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('更新进度窗口时出错:', error);
+      // 如果更新进度窗口失败，直接关闭窗口
+      if (progressWindow && !progressWindow.isDestroyed()) {
+        progressWindow.close();
+        progressWindow = null;
+      }
+    }
     
     // 安装更新
     await installUpdate(filePath);
     
   } catch (error) {
     console.error('下载更新失败:', error);
+    
+    // 关闭进度窗口
+    if (progressWindow && !progressWindow.isDestroyed()) {
+      progressWindow.close();
+      progressWindow = null;
+    }
     
     // 通知渲染进程下载失败
     BrowserWindow.getAllWindows().forEach(win => {
