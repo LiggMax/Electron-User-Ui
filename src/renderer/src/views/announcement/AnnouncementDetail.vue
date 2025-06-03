@@ -141,7 +141,6 @@ onMounted(() => {
   font-size: 20px;
   color: #333;
   margin: 0;
-  text-align: center;
 }
 
 .announcement-content {

@@ -55,7 +55,7 @@
   >
     <div class="service-dialog-content">
       <div class="service-icon">
-        <img src="../assets/imgae/serve.png" alt="客服" />
+        <img src="../assets/svg/telegram.svg" alt="客服" />
       </div>
       <div class="service-phone">
         <div class="phone-container">
@@ -349,8 +349,8 @@ onMounted(() => {
 }
 
 .service-icon img {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
 }
 
 .service-phone {

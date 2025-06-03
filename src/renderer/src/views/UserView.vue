@@ -3,7 +3,7 @@
     <div class="profile-card">
       <div class="user-avatar-section">
         <div class="avatar-container">
-          <img :src="userInfo.userAvatar || userAvatar" alt="用户头像" class="user-avatar" />
+          <img :src="userInfo.userAvatar || userAvatar" alt="" class="user-avatar" />
         </div>
         <div class="user-basic-info">
           <div class="username">{{ userInfo.nickName || "用户昵称" }}</div>
@@ -41,22 +41,22 @@
           <div class="user-info-header">
             <span class="avatar-label">头像</span>
             <div class="avatar-wrapper">
-              <img :src="previewAvatar || userInfo.userAvatar || userAvatar" alt="用户头像" class="profile-avatar" />
+              <img :src="previewAvatar || userInfo.userAvatar || userAvatar" alt="" class="profile-avatar" />
               <div class="avatar-upload-overlay" @click="triggerFileInput">
                 <span>更换头像</span>
               </div>
-              <input 
-                type="file" 
-                ref="fileInput" 
-                style="display: none" 
-                accept="image/*" 
-                @change="handleFileChange" 
+              <input
+                type="file"
+                ref="fileInput"
+                style="display: none"
+                accept="image/*"
+                @change="handleFileChange"
               />
             </div>
-            <el-button 
-              v-if="selectedFile" 
-              type="primary" 
-              size="small" 
+            <el-button
+              v-if="selectedFile"
+              type="primary"
+              size="small"
               class="upload-avatar-btn"
               :loading="uploadingAvatar"
               @click="uploadAvatar"
@@ -120,7 +120,7 @@
                 <div class="collection-date">收藏于: {{ item.created_at.split("T")[0] }}</div>
               </div>
               <div class="collection-actions">
-                <button class="action-btn view-btn" >查看</button>
+                <button class="action-btn view-btn">查看</button>
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@
           <div v-else class="orders-grid">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
               <div class="order-info">
-                <h4>订单Id：{{ item.user_project_id }}</h4>
+                <h4>订单Id：{{ item.orders_id }}</h4>
                 <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
                 <div class="order-phone-number">号码：{{ formatPhoneNumber(item.phone_number) }}</div>
                 <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at) }}</div>
@@ -164,14 +164,17 @@
       <!-- 添加充值对话框 -->
       <el-dialog
         v-model="rechargeDialogVisible"
-        title="联系客服进行余额充值："
+        title="联系客服额充值："
         width="400px"
         :close-on-click-modal="false"
         center
       >
         <div class="recharge-dialog-content">
           <div class="recharge-info">
-            <h3>1213800123</h3>
+            <div class="account-info">
+              <span class="account-label">✈+</span>
+              <span class="account-number">1213800123</span>
+            </div>
           </div>
         </div>
         <template #footer>
@@ -226,7 +229,6 @@ import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
-import { Refresh } from "@element-plus/icons-vue";
 import {
   UserUpdateService,
   UserFavoriteService,
@@ -268,21 +270,21 @@ const triggerFileInput = () => {
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   if (!file) return;
-  
+
   // 验证文件类型
-  if (!file.type.startsWith('image/')) {
-    message.error('请选择图片文件');
+  if (!file.type.startsWith("image/")) {
+    message.error("请选择图片文件");
     return;
   }
-  
+
   // 验证文件大小（限制为2MB）
   if (file.size > 5 * 1024 * 1024) {
-    message.error('图片大小不能超过5MB');
+    message.error("图片大小不能超过5MB");
     return;
   }
-  
+
   selectedFile.value = file;
-  
+
   // 创建预览
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -294,26 +296,26 @@ const handleFileChange = (event) => {
 // 上传头像
 const uploadAvatar = async () => {
   if (!selectedFile.value) return;
-  
+
   uploadingAvatar.value = true;
-  
+
   try {
     // 直接使用文件对象上传
     await UserAvatarService(selectedFile.value);
-    
-    message.success('头像上传成功');
-    
+
+    message.success("头像上传成功");
+
     // 刷新用户信息
     const res = await UserInfoService();
     setUserInfo(res.data);
-    
+
     // 清除选择的文件
     selectedFile.value = null;
     previewAvatar.value = null;
-    fileInput.value.value = '';
+    fileInput.value.value = "";
   } catch (error) {
-    console.error('上传头像失败:', error);
-    message.error('上传头像失败，请稍后再试');
+    console.error("上传头像失败:", error);
+    message.error("上传头像失败，请稍后再试");
   } finally {
     uploadingAvatar.value = false;
   }
@@ -481,15 +483,6 @@ const formatPhoneNumber = (phoneNumber) => {
   const numStr = phoneNumber.toString();
   return `${numStr.slice(0, 3)} ${numStr.slice(3, 7)} ${numStr.slice(7)}`;
 };
-
-// 移除收藏
-const removeFavorite = (item) => {
-  message.success(`已移除收藏: ${item.project_name}`);
-  // 这里可以添加调用移除收藏API的逻辑
-  // 移除后刷新列表
-  getFavoriteList();
-};
-
 
 // 保存用户信息
 const saveUserInfo = async () => {
@@ -945,18 +938,8 @@ onMounted(() => {
   color: white;
 }
 
-.remove-btn {
-  background-color: #f5f5f5;
-  color: #666;
-}
-
 .view-btn:hover {
   background-color: #40a9ff;
-}
-
-.remove-btn:hover {
-  background-color: #f56c6c;
-  color: white;
 }
 
 /* 我的订单样式 */
@@ -1045,10 +1028,6 @@ onMounted(() => {
   padding: 30px 0;
 }
 
-/* 余额充值样式 */
-.my-balance {
-  background-color: #fff8e8;
-}
 
 .recharge-dialog-content {
   padding: 10px 0;
@@ -1056,19 +1035,6 @@ onMounted(() => {
 
 .recharge-info {
   text-align: center;
-}
-
-
-.account-number .label {
-  font-weight: bold;
-  color: #666;
-}
-
-.account-number .number {
-  font-size: 18px;
-  font-weight: bold;
-  color: #1890ff;
-  margin: 0 5px;
 }
 
 
@@ -1133,16 +1099,6 @@ onMounted(() => {
   border-color: #f78989;
 }
 
-/* 添加自定义样式使对话框标题左对齐 */
-:deep(.el-dialog__header) {
-  text-align: left;
-  padding-left: 20px;
-}
-
-:deep(.el-dialog__title) {
-  font-weight: bold;
-}
-
 .invitation-code {
   font-size: 14px;
   color: #606266;
@@ -1162,5 +1118,22 @@ onMounted(() => {
   font-size: 12px;
   padding: 4px 10px;
   height: auto;
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.account-label {
+  margin-right: 10px;
+}
+
+.account-number {
+  margin-left: 5px;
 }
 </style>
