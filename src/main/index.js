@@ -134,6 +134,20 @@ app.whenReady().then(() => {
     checkForUpdatesFromAPI();
   });
 
+  // 用户确认开始下载更新
+  ipcMain.on('start-download-update', (event, versionInfo) => {
+    console.log('=== 收到下载更新请求 ===');
+    console.log('versionInfo:', JSON.stringify(versionInfo, null, 2));
+    console.log('开始执行下载流程...');
+    
+    try {
+      downloadAndInstallUpdate(versionInfo);
+      console.log('下载流程启动成功');
+    } catch (error) {
+      console.error('启动下载流程时出错:', error);
+    }
+  });
+
   // 设置自动更新器
   setupAutoUpdater();
 
@@ -315,27 +329,13 @@ async function checkForUpdatesFromAPI() {
       
       // 比较版本号
       if (isVersionNewer(latestVersion.version, currentVersion)) {
-        console.log('发现新版本，准备下载更新');
+        console.log('发现新版本，通知渲染进程');
         
-        // 通知渲染进程发现新版本
+        // 直接通知渲染进程发现新版本，不显示对话框
         BrowserWindow.getAllWindows().forEach(win => {
           win.webContents.send('update-available', latestVersion);
         });
         
-        // 显示更新提示
-        const dialogOpts = {
-          type: 'info',
-          buttons: ['立即更新', '稍后提醒'],
-          title: '发现新版本',
-          message: `发现新版本 ${latestVersion.version}`,
-          detail: `更新内容：\n${latestVersion.releaseNotes}\n\n是否立即下载并安装更新？`
-        };
-
-        const result = await dialog.showMessageBox(dialogOpts);
-        if (result.response === 0) {
-          // 用户选择立即更新，开始下载
-          await downloadAndInstallUpdate(latestVersion);
-        }
       } else {
         console.log('当前已是最新版本');
         // 通知渲染进程没有更新
@@ -361,12 +361,17 @@ async function checkForUpdatesFromAPI() {
 
 // 下载并安装更新
 async function downloadAndInstallUpdate(versionInfo) {
-  let progressWindow = null; // 声明在函数顶部
-  
   try {
     const fs = require('fs');
     const path = require('path');
     const axios = require('axios');
+    
+    console.log('开始下载更新文件:', versionInfo.downloadUrl);
+    
+    // 通知渲染进程开始下载
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-download-start', versionInfo);
+    });
     
     // 创建下载目录
     const downloadDir = path.join(app.getPath('temp'), 'app-updates');
@@ -386,49 +391,6 @@ async function downloadAndInstallUpdate(versionInfo) {
     }
     
     const filePath = path.join(downloadDir, fileName);
-    
-    // 显示下载进度对话框
-    progressWindow = new BrowserWindow({
-      width: 400,
-      height: 200,
-      resizable: false,
-      minimizable: false,
-      maximizable: false,
-      alwaysOnTop: true,
-      frame: true,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false
-      }
-    });
-    
-    // 加载进度页面HTML
-    await progressWindow.loadURL(`data:text/html;charset=utf-8,
-      <html>
-        <head>
-          <title>下载更新</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-            .progress-container { margin: 20px 0; }
-            .progress-bar { width: 100%; height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden; }
-            .progress-fill { height: 100%; background: #4CAF50; width: 0%; transition: width 0.3s; }
-            .status { margin: 10px 0; color: #666; }
-          </style>
-        </head>
-        <body>
-          <h2>正在下载更新...</h2>
-          <div class="progress-container">
-            <div class="progress-bar">
-              <div class="progress-fill" id="progress"></div>
-            </div>
-          </div>
-          <div class="status" id="status">准备下载...</div>
-          <div id="speed"></div>
-        </body>
-      </html>
-    `);
-    
-    console.log('开始下载更新文件:', versionInfo.downloadUrl);
     
     // 创建文件写入流
     const writer = fs.createWriteStream(filePath);
@@ -458,29 +420,10 @@ async function downloadAndInstallUpdate(versionInfo) {
         bytesPerSecond: speed
       };
       
-      // 通知渲染进程下载进度
+      // 只通知渲染进程下载进度
       BrowserWindow.getAllWindows().forEach(win => {
         win.webContents.send('update-download-progress', progressInfo);
       });
-      
-      // 更新进度窗口
-      if (progressWindow && !progressWindow.isDestroyed()) {
-        progressWindow.webContents.executeJavaScript(`
-          try {
-            const progressEl = document.getElementById('progress');
-            const statusEl = document.getElementById('status');
-            const speedEl = document.getElementById('speed');
-            
-            if (progressEl) progressEl.style.width = '${progress.toFixed(1)}%';
-            if (statusEl) statusEl.textContent = '已下载: ${(downloadedLength / 1024 / 1024).toFixed(1)} MB / ${(totalLength / 1024 / 1024).toFixed(1)} MB (${progress.toFixed(1)}%)';
-            if (speedEl) speedEl.textContent = '下载速度: ${(speed / 1024 / 1024).toFixed(1)} MB/s';
-          } catch (e) {
-            console.error('更新进度显示失败:', e);
-          }
-        `).catch((error) => {
-          console.error('执行进度更新脚本失败:', error);
-        });
-      }
     });
     
     response.data.pipe(writer);
@@ -500,55 +443,16 @@ async function downloadAndInstallUpdate(versionInfo) {
       });
     });
     
-    // 更新进度窗口（如果窗口还存在的话）
-    try {
-      if (progressWindow && !progressWindow.isDestroyed()) {
-        await progressWindow.webContents.executeJavaScript(`
-          try {
-            const h2 = document.querySelector('h2');
-            const status = document.getElementById('status');
-            if (h2) h2.textContent = '下载完成！';
-            if (status) status.textContent = '正在准备安装...';
-          } catch (e) {
-            console.error('更新进度窗口内容失败:', e);
-          }
-        `);
-        
-        // 延迟关闭窗口
-        setTimeout(() => {
-          if (progressWindow && !progressWindow.isDestroyed()) {
-            progressWindow.close();
-            progressWindow = null;
-          }
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('更新进度窗口时出错:', error);
-      // 如果更新进度窗口失败，直接关闭窗口
-      if (progressWindow && !progressWindow.isDestroyed()) {
-        progressWindow.close();
-        progressWindow = null;
-      }
-    }
-    
-    // 安装更新
+    // 自动开始安装
     await installUpdate(filePath);
-    
+     
   } catch (error) {
     console.error('下载更新失败:', error);
-    
-    // 关闭进度窗口
-    if (progressWindow && !progressWindow.isDestroyed()) {
-      progressWindow.close();
-      progressWindow = null;
-    }
     
     // 通知渲染进程下载失败
     BrowserWindow.getAllWindows().forEach(win => {
       win.webContents.send('update-error', error.message);
     });
-    
-    dialog.showErrorBox('更新失败', `下载更新时发生错误: ${error.message}`);
   }
 }
 
@@ -560,18 +464,10 @@ async function installUpdate(filePath) {
     
     console.log('开始安装更新:', filePath);
     
-    // 显示安装确认对话框
-    const confirmResult = await dialog.showMessageBox({
-      type: 'question',
-      buttons: ['立即安装', '取消'],
-      title: '准备安装更新',
-      message: '更新文件已下载完成',
-      detail: '应用程序将会关闭并安装新版本。是否继续？'
+    // 通知渲染进程准备安装
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-installing', { filePath });
     });
-    
-    if (confirmResult.response !== 0) {
-      return;
-    }
     
     if (platform === 'win32') {
       // Windows: 启动安装程序
@@ -580,10 +476,10 @@ async function installUpdate(filePath) {
         stdio: 'ignore' 
       });
       
-      // 关闭当前应用
+      // 延迟关闭当前应用
       setTimeout(() => {
         app.quit();
-      }, 1000);
+      }, 2000);
       
     } else if (platform === 'darwin') {
       // macOS: 打开DMG文件
@@ -591,12 +487,15 @@ async function installUpdate(filePath) {
       exec(`open "${filePath}"`, (error) => {
         if (error) {
           console.error('打开DMG失败:', error);
-          dialog.showErrorBox('安装失败', '无法打开安装文件');
+          BrowserWindow.getAllWindows().forEach(win => {
+            win.webContents.send('update-error', '无法打开安装文件');
+          });
         } else {
-          dialog.showMessageBox({
-            type: 'info',
-            title: '请手动安装',
-            message: '已打开安装文件，请手动完成安装过程'
+          // 通知用户手动安装
+          BrowserWindow.getAllWindows().forEach(win => {
+            win.webContents.send('update-manual-install', { 
+              message: '已打开安装文件，请手动完成安装过程' 
+            });
           });
         }
       });
@@ -606,6 +505,9 @@ async function installUpdate(filePath) {
       execFile('chmod', ['+x', filePath], (error) => {
         if (error) {
           console.error('设置执行权限失败:', error);
+          BrowserWindow.getAllWindows().forEach(win => {
+            win.webContents.send('update-error', '设置执行权限失败');
+          });
           return;
         }
         
@@ -616,13 +518,15 @@ async function installUpdate(filePath) {
         
         setTimeout(() => {
           app.quit();
-        }, 1000);
+        }, 2000);
       });
     }
     
   } catch (error) {
     console.error('安装更新失败:', error);
-    dialog.showErrorBox('安装失败', `安装更新时发生错误: ${error.message}`);
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-error', error.message);
+    });
   }
 }
 

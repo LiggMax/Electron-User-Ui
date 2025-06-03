@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import UpdateNotification from './components/UpdateNotification.vue';
+import SimpleUpdateNotification from './components/SimpleUpdateNotification.vue';
 
 const router = useRouter();
 
@@ -31,7 +31,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="app-container">
     <router-view />
-    <UpdateNotification />
+    <SimpleUpdateNotification />
   </div>
 </template>
 

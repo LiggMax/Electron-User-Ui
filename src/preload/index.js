@@ -17,6 +17,9 @@ const api = {
   checkForUpdates: () => {
     ipcRenderer.send('check-for-updates')
   },
+  startDownloadUpdate: (versionInfo) => {
+    ipcRenderer.send('start-download-update', versionInfo)
+  },
   quitAndInstall: () => {
     ipcRenderer.send('quit-and-install')
   },
