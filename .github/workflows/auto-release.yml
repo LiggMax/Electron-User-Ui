@@ -158,12 +158,26 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 获取项目版本号
+      - name: 获取项目版本号和发布信息
         id: package_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           echo "版本号: $VERSION"
+          
+          # 获取最新的提交信息作为更新内容
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          # 获取更详细的提交历史（自上个tag以来的变更）
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREVIOUS_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD | head -20)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s" --max-count=10)
+          fi
+          
+          # 保存到文件以避免特殊字符问题
+          echo "$CHANGELOG" > CHANGELOG.txt
+          echo "更新日志已保存到 CHANGELOG.txt"
 
       - name: 下载构建产物
         uses: actions/download-artifact@v4
@@ -171,24 +185,63 @@ jobs:
           name: electron-app-windows
           path: dist
 
-      - name: 显示构建产物结构
+      - name: 显示构建产物结构和文件信息
         run: |
           ls -la dist/
+          # 获取exe文件信息
+          EXE_FILE=$(find dist/ -name "*.exe" -type f | head -n 1)
+          if [ -n "$EXE_FILE" ]; then
+            file_size=$(stat -c%s "$EXE_FILE" 2>/dev/null || stat -f%z "$EXE_FILE")
+            file_size_mb=$(( file_size / 1024 / 1024 ))
+            echo "EXE_FILE=$EXE_FILE" >> $GITHUB_ENV
+            echo "FILE_SIZE_MB=${file_size_mb}" >> $GITHUB_ENV
+            echo "找到的执行文件: $EXE_FILE (${file_size_mb} MB)"
+          fi
 
-      - name: 创建发布
+      - name: 生成发布说明
+        run: |
+          cat > RELEASE_BODY.md << 'EOF'
+          ## 📦 版本 ${{ env.APP_VERSION }} 发布说明
+          
+          ### ✨ 更新内容
+          EOF
+          cat CHANGELOG.txt >> RELEASE_BODY.md
+          cat >> RELEASE_BODY.md << 'EOF'
+          
+          ### 📋 版本信息
+          - **版本号**: v${{ env.APP_VERSION }}
+          - **发布时间**: ${{ github.event.head_commit.timestamp }}
+          - **文件大小**: ${{ env.FILE_SIZE_MB }} MB
+          - **支持平台**: Windows 10/11 (x64)
+          - **提交哈希**: ${{ github.sha }}
+          
+          ### 🔄 自动更新支持
+          - ✅ 支持应用内自动更新
+          - ✅ 已自动上传到更新服务器
+          - ✅ 用户将收到更新通知
+          
+          ### 📥 下载说明
+          1. 下载下方的 `.exe` 文件
+          2. 以管理员权限运行安装程序
+          3. 如果已安装旧版本，程序会自动覆盖更新
+          
+          ### 🛠️ 技术支持
+          如果在安装或使用过程中遇到问题，请提交 Issue 或联系开发团队。
+          
+          ---
+          *此版本通过 GitHub Actions 自动构建和发布*
+          EOF
+
+      - name: 创建GitHub发布
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/*.exe"
           tag: v${{ env.APP_VERSION }}
-          name: 长虹国际管理介面 v${{ env.APP_VERSION }}
-          body: |
-            ### 版本 ${{ env.APP_VERSION }} 发布
-            更新内容: 添加软件自动更新功能
-            发布时间: ${{ github.event.head_commit.timestamp }}
-            提交: ${{ github.sha }}
-            
-            **注意**: 此版本已自动上传到更新服务器，支持应用内自动更新。
+          name: "🚀 v${{ env.APP_VERSION }}"
+          bodyFile: "RELEASE_BODY.md"
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           draft: false
           prerelease: false
+          generateReleaseNotes: false
+          makeLatest: true
