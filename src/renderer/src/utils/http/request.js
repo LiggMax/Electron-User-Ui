@@ -6,7 +6,6 @@ import message from "../message";
 
 // 从环境变量中获取API基础URL
 const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
-console.log(`[渲染进程] API基础URL: ${baseURL}`);
 
 // 判断是否为生产环境
 const isProd = import.meta.env.PROD;
