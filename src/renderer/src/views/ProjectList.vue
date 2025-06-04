@@ -147,26 +147,40 @@ const collectCard = (card) => {
 };
 
 // 购买成功回调
-const handleBuySuccess = (buyData) => {
-  console.log('购买数据:', buyData);
-  
-  // 更新项目列表中的可用数量
-  const { projectId, quantity, orderData } = buyData;
-  
-  // 找到对应的项目卡片并更新数量
-  const targetCard = cardList.value.find(card => card.projectId === projectId);
-  if (targetCard) {
-    // 减去购买的数量
-    targetCard.phoneCount = Math.max(0, targetCard.phoneCount - quantity);
+const handleBuySuccess = (buyData) =>
+  {
+    console.log('购买数据:', buyData);
+
+    // 更新项目列表中的可用数量
+    const { projectId, actualQuantity, orderData } = buyData;
+
+    // 找到对应的项目卡片并更新数量
+    const targetCard = cardList.value.find(card => card.projectId === projectId);
+    if (targetCard) {
+      // 减去实际购买的数量
+      targetCard.phoneCount = Math.max(0, targetCard.phoneCount - (actualQuantity || 1));
+    }
+
+    // 显示详细的订单信息
+    if (orderData && orderData.orderId) {
+      // 构建简洁的成功消息，突出关键信息
+      let detailMsg = '';
+      detailMsg += `📦 数量：${orderData.successCount} 个\n`;
+      detailMsg += `💰 金额：¥${orderData.totalCost.toFixed(2)}\n`;
+
+      message.success(detailMsg);
+
+      // 如果购买的号码数量较少，分别显示具体号码
+      if (orderData.purchasedPhones && orderData.purchasedPhones.length <= 3) {
+        orderData.purchasedPhones.join('、');
+        setTimeout(() => {
+        }, 2000);
+      }
+    }
+
+    // 可以在这里添加跳转到订单页面的逻辑
   }
-  
-  // 显示订单信息
-  if (orderData) {
-    message.success(`订单创建成功，订单号: ${orderData.orderId || '未获取到订单号'}`);
-  }
-  
-  // 可以在这里添加跳转到订单页面的逻辑
-};
+;
 
 // 购买
 const buyCard = (card) => {

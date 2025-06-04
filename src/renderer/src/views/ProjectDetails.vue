@@ -32,10 +32,15 @@
                   <div class="region-price">¥ {{ project.projectPrice?.toFixed(2) || '0.00' }}</div>
                 </div>
                 <div class="region-actions">
+                  <div class="quantity-selector">
+                    <button class="quantity-btn" @click="decreaseQuantity(region)" :disabled="region.quantity <= 1">-</button>
+                    <span class="quantity-display">{{ region.quantity }}</span>
+                    <button class="quantity-btn" @click="increaseQuantity(region)" :disabled="region.quantity >= region.phoneCount">+</button>
+                  </div>
                   <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
                         :disabled="region.phoneCount <= 0"
                         @click="buyRegion(region)">
-                    立即购买
+                    购买 {{ region.quantity }} 个 (总计 ¥{{ ((project.projectPrice || 0) * region.quantity).toFixed(2) }})
                   </button>
                 </div>
               </div>
@@ -144,6 +149,20 @@ const getRegionIcon = (regionMark) => {
   }
 };
 
+// 增加数量
+const increaseQuantity = (region) => {
+  if (region.quantity < region.phoneCount) {
+    region.quantity++;
+  }
+};
+
+// 减少数量
+const decreaseQuantity = (region) => {
+  if (region.quantity > 1) {
+    region.quantity--;
+  }
+};
+
 // 关闭弹窗
 const closeModal = () => {
   emit('update:visible', false);
@@ -170,16 +189,44 @@ const buyRegion = async (region) => {
     // 调用购买API
     const res = await PhoneBuyService(buyData);
     
-      message.success(`成功购买${region.regionName}地区${region.quantity || 1}个号码`);
+    // 检查响应数据
+    if (res.data && res.data.success) {
+      // 购买成功
+      const orderData = res.data;
+      // 如果有警告信息（部分成功），也要显示
+      if (orderData.warning) {
+        setTimeout(() => {
+          message.warning(`⚠️ ${orderData.warning}`);
+        }, 1500);
+      }
       
       // 通知父组件购买成功
       emit('buy-success', {
         ...buyData,
-        orderData: res.data
+        orderData: orderData,
+        actualQuantity: orderData.successCount,
+        actualCost: orderData.totalCost
       });
+      
+      // 更新地区可用数量
+      region.phoneCount = Math.max(0, region.phoneCount - orderData.successCount);
+      
+      // 重置该地区的购买数量为1
+      region.quantity = 1;
       
       // 关闭弹窗
       closeModal();
+    } else {
+      // 处理失败情况
+      message.error('购买失败，请重试');
+    }
+  } catch (error) {
+    console.error('购买失败:', error);
+    if (error.response && error.response.data && error.response.data.message) {
+      message.error(error.response.data.message);
+    } else {
+      message.error('购买失败，请稍后重试');
+    }
   } finally {
     loading.value = false;
   }
@@ -374,6 +421,55 @@ const getProjectRegions = async (projectId) => {
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+.quantity-btn {
+  background-color: #fff;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: #666;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: all 0.2s;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+  color: #333;
+}
+
+.quantity-btn:disabled {
+  color: #cccccc;
+  cursor: not-allowed;
+  background-color: #f8f9fa;
+}
+
+.quantity-display {
+  margin: 0;
+  padding: 8px 15px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  background-color: #fff;
+  min-width: 40px;
+  text-align: center;
+  border-left: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
 }
 
 .buy-btn {
