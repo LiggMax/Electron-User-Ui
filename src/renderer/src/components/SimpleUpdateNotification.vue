@@ -74,7 +74,7 @@ export default {
       
       // 检查更新中
       ipc.on('update-checking', () => {
-        this.showNotification('检查更新', '正在检查更新...', false, false)
+        console.log('正在检查更新...')
       })
       
       // 发现新版本
