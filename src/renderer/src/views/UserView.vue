@@ -147,8 +147,6 @@
           <div v-else class="orders-grid">
             <div v-for="(item, index) in orderList" :key="index" class="order-item">
               <div class="order-info">
-                <h4>订单Id：{{ item.orders_id }}</h4>
-                <div class="order-project-name">{{ getProjectName(item.user_project_id) }}</div>
                 <div class="order-phone-number">号码：{{ formatPhoneNumber(item.phone_number) }}</div>
                 <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at) }}</div>
               </div>
@@ -460,20 +458,6 @@ const getOrderList = async () => {
     orderCount.value = res.data.length;
   } finally {
     orderLoading.value = false;
-  }
-};
-
-// 获取项目名称
-const getProjectName = (projectId) => {
-  switch (projectId) {
-    case 1:
-      return "Instagram";
-    case 2:
-      return "TikTok";
-    case 3:
-      return "facebook";
-    case 4:
-      return "Telegram";
   }
 };
 
@@ -972,18 +956,11 @@ onMounted(() => {
   flex: 1;
 }
 
-.order-project-name {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 5px;
-}
-
 .order-phone-number {
   font-size: 16px;
   font-weight: bold;
   color: #444;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
 }
 
 .order-date {
