@@ -13,7 +13,9 @@
               <div class="project-icon">
                 <img :src="getProjectIcon(project.projectName)" :alt="project.projectName">
               </div>
-              <div class="project-title">{{ project.projectName }}</div>
+              <div class="project-info">
+                <div class="project-title">{{ project.projectName }}</div>
+              </div>
             </div>
             
             <!-- 地区列表 -->
@@ -27,7 +29,7 @@
                     <div class="region-name">{{ region.regionName }}</div>
                   </div>
                   <div class="region-count">可用数量: {{ region.phoneCount }}</div>
-                  <div class="region-price">¥ 0.2</div>
+                  <div class="region-price">¥ {{ project.projectPrice?.toFixed(2) || '0.00' }}</div>
                 </div>
                 <div class="region-actions">
                   <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
@@ -139,24 +141,6 @@ const getRegionIcon = (regionMark) => {
       return USA;
     default:
       return Default;
-  }
-};
-
-// 增加数量
-const increaseQuantity = (region) => {
-  if (!region.quantity) {
-    region.quantity = 1;
-  }
-  region.quantity++;
-};
-
-// 减少数量
-const decreaseQuantity = (region) => {
-  if (!region.quantity) {
-    region.quantity = 1;
-  }
-  if (region.quantity > 1) {
-    region.quantity--;
   }
 };
 
@@ -309,6 +293,11 @@ const getProjectRegions = async (projectId) => {
   width: 90%;
   height: 90%;
   object-fit: cover;
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .project-title {
