@@ -53,7 +53,6 @@ export default {
   
   mounted() {
     // 检查API可用性
-    console.log('=== SimpleUpdateNotification 组件挂载 ===');
     console.log('window.api可用性:', !!window.api);
     console.log('window.electron可用性:', !!window.electron);
     if (window.api) {
@@ -97,7 +96,6 @@ export default {
       
       // 没有更新
       ipc.on('update-not-available', () => {
-        this.showNotification('已是最新版本', '当前已是最新版本', false, true, '知道了', 'close')
       })
       
       // 开始下载
