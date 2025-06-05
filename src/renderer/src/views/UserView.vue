@@ -151,8 +151,10 @@
                 <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at) }}</div>
               </div>
               <div class="order-status">
-                <div class="status-badge success">已完成</div>
-                <div class="order-money">￥{{ item.project_money + item.phone_money || "0.00" }}</div>
+                <el-tag :type="item.state === 0 ? 'info' : 'success'" effect="dark">
+                  {{ item.state === 0 ? '未使用' : '已完成' }}
+                </el-tag>
+                <div class="order-money">￥{{ item.project_money || "0.00" }}</div>
               </div>
             </div>
           </div>

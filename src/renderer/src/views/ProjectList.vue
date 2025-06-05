@@ -130,16 +130,6 @@ const getNumber = () => {
   message.success("取号成功");
 };
 
-// 重置
-const resetAll = () => {
-  selectedProject.value = "";
-  selectedCountry.value = "";
-  specifiedNumber.value = "";
-  excludedNumbers.value = "";
-  specificCard.value = "";
-  message.success("已重置所有选项");
-};
-
 // 收藏
 const collectCard = (card) => {
   ProjectCollectService(card.projectId)
@@ -230,13 +220,6 @@ const getProjectList = async () => {
   } catch (error) {
     console.error('获取项目列表失败:', error);
   }
-};
-
-// 格式化日期
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 };
 
 onMounted(() => {
@@ -420,22 +403,4 @@ onMounted(() => {
   margin: 0;
 }
 
-/* 搜索切换按钮 */
-.toggle-icon {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  transition: transform 0.3s;
-}
-
-.toggle-icon.collapsed {
-  border-top: 6px solid #606266;
-  border-bottom: 0;
-}
-
-.toggle-icon.expanded {
-  border-bottom: 6px solid #606266;
-  border-top: 0;
-}
 </style>
