@@ -189,8 +189,6 @@ const buyRegion = async (region) => {
     // 调用购买API
     const res = await PhoneBuyService(buyData);
     
-    // 检查响应数据
-    if (res.data && res.data.success) {
       // 购买成功
       const orderData = res.data;
       // 如果有警告信息（部分成功），也要显示
@@ -216,17 +214,6 @@ const buyRegion = async (region) => {
       
       // 关闭弹窗
       closeModal();
-    } else {
-      // 处理失败情况
-      message.error('购买失败，请重试');
-    }
-  } catch (error) {
-    console.error('购买失败:', error);
-    if (error.response && error.response.data && error.response.data.message) {
-      message.error(error.response.data.message);
-    } else {
-      message.error('购买失败，请稍后重试');
-    }
   } finally {
     loading.value = false;
   }
@@ -248,7 +235,6 @@ const getProjectRegions = async (projectId) => {
     });
   } catch (error) {
     console.error('获取项目地区列表失败:', error);
-    message.error('获取项目地区列表失败');
   } finally {
     loading.value = false;
   }
@@ -485,11 +471,6 @@ const getProjectRegions = async (projectId) => {
 
 .buy-btn:hover {
   background-color: #f39c37;
-}
-
-.buy-btn.disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
 }
 
 /* 加载状态 */
