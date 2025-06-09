@@ -71,6 +71,15 @@
               </div>
             </div>
             <div class="sms-message">{{ sms.message }}</div>
+            
+            <!-- 添加使用提示和剩余时间 -->
+            <div class="sms-notice-inline">
+              <div class="inline-notice">
+                <span class="notice-icon-small">⚠️</span>
+                <span class="notice-text-small">请在20分钟内使用</span>
+              </div>
+            </div>
+            
             <div class="sms-footer">
               <div class="sms-time">{{ sms.time }}</div>
               <div class="sms-actions">
@@ -129,12 +138,12 @@ const handleVisibilityChange = () => {
   console.log("页面可见性:", isPageVisible.value ? "可见" : "不可见");
 
   if (isPageVisible.value) {
-    // 页面可见时，开始轮询
+    // 页面可见时，开始轮询和时间更新
     startPolling();
     // 立即获取一次最新数据
     getVerificationCodes();
   } else {
-    // 页面不可见时，停止轮询
+    // 页面不可见时，停止轮询和时间更新
     stopPolling();
   }
 };
@@ -161,7 +170,8 @@ const getVerificationCodes = async () => {
         time: DateFormatter.format(item.createdAt),
         message: `您的验证码是: ${item.code}`,
         phoneNumber: item.phoneNumber,
-        code: item.code
+        code: item.code,
+        createdAt: item.createdAt // 保留原始创建时间用于计算剩余时间
       };
     });
 
@@ -265,7 +275,6 @@ const getSmsList = async () => {
   }
 };
 
-
 onMounted(async () => {
   // 注册页面可见性变化事件
   document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -273,7 +282,6 @@ onMounted(async () => {
   await getSmsList();
   // 页面加载时自动获取验证码
   await getVerificationCodes();
-  // 开始轮询
   startPolling();
 });
 
@@ -286,12 +294,12 @@ onBeforeUnmount(() => {
 // 监听路由变化
 watch(() => route.path, (newPath) => {
   if (newPath === "/sms") {
-    // 当切换到短信页面时，开始轮询
+    // 当切换到短信页面时，开始轮询和时间更新
     isPageVisible.value = true;
     getVerificationCodes();
     startPolling();
   } else {
-    // 当离开短信页面时，停止轮询
+    // 当离开短信页面时，停止轮询和时间更新
     isPageVisible.value = false;
     stopPolling();
   }
@@ -486,4 +494,33 @@ watch(() => route.path, (newPath) => {
   font-size: 14px;
   color: #c0c4cc;
 }
+
+/* 使用提示样式 */
+.sms-notice-inline {
+  background-color: #fef7e0;
+  border-left: 4px solid #e6a23c;
+  padding: 8px 12px;
+  margin: 8px 0;
+  border-radius: 4px;
+}
+
+.inline-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.notice-icon-small {
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.notice-text-small {
+  font-size: 13px;
+  color: #e6a23c;
+  font-weight: 500;
+  flex: 1;
+}
+
 </style>
