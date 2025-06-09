@@ -152,7 +152,7 @@
               </div>
               <div class="order-status">
                 <el-tag v-if="item.state === 1" type="success">
-                  完成
+                  已完成
                 </el-tag>
                 <el-tag v-else type="info">
                   未使用
