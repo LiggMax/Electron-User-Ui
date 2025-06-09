@@ -151,8 +151,13 @@
                 <div class="order-date">购买时间: {{ DateFormatter.format(item.created_at) }}</div>
               </div>
               <div class="order-status">
-                <div class="status-badge success">已完成</div>
-                <div class="order-money">￥{{ item.project_money + item.phone_money || "0.00" }}</div>
+                <el-tag v-if="item.state === 1" type="success">
+                  完成
+                </el-tag>
+                <el-tag v-else type="info">
+                  未使用
+                </el-tag>
+                <div class="order-money">￥{{ item.project_money || "0.00" }}</div>
               </div>
             </div>
           </div>
@@ -974,20 +979,6 @@ onMounted(() => {
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-
-.status-badge.success {
-  background-color: #e6fff1;
-  color: #52c41a;
 }
 
 .order-money {

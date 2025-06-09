@@ -59,7 +59,6 @@
           <div class="empty-icon">📭</div>
           <div class="empty-text">暂无短信验证码</div>
           <div class="empty-hint">
-            <div>验证码接收需要一些时间，请耐心等待</div>
             <div class="hint-note">💡 提醒：验证码有效期为20分钟，请及时使用</div>
           </div>
         </div>
@@ -464,15 +463,10 @@ watch(() => route.path, (newPath) => {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 6px;
+  color: #67c23a;
   border-radius: 8px;
   white-space: nowrap;
   border: 1px solid;
-}
-
-.time-normal {
-  color: #67c23a;
-  background-color: rgba(103, 194, 58, 0.1);
-  border-color: rgba(103, 194, 58, 0.3);
 }
 
 /* 加载状态 */
