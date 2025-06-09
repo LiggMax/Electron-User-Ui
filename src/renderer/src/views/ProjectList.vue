@@ -422,7 +422,7 @@ onMounted(() => {
   transition: transform 0.3s;
 }
 
-.toggle-icon.collapsed {
+ toggle-icon.collapsed {
   border-top: 6px solid #606266;
   border-bottom: 0;
 }

@@ -30,13 +30,15 @@
         <el-table-column prop="status" label="状态" min-width="90">
           <template #default="scope">
             <el-tag :type="scope.row.status === 0 ? 'info' : 'success'">
-              {{ scope.row.status === 0 ? '未使用' : '已使用' }}
+              {{ scope.row.status === 0 ? "未使用" : "已使用" }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="110" fixed="right">
           <template #default="scope">
-            <el-button size="small" type="primary" @click="copyPhoneNumber(scope.row.phoneNumber)" style="margin-right: 8px;">复制号码</el-button>
+            <el-button size="small" type="primary" @click="copyPhoneNumber(scope.row.phoneNumber)"
+                       style="margin-right: 8px;">复制号码
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -56,38 +58,35 @@
         <div v-else-if="smsList.length === 0" class="empty-sms">
           <div class="empty-icon">📭</div>
           <div class="empty-text">暂无短信验证码</div>
-          <div class="empty-hint">请稍后再试或联系客服</div>
+          <div class="empty-hint">
+            <div>验证码接收需要一些时间，请耐心等待</div>
+            <div class="hint-note">💡 提醒：验证码有效期为20分钟，请及时使用</div>
+          </div>
         </div>
         <div v-else class="sms-list">
           <div class="sms-item" v-for="(sms, index) in smsList" :key="index">
             <div class="sms-meta">
               <div class="sms-phone">手机号：{{ sms.phoneNumber }}</div>
+
               <div class="sms-actions">
                 <button class="sms-copy" @click="copySmsCode(sms.code)" title="复制验证码">
                   <i class="copy-icon">
-                    <el-icon :size="25"><CopyDocument /></el-icon>
+                    <el-icon :size="25">
+                      <CopyDocument />
+                    </el-icon>
                   </i>
                 </button>
               </div>
             </div>
             <div class="sms-message">{{ sms.message }}</div>
-            
-            <!-- 添加使用提示和剩余时间 -->
-            <div class="sms-notice-inline">
-              <div class="inline-notice">
-                <span class="notice-icon-small">⚠️</span>
-                <span class="notice-text-small">请在20分钟内使用</span>
-              </div>
-            </div>
-            
             <div class="sms-footer">
               <div class="sms-time">{{ sms.time }}</div>
               <div class="sms-actions">
-                <button class="sms-delete" @click="deleteSms(sms)">
-                  <i class="delete-icon">
-                    <el-icon :size="25"><Delete /></el-icon>
-                  </i>
-                </button>
+                <div class="sms-time-info">
+                <span class="remaining-time" :class="getTimeStatusClass(sms.createdAt)">
+                  请在{{ formatRemainingTime(sms.createdAt) }}内使用
+                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -100,10 +99,11 @@
 <script setup>
 import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 import message from "../utils/message";
-import { CopyDocument ,Delete } from "@element-plus/icons-vue";
+import { CopyDocument } from "@element-plus/icons-vue";
 import { SmsListService, SmsCodeService } from "../api/sms";
 import { useRoute } from "vue-router";
 import DateFormatter from "../utils/DateFormatter.js";
+import TimeUtils from "../utils/timeUtils.js";
 
 const selectedProject = ref("");
 const selectedRows = ref([]);
@@ -129,8 +129,12 @@ const smsLoading = ref(false);
 
 // 轮询定时器
 let pollingTimer = null;
+// 时间更新定时器  
+let timeUpdateTimer = null;
 // 轮询间隔时间(毫秒)
 const POLLING_INTERVAL = 6000;
+// 时间更新间隔(毫秒) - 每30秒更新一次时间显示
+const TIME_UPDATE_INTERVAL = 30000;
 
 // 监听页面可见性变化
 const handleVisibilityChange = () => {
@@ -140,11 +144,13 @@ const handleVisibilityChange = () => {
   if (isPageVisible.value) {
     // 页面可见时，开始轮询和时间更新
     startPolling();
+    startTimeUpdate();
     // 立即获取一次最新数据
     getVerificationCodes();
   } else {
     // 页面不可见时，停止轮询和时间更新
     stopPolling();
+    stopTimeUpdate();
   }
 };
 
@@ -214,12 +220,6 @@ const isCurrentRoute = () => {
   return route.path === "/sms";
 };
 
-// 删除短信
-const deleteSms = (sms) => {
-  message.success(`删除短信: ${sms.code}`);
-  smsList.value = smsList.value.filter(s => s.id !== sms.id);
-};
-
 // 复制短信验证码
 const copySmsCode = (code) => {
   if (!code) {
@@ -267,11 +267,35 @@ const getSmsList = async () => {
         phoneNumber: item.phoneNumber,
         location: item.regionName || "未知",
         createdAt: DateFormatter.format(item.createdAt),
-        status: item.state, // 直接使用原始状态值，不转换
+        status: item.state // 直接使用原始状态值，不转换
       };
     });
   } catch (error) {
     console.error("获取短信列表失败:", error);
+  }
+};
+
+// 使用TimeUtils工具类的包装函数
+const formatRemainingTime = (createdAt) => TimeUtils.formatRemainingTime(createdAt);
+const getTimeStatusClass = (createdAt) => TimeUtils.getTimeStatusClass(createdAt);
+
+// 开始时间更新定时器
+const startTimeUpdate = () => {
+  stopTimeUpdate();
+  timeUpdateTimer = setInterval(() => {
+    if (isPageVisible.value && isCurrentRoute() && smsList.value.length > 0) {
+      console.log("更新剩余时间显示...");
+      // 触发组件重新渲染以更新时间显示
+      smsList.value = [...smsList.value];
+    }
+  }, TIME_UPDATE_INTERVAL);
+};
+
+// 停止时间更新定时器
+const stopTimeUpdate = () => {
+  if (timeUpdateTimer) {
+    clearInterval(timeUpdateTimer);
+    timeUpdateTimer = null;
   }
 };
 
@@ -283,11 +307,13 @@ onMounted(async () => {
   // 页面加载时自动获取验证码
   await getVerificationCodes();
   startPolling();
+  startTimeUpdate();
 });
 
 // 组件卸载前清除定时器和事件监听
 onBeforeUnmount(() => {
   stopPolling();
+  stopTimeUpdate();
   document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
 
@@ -298,10 +324,12 @@ watch(() => route.path, (newPath) => {
     isPageVisible.value = true;
     getVerificationCodes();
     startPolling();
+    startTimeUpdate();
   } else {
     // 当离开短信页面时，停止轮询和时间更新
     isPageVisible.value = false;
     stopPolling();
+    stopTimeUpdate();
   }
 });
 </script>
@@ -379,15 +407,20 @@ watch(() => route.path, (newPath) => {
 .sms-meta {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 8px;
   font-size: 13px;
   color: #606266;
   font-weight: bold;
-  align-items: center;
 }
 
 .sms-phone {
   color: #409EFF;
+  flex: 1;
+}
+
+.sms-time-info {
+  margin: 0 10px;
 }
 
 .sms-message {
@@ -412,8 +445,7 @@ watch(() => route.path, (newPath) => {
   justify-content: flex-end;
 }
 
-.sms-copy,
-.sms-delete {
+.sms-copy{
   background: none;
   border: none;
   cursor: pointer;
@@ -428,13 +460,19 @@ watch(() => route.path, (newPath) => {
   color: #409EFF;
 }
 
-.sms-delete {
-  color: #f56c6c;
+.remaining-time {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  border: 1px solid;
 }
 
-.sms-copy:hover,
-.sms-delete:hover {
-  opacity: 1;
+.time-normal {
+  color: #67c23a;
+  background-color: rgba(103, 194, 58, 0.1);
+  border-color: rgba(103, 194, 58, 0.3);
 }
 
 /* 加载状态 */
@@ -487,40 +525,24 @@ watch(() => route.path, (newPath) => {
 
 .empty-text {
   font-size: 18px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  color: #606266;
 }
 
 .empty-hint {
-  font-size: 14px;
+  text-align: center;
   color: #c0c4cc;
+  line-height: 1.6;
 }
 
-/* 使用提示样式 */
-.sms-notice-inline {
-  background-color: #fef7e0;
-  border-left: 4px solid #e6a23c;
-  padding: 8px 12px;
-  margin: 8px 0;
-  border-radius: 4px;
-}
-
-.inline-notice {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.notice-icon-small {
-  font-size: 14px;
-  margin-right: 8px;
-}
-
-.notice-text-small {
+.hint-note {
   font-size: 13px;
   color: #e6a23c;
-  font-weight: 500;
-  flex: 1;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: rgba(230, 162, 60, 0.1);
+  border-radius: 4px;
+  display: inline-block;
 }
 
 </style>
