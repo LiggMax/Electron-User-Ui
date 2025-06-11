@@ -26,16 +26,20 @@
         <el-table-column prop="phoneNumber" width="140" label="手机号码" />
         <el-table-column prop="projectName" width="120" label="项目">
           <template #default="scope">
-            <img :src="scope.row.projectIcon"
-                 style="width: 20px;margin-right: 5px;border-radius: 5px" alt="">
-            <el-tag type="success" >{{ scope.row.projectName }}</el-tag>
+            <div class="table-cell-content">
+              <img :src="scope.row.projectIcon"
+                   class="table-icon" alt="">
+              <el-tag type="success" >{{ scope.row.projectName }}</el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="location" width="100" label="号码归属地">
           <template #default="scope">
-            <img :src="scope.row.regionIcon"
-                 style="width: 20px;margin-right: 5px;border-radius: 5px" alt=""></img>
-            <el-tag type="warning">{{ scope.row.location }}</el-tag>
+            <div class="table-cell-content">
+              <img :src="scope.row.regionIcon"
+                   class="table-icon" alt="">
+              <el-tag type="warning">{{ scope.row.location }}</el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" width="180" label="购买时间" />
@@ -550,6 +554,18 @@ watch(() => route.path, (newPath) => {
   background-color: rgba(230, 162, 60, 0.1);
   border-radius: 4px;
   display: inline-block;
+}
+
+.table-cell-content {
+  display: flex;
+  align-items: center;
+}
+
+.table-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  border-radius: 5px;
 }
 
 </style>
