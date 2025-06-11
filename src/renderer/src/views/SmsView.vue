@@ -24,8 +24,20 @@
           <template #default="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
         <el-table-column prop="phoneNumber" width="140" label="手机号码" />
-        <el-table-column prop="projectName" width="90" label="项目" />
-        <el-table-column prop="location" width="100" label="号码归属地" />
+        <el-table-column prop="projectName" width="120" label="项目">
+          <template #default="scope">
+            <img :src="scope.row.projectIcon"
+                 style="width: 20px;margin-right: 5px;border-radius: 5px" alt="">
+            <el-tag type="success" >{{ scope.row.projectName }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="location" width="100" label="号码归属地">
+          <template #default="scope">
+            <img :src="scope.row.regionIcon"
+                 style="width: 20px;margin-right: 5px;border-radius: 5px" alt=""></img>
+            <el-tag type="warning">{{ scope.row.location }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="createdAt" width="180" label="购买时间" />
         <el-table-column prop="status" label="状态" min-width="90">
           <template #default="scope">
@@ -185,7 +197,6 @@ const getVerificationCodes = async () => {
     console.log("获取到验证码数据:", newSmsList.length);
   } catch (error) {
     console.error("获取验证码失败:", error);
-    message.error("获取验证码失败，请稍后重试");
   } finally {
     smsLoading.value = false;
   }
@@ -264,6 +275,8 @@ const getSmsList = async () => {
         userProjectId: item.userProjectId,
         projectName: item.projectName,
         phoneNumber: item.phoneNumber,
+        projectIcon: item.projectIcon,
+        regionIcon: item.regionIcon,
         location: item.regionName || "未知",
         createdAt: DateFormatter.format(item.createdAt),
         status: item.state // 直接使用原始状态值，不转换
@@ -444,7 +457,7 @@ watch(() => route.path, (newPath) => {
   justify-content: flex-end;
 }
 
-.sms-copy{
+.sms-copy {
   background: none;
   border: none;
   cursor: pointer;

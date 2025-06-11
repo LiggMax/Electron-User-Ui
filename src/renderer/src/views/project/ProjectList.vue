@@ -4,11 +4,11 @@
     <Announcement @show-detail-modal="showAnnouncementModal = true" />
 
     <!-- 智能查询按钮 -->
-    <div class="smart-query-section">
-      <div class="smart-query-label">
-        智能匹配
-      </div>
-    </div>
+<!--    <div class="smart-query-section">-->
+<!--      <div class="smart-query-label">-->
+<!--        智能匹配-->
+<!--      </div>-->
+<!--    </div>-->
 
     <!-- 卡片列表区域 -->
     <div class="card-list-area">
@@ -16,7 +16,7 @@
         <div class="card-item" v-for="card in cardList" :key="card.projectId">
           <div class="left-section">
             <div class="card-icon">
-              <img :src="getProjectIcon(card.projectName)" :alt="card.projectName" class="country-flag">
+              <img :src="card.icon ? card.icon : Image " :alt="card.projectName" class="country-flag">
             </div>
           </div>
           <div class="right-section">
@@ -40,7 +40,7 @@
       </div>
       <div v-else class="empty-data-container">
         <div class="no-data-image-wrapper">
-          <img src="../assets/imgae/NoData.jpg" alt="暂无数据" class="no-data-img">
+          <img src="../../assets/imgae/NoData.jpg" alt="暂无数据" class="no-data-img">
           <h2 class="no-data-text">暂无搜索</h2>
         </div>
       </div>
@@ -60,25 +60,14 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
-import message from "../utils/message";
-import { ProjectListService } from "../api/project";
-import { ProjectCollectService } from "../api/user";
+import message from "../../utils/message";
+import { ProjectListService } from "../../api/project";
+import { ProjectCollectService } from "../../api/user";
 import ProjectDetails from "./ProjectDetails.vue";
-import Announcement from "./announcement/Announcement.vue";
-import AnnouncementDetail from "./announcement/AnnouncementDetail.vue";
+import Announcement from "../announcement/Announcement.vue";
+import AnnouncementDetail from "../announcement/AnnouncementDetail.vue";
+import Image from '../../assets/imgae/project/Image.svg'
 
-//导入项目图标
-import Telegram from '../assets/imgae/project/Telegram.png'
-import facebook from '../assets/imgae/project/facebook.png'
-import TikTok from '../assets/imgae/project/TikTok.webp'
-import Instagram from '../assets/imgae/project/Instagram.webp'
-
-// 搜索参数
-const selectedProject = ref("");
-const selectedCountry = ref("");
-const specifiedNumber = ref("");
-const excludedNumbers = ref("");
-const specificCard = ref("");
 
 // 卡片列表
 const cardList = ref([]);
@@ -86,59 +75,10 @@ const cardList = ref([]);
 const projectOptions = ref([]);
 const countryOptions = ref([]);
 
-// 控制搜索区域的显示隐藏
-const showSearchArea = ref(false);
-
 // 弹窗控制
 const showProjectModal = ref(false);
 const showAnnouncementModal = ref(false);
 const currentProject = ref({});
-
-// 获取项目图标
-const getProjectIcon = (projectName) => {
-  switch (projectName) {
-    case "Instagram":
-      return Instagram;
-    case "facebook":
-      return facebook;
-    case "TikTok":
-      return TikTok;
-    case "Telegram":
-      return Telegram;
-    default:
-      return facebook; // 默认图片
-  }
-};
-
-// 单独查询号码
-const singleQueryNumber = () => {
-  message.success("单独查询号码");
-};
-
-// 批量查询号码
-const batchQueryNumbers = () => {
-  message.success("批量查询号码");
-};
-
-// 查询单个号码
-const querySpecificNumber = () => {
-  message.success("查询单个号码");
-};
-
-// 取号
-const getNumber = () => {
-  message.success("取号成功");
-};
-
-// 重置
-const resetAll = () => {
-  selectedProject.value = "";
-  selectedCountry.value = "";
-  specifiedNumber.value = "";
-  excludedNumbers.value = "";
-  specificCard.value = "";
-  message.success("已重置所有选项");
-};
 
 // 收藏
 const collectCard = (card) => {
@@ -178,7 +118,6 @@ const handleBuySuccess = (buyData) =>
       }
     }
 
-    // 可以在这里添加跳转到订单页面的逻辑
   }
 ;
 
@@ -199,8 +138,7 @@ const buyCard = (card) => {
 const getProjectList = async () => {
   try {
     const res = await ProjectListService();
-    console.log('获取到的项目列表数据:', res.data);
-    
+
     // 确保返回的数据有正确的格式，适配新的数据库结构
     cardList.value = res.data.map(item => {
       // 添加quantity字段用于前端操作
@@ -238,32 +176,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 智能匹配标签 */
-.smart-query-section {
-  padding: 0;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: stretch;
-}
-
-.smart-query-label {
-  display: inline-block;
-  background-color: #4085f6;
-  color: white;
-  padding: 10px 25px;
-  border: none;
-  border-radius: 8px 0 0 8px;
-  font-size: 20px;
-  font-weight: 500;
-  cursor: default;
-}
-
-.smart-query-section::after {
-  content: '';
-  flex: 1;
-  background-color: #fff;
-  border-radius: 0 8px 8px 0;
-}
 
 /* 卡片列表区域 */
 .card-list-area {
@@ -411,24 +323,5 @@ onMounted(() => {
   font-size: 18px;
   font-weight: normal;
   margin: 0;
-}
-
-/* 搜索切换按钮 */
-.toggle-icon {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  transition: transform 0.3s;
-}
-
- toggle-icon.collapsed {
-  border-top: 6px solid #606266;
-  border-bottom: 0;
-}
-
-.toggle-icon.expanded {
-  border-bottom: 6px solid #606266;
-  border-top: 0;
 }
 </style>

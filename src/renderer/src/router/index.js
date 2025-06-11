@@ -14,7 +14,7 @@ const routes = [
   {
     path: '/project-details',
     name: 'ProjectDetails',
-    component: () => import('../views/ProjectDetails.vue')
+    component: () => import('../views/project/ProjectDetails.vue')
   },
   {
     path: '/announcement-detail',
@@ -28,7 +28,7 @@ const routes = [
       {
         path: 'project',
         name: 'Project',
-        component: () => import('../views/ProjectList.vue'),
+        component: () => import('../views/project/ProjectList.vue'),
         meta: {
           title: '项目列表',
           activeMenu: 'project'

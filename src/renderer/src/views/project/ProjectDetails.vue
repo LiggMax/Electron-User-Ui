@@ -11,46 +11,50 @@
           <div class="modal-body">
             <div class="project-header">
               <div class="project-icon">
-                <img :src="getProjectIcon(project.projectName)" :alt="project.projectName">
-              </div>
+                <img :src="props.project.icon" :alt="project.projectName"
+                     style="border-radius: 8px;"></div>
               <div class="project-info">
                 <div class="project-title">{{ project.projectName }}</div>
               </div>
             </div>
-            
+
             <!-- 地区列表 -->
             <div v-if="regionList.length > 0" class="region-list">
               <div class="region-item" v-for="region in regionList" :key="region.regionId">
                 <div class="region-info">
                   <div class="region-header">
                     <div class="region-icon-container">
-                      <img :src="getRegionIcon(region.regionMark)" :alt="region.regionName" class="region-icon">
+                      <img :src="region.icon? region.icon : Image" :alt="region.regionName" class="region-icon">
                     </div>
                     <div class="region-name">{{ region.regionName }}</div>
                   </div>
                   <div class="region-count">可用数量: {{ region.phoneCount }}</div>
-                  <div class="region-price">¥ {{ project.projectPrice?.toFixed(2) || '0.00' }}</div>
+                  <div class="region-price">¥ {{ project.projectPrice?.toFixed(2) || "0.00" }}</div>
                 </div>
                 <div class="region-actions">
                   <div class="quantity-selector">
-                    <button class="quantity-btn" @click="decreaseQuantity(region)" :disabled="region.quantity <= 1">-</button>
+                    <button class="quantity-btn" @click="decreaseQuantity(region)" :disabled="region.quantity <= 1">-
+                    </button>
                     <span class="quantity-display">{{ region.quantity }}</span>
-                    <button class="quantity-btn" @click="increaseQuantity(region)" :disabled="region.quantity >= region.phoneCount">+</button>
+                    <button class="quantity-btn" @click="increaseQuantity(region)"
+                            :disabled="region.quantity >= region.phoneCount">+
+                    </button>
                   </div>
                   <button :class="['buy-btn', region.phoneCount <= 0 ? 'disabled' : '']"
-                        :disabled="region.phoneCount <= 0"
-                        @click="buyRegion(region)">
-                    购买 {{ region.quantity }} 个 (总计 ¥{{ ((project.projectPrice || 0) * region.quantity).toFixed(2) }})
+                          :disabled="region.phoneCount <= 0"
+                          @click="buyRegion(region)">
+                    购买 {{ region.quantity }} 个 (总计 ¥{{ ((project.projectPrice || 0) * region.quantity).toFixed(2)
+                    }})
                   </button>
                 </div>
               </div>
             </div>
-            
+
             <div v-else-if="loading" class="loading-section">
               <div class="loading-spinner"></div>
               <div class="loading-text">加载中...</div>
             </div>
-            
+
             <div v-else class="empty-section">
               <div class="empty-icon">🔍</div>
               <div class="empty-text">暂无可用地区</div>
@@ -64,20 +68,10 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import message from "../utils/message";
-import macauFlag from "../assets/imgae/Macau.png";
-import hongkongFlag from "../assets/imgae/HongKong.png";
-import { ProjectGoodsService } from "../api/project";
-import { PhoneBuyService } from "../api/user";
-
-// 导入项目图标
-import Telegram from '../assets/imgae/project/Telegram.png'
-import facebook from '../assets/imgae/project/facebook.png'
-import TikTok from '../assets/imgae/project/TikTok.webp'
-import Instagram from '../assets/imgae/project/Instagram.webp'
-// 导入地区图标
-import USA from '../assets/imgae/UnitedStates.png'
-import Default from '../assets/svg/default.svg'
+import message from "../../utils/message";
+import { ProjectGoodsService } from "../../api/project";
+import { PhoneBuyService } from "../../api/user";
+import Image from "../../assets/imgae/project/Image.svg";
 
 // 组件属性
 const props = defineProps({
@@ -94,7 +88,7 @@ const props = defineProps({
 });
 
 // 组件事件
-const emit = defineEmits(['update:visible', 'buy-success']);
+const emit = defineEmits(["update:visible", "buy-success"]);
 
 // 响应式数据
 const regionList = ref([]);
@@ -114,41 +108,6 @@ watch(() => props.visible, (isVisible) => {
   }
 });
 
-// 获取项目图标
-const getProjectIcon = (projectName) => {
-  switch (projectName) {
-    case "Instagram":
-      return Instagram;
-    case "facebook":
-      return facebook;
-    case "TikTok":
-      return TikTok;
-    case "Telegram":
-      return Telegram;
-    default:
-      return facebook; // 默认图片
-  }
-};
-
-// 获取地区图标
-const getRegionIcon = (regionMark) => {
-  if (!regionMark) return Default;
-  
-  switch (regionMark?.toLowerCase()) {
-    case 'macau':
-    case '澳门':
-      return macauFlag;
-    case 'hongkong':
-    case '香港':
-      return hongkongFlag;
-    case 'usa':
-    case '美国':
-      return USA;
-    default:
-      return Default;
-  }
-};
-
 // 增加数量
 const increaseQuantity = (region) => {
   if (region.quantity < region.phoneCount) {
@@ -165,13 +124,13 @@ const decreaseQuantity = (region) => {
 
 // 关闭弹窗
 const closeModal = () => {
-  emit('update:visible', false);
+  emit("update:visible", false);
 };
 
 // 购买特定地区
 const buyRegion = async (region) => {
   if (region.phoneCount <= 0) {
-    message.error('该地区暂无可用号码');
+    message.error("该地区暂无可用号码");
     return;
   }
 
@@ -185,35 +144,35 @@ const buyRegion = async (region) => {
 
     // 显示加载状态
     loading.value = true;
-    
+
     // 调用购买API
     const res = await PhoneBuyService(buyData);
-    
-      // 购买成功
-      const orderData = res.data;
-      // 如果有警告信息（部分成功），也要显示
-      if (orderData.warning) {
-        setTimeout(() => {
-          message.warning(`⚠️ ${orderData.warning}`);
-        }, 1500);
-      }
-      
-      // 通知父组件购买成功
-      emit('buy-success', {
-        ...buyData,
-        orderData: orderData,
-        actualQuantity: orderData.successCount,
-        actualCost: orderData.totalCost
-      });
-      
-      // 更新地区可用数量
-      region.phoneCount = Math.max(0, region.phoneCount - orderData.successCount);
-      
-      // 重置该地区的购买数量为1
-      region.quantity = 1;
-      
-      // 关闭弹窗
-      closeModal();
+
+    // 购买成功
+    const orderData = res.data;
+    // 如果有警告信息（部分成功），也要显示
+    if (orderData.warning) {
+      setTimeout(() => {
+        message.warning(`⚠️ ${orderData.warning}`);
+      }, 1500);
+    }
+
+    // 通知父组件购买成功
+    emit("buy-success", {
+      ...buyData,
+      orderData: orderData,
+      actualQuantity: orderData.successCount,
+      actualCost: orderData.totalCost
+    });
+
+    // 更新地区可用数量
+    region.phoneCount = Math.max(0, region.phoneCount - orderData.successCount);
+
+    // 重置该地区的购买数量为1
+    region.quantity = 1;
+
+    // 关闭弹窗
+    closeModal();
   } finally {
     loading.value = false;
   }
@@ -234,7 +193,7 @@ const getProjectRegions = async (projectId) => {
       };
     });
   } catch (error) {
-    console.error('获取项目地区列表失败:', error);
+    console.error("获取项目地区列表失败:", error);
   } finally {
     loading.value = false;
   }
@@ -313,13 +272,6 @@ const getProjectRegions = async (projectId) => {
 .project-icon {
   width: 60px;
   height: 60px;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-right: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f5f7fa;
 }
 
 .project-icon img {
@@ -367,12 +319,11 @@ const getProjectRegions = async (projectId) => {
 }
 
 .region-icon-container {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 6px;
   overflow: hidden;
   margin-right: 10px;
-  background-color: #f5f7fa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -382,6 +333,7 @@ const getProjectRegions = async (projectId) => {
   width: 90%;
   height: 90%;
   object-fit: cover;
+  border-radius: 5px;
 }
 
 .region-name {
@@ -498,8 +450,12 @@ const getProjectRegions = async (projectId) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 空数据状态 */
