@@ -2,13 +2,18 @@
   <div class="sms-content">
     <div class="sms-form">
       <div class="project-select-row">
-        <div class="form-item project-label">
-          <h4>项目：</h4>
+        <div class="project-select-row-left">
+          <div class="form-item project-label">
+            <h4>项目：</h4>
+          </div>
+          <div class="form-item project-select">
+            <el-select v-model="selectedProject" placeholder="请选择项目" size="default">
+              <el-option v-for="item in projectOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </div>
         </div>
-        <div class="form-item project-select">
-          <el-select v-model="selectedProject" placeholder="请选择项目" size="default">
-            <el-option v-for="item in projectOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <div class="project-select-row-right">
+          <span>提示:售卖后的号码在20分钟内有效，请及时使用</span>
         </div>
       </div>
 
@@ -29,7 +34,7 @@
             <div class="table-cell-content">
               <img :src="scope.row.projectIcon"
                    class="table-icon" alt="">
-              <el-tag type="success" >{{ scope.row.projectName }}</el-tag>
+              <el-tag type="success">{{ scope.row.projectName }}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -43,11 +48,13 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" width="180" label="购买时间" />
-        <el-table-column prop="status" label="状态" min-width="90">
+        <el-table-column prop="status" label="状态" min-width="80">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 0 ? 'info' : 'success'">
-              {{ scope.row.status === 0 ? "未使用" : "已使用" }}
-            </el-tag>
+            <div class="table-cell-content">
+              <el-tag :type="scope.row.status === 0? 'info' : 'success'">
+                {{ scope.row.status === 0 ? "未使用" : "已使用" }}
+              </el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="110" fixed="right">
@@ -79,9 +86,12 @@
           </div>
         </div>
         <div v-else class="sms-list">
-          <div class="sms-item" v-for="(sms, index) in smsList" :key="index">
+          <div class="sms-item" v-for="(sms) in smsList" :key="sms.code">
             <div class="sms-meta">
-              <div class="sms-phone">手机号：{{ sms.phoneNumber }}</div>
+              <div class="sms-meta-left">
+                <span class="sms-phone">手机号:{{ sms.phoneNumber }}</span>
+                <span class="sms-projectName">项目:{{ sms.projectName }}</span>
+              </div>
 
               <div class="sms-actions">
                 <button class="sms-copy" @click="copySmsCode(sms.code)" title="复制验证码">
@@ -191,6 +201,7 @@ const getVerificationCodes = async () => {
         time: DateFormatter.format(item.createdAt),
         message: `您的验证码是: ${item.code}`,
         phoneNumber: item.phoneNumber,
+        projectName: item.projectName,
         code: item.code,
         createdAt: item.createdAt // 保留原始创建时间用于计算剩余时间
       };
@@ -360,8 +371,19 @@ watch(() => route.path, (newPath) => {
 
 .project-select-row {
   display: flex;
+  justify-content: space-between; /* 左右分布 */
   align-items: center;
   margin-bottom: 15px;
+}
+
+.project-select-row-left {
+  display: flex;
+  align-items: center;
+}
+
+.project-select-row-right {
+  text-align: right;
+  color: #6c757d;
 }
 
 .project-label {
@@ -385,11 +407,6 @@ watch(() => route.path, (newPath) => {
   color: #333;
 }
 
-
-/* 自定义表头样式 */
-
-/* 固定列样式 */
-
 /* 用户信息区域 */
 .user-info-section {
   background-color: #303133;
@@ -409,8 +426,17 @@ watch(() => route.path, (newPath) => {
   overflow: hidden;
 }
 
+.sms-meta-left {
+  display: flex;
+}
+
 .sms-list {
   padding: 15px;
+}
+
+.sms-projectName {
+  color: #409EFF;
+  margin-left: 10px;
 }
 
 .sms-item {
