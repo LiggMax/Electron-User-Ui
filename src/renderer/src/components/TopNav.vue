@@ -70,7 +70,7 @@
   </el-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { UserInfoService } from "../api/user";
 import Avatar from '../assets/svg/avatar.svg'
@@ -393,31 +393,6 @@ onMounted(() => {
 
 .copy-btn:active {
   transform: translateY(0);
-}
-
-/* 优化弹窗样式 */
-:deep(.el-dialog) {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-:deep(.el-dialog__header) {
-  background: linear-gradient(135deg, #409EFF 0%, #53a8ff 100%);
-  padding: 16px 20px;
-}
-
-:deep(.el-dialog__title) {
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-:deep(.el-dialog__headerbtn .el-dialog__close) {
-  color: white;
-}
-
-:deep(.el-dialog__body) {
-  padding: 30px 20px;
 }
 
 </style>
