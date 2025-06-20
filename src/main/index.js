@@ -2,7 +2,6 @@ import { app, shell, BrowserWindow, ipcMain, autoUpdater, dialog } from "electro
 import { join } from "path";
 import icon from "../../resources/icon.png?asset";
 
-// 移除update-electron-app，使用自定义的autoUpdater
 // 配置更新服务器（调用后端API）
 const server = process.env.VITE_API_BASE_URL;
 

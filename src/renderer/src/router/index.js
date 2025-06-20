@@ -17,6 +17,11 @@ const routes = [
     component: () => import('../views/project/ProjectDetails.vue')
   },
   {
+    path: '/sse',
+    name: 'SSE',
+    component:() => import('../views/SSE.vue')
+  },
+  {
     path: '/announcement-detail',
     name: 'AnnouncementDetail',
     component: () => import('../views/announcement/AnnouncementDetail.vue')

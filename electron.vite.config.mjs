@@ -7,17 +7,17 @@ import { loadEnv } from 'vite'
 const getConfig = ({ mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   // 获取API基础URL，用于开发环境代理
   const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:8899/api';
   const proxyTarget = apiBaseUrl.replace(/\/api$/, '');
-  
+
   console.log(`[Vite配置] 环境: ${mode}`);
   // console.log(`[Vite配置] API代理目标: ${proxyTarget}`);
-  
+
   // 生产环境配置
   const prodEnv = mode === 'production' ? env : {};
-  
+
   return {
     main: {
       plugins: [externalizeDepsPlugin()],
@@ -43,6 +43,10 @@ const getConfig = ({ mode }) => {
             target: proxyTarget,
             changeOrigin: true,
             // rewrite: (path) => path.replace(/^\/api/, '')
+          },
+          '/api/sse': {
+            target: proxyTarget,
+            changeOrigin: true,
           }
         }
       },
