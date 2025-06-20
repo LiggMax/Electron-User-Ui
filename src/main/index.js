@@ -78,6 +78,15 @@ function createWindow() {
     mainWindow.show();
   });
 
+  // 监听窗口最大化/还原事件
+  mainWindow.on("maximize", () => {
+    mainWindow.webContents.send("window-maximize-change", true);
+  });
+
+  mainWindow.on("unmaximize", () => {
+    mainWindow.webContents.send("window-maximize-change", false);
+  });
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);
     return { action: "deny" };
@@ -122,7 +131,20 @@ app.whenReady().then(() => {
       } else {
         win.maximize();
       }
+      // 通知渲染进程窗口状态已变化
+      win.webContents.send("window-maximize-change", win.isMaximized());
     }
+  });
+
+  // 添加窗口最大化状态检查处理器
+  ipcMain.handle("is-window-maximized", () => {
+    const win = BrowserWindow.getFocusedWindow();
+    return win ? win.isMaximized() : false;
+  });
+
+  // 监听窗口最大化状态变化
+  ipcMain.on("window-maximize-change", () => {
+    // 这个事件由渲染进程发送，主进程不需要处理
   });
 
   // IPC test

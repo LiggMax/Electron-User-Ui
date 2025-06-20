@@ -9,7 +9,7 @@
     </div>
     <div class="nav-right non-draggable">
       <div class="user-controls-container">
-       
+
         <!-- 窗口控制按钮 -->
         <div class="window-controls">
           <div class="control-btn minimize" @click="minimizeWindow">
@@ -37,8 +37,8 @@
             <img src="../assets/imgae/serve.png" style="width: 32px; height: 32px" alt="客服" />
           </div>
           <div class="user-info">
-            <img :src="userInfoDate.userAvatar? userInfoDate.userAvatar : Avatar" style="width: 35px; height: 35px;" alt="" />
-            <span class="username">{{ userInfoDate.nickName }}</span>
+            <img :src="userInfo.userAvatar || Avatar" style="width: 35px; height: 35px;" alt="" />
+            <span class="username">{{ userInfo.nickName || '用户' }}</span>
           </div>
         </div>
       </div>
@@ -77,34 +77,28 @@ import Avatar from '../assets/svg/avatar.svg'
 import userInfoStore from "../store/userInfoStore";
 import { Refresh } from "@element-plus/icons-vue";
 import Message from "../utils/message";
+
 const isMaximized = ref(false);
-const userInfoDate = ref({
-  account: '',
-  nickName: '',
-  avatar: '',
-  email: '',
-  userAvatar: '',
-  createdAt: '',
-  loginTime: ''
-});
+
+// 使用全局状态而不是本地状态
+const { userInfo, setUserInfo } = userInfoStore();
+
+// 定义emit事件
+const emit = defineEmits(['userDataUpdated']);
 
 // 刷新用户信息
 const refreshUserInfo = async () => {
   try {
-    const res = await UserInfoService();
-    userInfoDate.value = res.data;
+    await getUserInfo();
     Message.success("刷新用户信息成功");
   } catch (error) {
     console.error("刷新用户信息出错:", error);
-    Message.error("刷新用户信息失败，请稍后再试");
+    Message.error("刷新用户信息失败");
   }
 };
 
-
 // 客服电话弹窗
 const customerServiceDialogVisible = ref(false);
-
-const userInfo = userInfoStore()
 
 defineProps({
   title: {
@@ -174,10 +168,14 @@ if (window.electron) {
 
 //获取用户信息
 const getUserInfo = async () => {
-  const res = await UserInfoService()
-  userInfoDate.value = res.data;
-  userInfo.setUserInfo(res.data)
-
+  try {
+    const res = await UserInfoService();
+    setUserInfo(res.data);
+    // 向父组件发出用户数据更新事件
+    emit('userDataUpdated', res.data);
+  } catch (error) {
+    throw error;
+  }
 };
 
 //钩子函数
