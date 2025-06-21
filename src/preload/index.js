@@ -9,9 +9,37 @@ const api = {
     minimize: () => ipcRenderer.send('window-minimize'),
     maximize: () => ipcRenderer.send('window-maximize')
   },
+  // 添加打开项目详情窗口的API
+  openProjectDetails: (projectId, projectName) => {
+    ipcRenderer.send('open-project-details', projectId, projectName)
+  },
+  // 更新相关API
+  checkForUpdates: () => {
+    ipcRenderer.send('check-for-updates')
+  },
   startDownloadUpdate: (versionInfo) => {
     ipcRenderer.send('start-download-update', versionInfo)
   },
+  quitAndInstall: () => {
+    ipcRenderer.send('quit-and-install')
+  },
+  // 更新事件监听
+  onUpdateAvailable: (callback) => {
+    ipcRenderer.on('update-available', callback)
+  },
+  onDownloadProgress: (callback) => {
+    ipcRenderer.on('download-progress', callback)
+  },
+  onUpdateDownloaded: (callback) => {
+    ipcRenderer.on('update-downloaded', callback)
+  },
+  onUpdateError: (callback) => {
+    ipcRenderer.on('update-error', callback)
+  },
+  // 移除事件监听
+  removeAllListeners: (channel) => {
+    ipcRenderer.removeAllListeners(channel)
+  }
 }
 
 // 添加electronAPI对象，包含apiRequest方法

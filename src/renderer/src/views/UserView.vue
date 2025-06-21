@@ -225,7 +225,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from "vue";
+import { ref, onMounted } from "vue";
 import message from "../utils/message";
 import userAvatar from "../assets/imgae/userInfo.png";
 import userInfoStore from "../store/userInfoStore";
@@ -252,35 +252,7 @@ import TikTok from "../assets/imgae/project/TikTok.webp";
 import Instagram from "../assets/imgae/project/Instagram.webp";
 import Default from "../assets/svg/default.svg";
 
-// 接收父组件传递的props
-const props = defineProps({
-  userInfo: {
-    type: Object,
-    default: () => ({})
-  },
-  userDataUpdated: {
-    type: Number,
-    default: 0
-  }
-});
-
-const { userInfo: storeUserInfo, setUserInfo } = userInfoStore();
-
-// 使用computed创建响应式的用户信息
-const userInfo = computed(() => {
-  // 优先使用从父组件传递的数据，如果没有则使用store中的数据
-  const sourceData = Object.keys(props.userInfo).length > 0 ? props.userInfo : storeUserInfo.value;
-
-  // 确保返回一个安全的对象，避免undefined错误
-  return sourceData || {
-    account: '',
-    nickName: '',
-    userAvatar: '',
-    money: '0.00',
-    invitationCode: ''
-  };
-});
-
+const { userInfo, setUserInfo } = userInfoStore();
 const activeSection = ref("");
 
 // 头像上传相关
@@ -438,7 +410,7 @@ const toggleSection = async (section) => {
     activeSection.value = section;
     if (section === "personal-info") {
       // 初始化表单数据
-      userForm.value.nickName = userInfo.value.nickName || "";
+      userForm.value.nickName = userInfo.nickName || "";
       userForm.value.oldPassword = "";
       userForm.value.newPassword = "";
     } else if (section === "my-collections") {
@@ -451,7 +423,7 @@ const toggleSection = async (section) => {
       // 显示个人信息区域，聚焦于密码修改
       activeSection.value = "personal-info";
       // 初始化表单数据，清空昵称聚焦于密码
-      userForm.value.nickName = userInfo.value.nickName || "";
+      userForm.value.nickName = userInfo.nickName || "";
       userForm.value.oldPassword = "";
       userForm.value.newPassword = "";
       // 稍后聚焦密码输入框
@@ -544,8 +516,8 @@ const confirmLogout = async () => {
 
 // 复制邀请码
 const copyInvitationCode = () => {
-  if (userInfo.value.invitationCode) {
-    navigator.clipboard.writeText(userInfo.value.invitationCode)
+  if (userInfo.invitationCode) {
+    navigator.clipboard.writeText(userInfo.invitationCode)
       .then(() => {
         message.success("邀请码已复制到剪贴板");
       })
@@ -555,40 +527,13 @@ const copyInvitationCode = () => {
   }
 };
 
+
 onMounted(() => {
   // 初始化操作
   getOrderList(); // 页面加载时获取订单数量
   // 默认显示个人信息页面
   toggleSection("personal-info");
 });
-
-// 监听父组件的数据更新
-watch(
-  () => props.userDataUpdated,
-  (newVal, oldVal) => {
-    if (newVal !== oldVal && newVal > 0) {
-      // 当父组件数据更新时，同步更新本地数据
-      if (Object.keys(props.userInfo).length > 0) {
-        // 更新store中的数据以保持一致性
-        setUserInfo(props.userInfo);
-        // 更新表单数据
-        userForm.value.nickName = props.userInfo.nickName || "";
-      }
-    }
-  }
-);
-
-// 监听用户信息变化，确保数据同步
-watch(
-  () => userInfo.value,
-  (newUserInfo) => {
-    if (newUserInfo && newUserInfo.nickName) {
-      // 更新表单数据
-      userForm.value.nickName = newUserInfo.nickName || "";
-    }
-  },
-  { deep: true, immediate: true }
-);
 </script>
 
 <style scoped>
