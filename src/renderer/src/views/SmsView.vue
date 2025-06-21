@@ -107,9 +107,12 @@
           </div>
         </div>
         <div v-else-if="sseStatus === 'error'" class="error-state">
-          <div class="error-icon"><img src="../assets/svg/error.svg"  alt=""></div>
+          <div class="error-icon">⚠️</div>
           <div class="error-text">连接失败</div>
           <div class="error-hint">请检查网络连接或稍后重试</div>
+          <el-button type="primary" size="small" @click="startSSEConnection" style="margin-top: 15px;">
+            重新连接
+          </el-button>
         </div>
         <div v-else-if="smsList.length > 0" class="sms-list">
           <div class="sms-item" v-for="(sms) in smsList" :key="sms.code">
@@ -188,7 +191,7 @@ const route = useRoute();
 let sseService: SmsSSEService | null = null;
 
 // SSE状态管理
-const sseStatus = ref<"disconnected" | "connecting" | "connected" | "error">("disconnected");
+const sseStatus = ref<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
 const connectionStartTime = ref<Date | null>(null);
 
 // 项目选项
@@ -215,27 +218,27 @@ const TIME_UPDATE_INTERVAL = 30000;
 // SSE状态相关计算属性
 const sseStatusClass = computed(() => {
   switch (sseStatus.value) {
-    case "connected":
-      return "status-connected";
-    case "connecting":
-      return "status-connecting";
-    case "error":
-      return "status-error";
+    case 'connected':
+      return 'status-connected';
+    case 'connecting':
+      return 'status-connecting';
+    case 'error':
+      return 'status-error';
     default:
-      return "status-disconnected";
+      return 'status-disconnected';
   }
 });
 
 const sseStatusText = computed(() => {
   switch (sseStatus.value) {
-    case "connected":
-      return "已连接";
-    case "connecting":
-      return "连接中...";
-    case "error":
-      return "连接失败";
+    case 'connected':
+      return '已连接';
+    case 'connecting':
+      return '连接中...';
+    case 'error':
+      return '连接失败';
     default:
-      return "未连接";
+      return '未连接';
   }
 });
 
@@ -251,14 +254,14 @@ const startSSEConnection = () => {
     sseService.close();
   }
 
-  sseStatus.value = "connecting";
+  sseStatus.value = 'connecting';
   sseService = new SmsSSEService();
 
   // 设置SSE事件处理器
   sseService.onConnect((message) => {
     console.log("SSE连接成功:", message);
     smsLoading.value = false;
-    sseStatus.value = "connected";
+    sseStatus.value = 'connected';
     connectionStartTime.value = new Date();
   });
 
@@ -297,7 +300,7 @@ const startSSEConnection = () => {
   sseService.onError((error) => {
     console.error("SSE连接错误:", error);
     smsLoading.value = false;
-    sseStatus.value = "error";
+    sseStatus.value = 'error';
     if (connectionTimer) {
       clearInterval(connectionTimer);
       connectionTimer = null;
@@ -307,7 +310,7 @@ const startSSEConnection = () => {
   sseService.onClose(() => {
     console.log("SSE连接已关闭");
     smsLoading.value = false;
-    sseStatus.value = "disconnected";
+    sseStatus.value = 'disconnected';
     if (connectionTimer) {
       clearInterval(connectionTimer);
       connectionTimer = null;
@@ -325,7 +328,7 @@ const stopSSEConnection = () => {
     sseService.close();
     sseService = null;
   }
-  sseStatus.value = "disconnected";
+  sseStatus.value = 'disconnected';
   if (connectionTimer) {
     clearInterval(connectionTimer);
     connectionTimer = null;
@@ -792,8 +795,9 @@ watch(() => route.path, (newPath) => {
   color: #f56c6c;
 }
 
-.error-icon img{
-  width: 80px;
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
 }
 
 .error-text {
