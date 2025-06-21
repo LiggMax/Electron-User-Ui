@@ -66,55 +66,26 @@
         </el-table-column>
       </el-table>
 
+      <!-- 用户信息栏 -->
+      <div class="user-info-section">
+        <span class="user-phone">已购买号码: {{ phoneList.length }}</span>
+        <span class="sms-counter">验证码数量: {{ smsList.length }}</span>
+      </div>
+
       <!-- 短信内容区域 -->
       <div class="sms-content-area">
-        <!-- SSE状态指示器 -->
-        <div class="sse-status-header">
-          <div class="sse-status-indicator">
-            <div class="status-icon-wrapper">
-              <div :class="['status-icon', sseStatusClass]">
-                <div v-if="sseStatus === 'connecting'" class="pulse-ring"></div>
-                <div class="status-dot"></div>
-              </div>
-            </div>
-            <div class="status-info">
-              <div class="status-title">短信服务状态</div>
-              <div class="status-text">{{ sseStatusText }}</div>
-            </div>
-          </div>
-          <div class="status-stats">
-            <div class="stat-item">
-              <div class="stat-value">{{ phoneList.length }}</div>
-              <div class="stat-label">已购买号码</div>
-            </div>
-            <div class="stat-separator"></div>
-            <div class="stat-item">
-              <div class="stat-value">{{ smsList.length }}</div>
-              <div class="stat-label">验证码数量</div>
-            </div>
-          </div>
-        </div>
-
         <div v-if="smsLoading" class="loading-container">
           <div class="loading-spinner"></div>
-          <span class="loading-text">正在建立连接...</span>
+          <span class="loading-text">正在获取短信验证码...</span>
         </div>
-        <div v-else-if="smsList.length === 0 && sseStatus === 'connected'" class="empty-sms">
+        <div v-else-if="smsList.length === 0" class="empty-sms">
           <div class="empty-icon">📭</div>
           <div class="empty-text">暂无短信验证码</div>
           <div class="empty-hint">
             <div class="hint-note">💡 提醒：验证码有效期为20分钟，请及时使用</div>
           </div>
         </div>
-        <div v-else-if="sseStatus === 'error'" class="error-state">
-          <div class="error-icon">⚠️</div>
-          <div class="error-text">连接失败</div>
-          <div class="error-hint">请检查网络连接或稍后重试</div>
-          <el-button type="primary" size="small" @click="startSSEConnection" style="margin-top: 15px;">
-            重新连接
-          </el-button>
-        </div>
-        <div v-else-if="smsList.length > 0" class="sms-list">
+        <div v-else class="sms-list">
           <div class="sms-item" v-for="(sms) in smsList" :key="sms.code">
             <div class="sms-meta">
               <div class="sms-meta-left">
@@ -151,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount, watch, computed } from "vue";
+import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 import message from "../utils/message";
 import { CopyDocument } from "@element-plus/icons-vue";
 import { SmsListService } from "../api/sms";
@@ -160,39 +131,12 @@ import { useRoute } from "vue-router";
 import DateFormatter from "../utils/DateFormatter.js";
 import TimeUtils from "../utils/timeUtils.js";
 
-// 定义SMS数据类型
-interface SmsItem {
-  id: string;
-  time: string;
-  message: string;
-  phoneNumber: string;
-  projectName: string;
-  code: string;
-  createdAt: string;
-}
-
-// 定义Phone数据类型
-interface PhoneItem {
-  userProjectId: string;
-  projectName: string;
-  phoneNumber: string;
-  projectIcon: string;
-  regionIcon: string;
-  location: string;
-  createdAt: string;
-  status: number;
-}
-
 const selectedProject = ref("");
-const selectedRows = ref<PhoneItem[]>([]);
+const selectedRows = ref([]);
 const route = useRoute();
 
 // SSE服务实例
-let sseService: SmsSSEService | null = null;
-
-// SSE状态管理
-const sseStatus = ref<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
-const connectionStartTime = ref<Date | null>(null);
+let sseService = null;
 
 // 项目选项
 const projectOptions = [
@@ -201,50 +145,21 @@ const projectOptions = [
 ];
 
 // 手机号列表
-const phoneList = ref<PhoneItem[]>([]);
+const phoneList = ref([]);
 
 // 短信列表数据
-const smsList = ref<SmsItem[]>([]);
+const smsList = ref([]);
 
 // 添加loading状态
 const smsLoading = ref(false);
 
 // 时间更新定时器
-let timeUpdateTimer: NodeJS.Timeout | null = null;
-let connectionTimer: NodeJS.Timeout | null = null;
+let timeUpdateTimer = null;
 // 时间更新间隔(毫秒) - 每30秒更新一次时间显示
 const TIME_UPDATE_INTERVAL = 30000;
 
-// SSE状态相关计算属性
-const sseStatusClass = computed(() => {
-  switch (sseStatus.value) {
-    case 'connected':
-      return 'status-connected';
-    case 'connecting':
-      return 'status-connecting';
-    case 'error':
-      return 'status-error';
-    default:
-      return 'status-disconnected';
-  }
-});
-
-const sseStatusText = computed(() => {
-  switch (sseStatus.value) {
-    case 'connected':
-      return '已连接';
-    case 'connecting':
-      return '连接中...';
-    case 'error':
-      return '连接失败';
-    default:
-      return '未连接';
-  }
-});
-
-
 // 多选变化
-const handleSelectionChange = (rows: PhoneItem[]) => {
+const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
 };
 
@@ -254,22 +169,19 @@ const startSSEConnection = () => {
     sseService.close();
   }
 
-  sseStatus.value = 'connecting';
   sseService = new SmsSSEService();
 
   // 设置SSE事件处理器
   sseService.onConnect((message) => {
-    console.log("SSE连接成功:", message);
+    console.log('SSE连接成功:', message);
     smsLoading.value = false;
-    sseStatus.value = 'connected';
-    connectionStartTime.value = new Date();
   });
 
-  sseService.onSmsCode((data: any) => {
-    console.log("收到新验证码:", data);
+  sseService.onSmsCode((data) => {
+    console.log('收到新验证码:', data);
 
     // 将SSE数据转换为短信列表格式
-    const newSms: SmsItem = {
+    const newSms = {
       id: data.codeInfo.id,
       time: DateFormatter.format(data.codeInfo.createdAt),
       message: `您的验证码是: ${data.codeInfo.code}`,
@@ -289,32 +201,22 @@ const startSSEConnection = () => {
     if (!exists) {
       // 将新验证码添加到列表顶部
       smsList.value.unshift(newSms);
-      message.success("收到新的短信验证码");
+      message.success('收到新的短信验证码');
     }
   });
 
   sseService.onHeartbeat(() => {
-    console.log("SSE心跳正常");
+    console.log('SSE心跳正常');
   });
 
   sseService.onError((error) => {
-    console.error("SSE连接错误:", error);
+    console.error('SSE连接错误:', error);
     smsLoading.value = false;
-    sseStatus.value = 'error';
-    if (connectionTimer) {
-      clearInterval(connectionTimer);
-      connectionTimer = null;
-    }
   });
 
   sseService.onClose(() => {
-    console.log("SSE连接已关闭");
+    console.log('SSE连接已关闭');
     smsLoading.value = false;
-    sseStatus.value = 'disconnected';
-    if (connectionTimer) {
-      clearInterval(connectionTimer);
-      connectionTimer = null;
-    }
   });
 
   // 开始连接
@@ -328,15 +230,10 @@ const stopSSEConnection = () => {
     sseService.close();
     sseService = null;
   }
-  sseStatus.value = 'disconnected';
-  if (connectionTimer) {
-    clearInterval(connectionTimer);
-    connectionTimer = null;
-  }
 };
 
 // 复制短信验证码
-const copySmsCode = (code: string) => {
+const copySmsCode = (code) => {
   if (!code) {
     message.error("验证码为空");
     return;
@@ -353,7 +250,7 @@ const copySmsCode = (code: string) => {
 };
 
 // 复制手机号码
-const copyPhoneNumber = (phoneNumber: string) => {
+const copyPhoneNumber = (phoneNumber) => {
   if (!phoneNumber) {
     message.error("手机号码为空");
     return;
@@ -375,7 +272,7 @@ const getSmsList = async () => {
     const res = await SmsListService();
 
     // 直接使用API返回的数据格式
-    phoneList.value = res.data.map((item: any): PhoneItem => {
+    phoneList.value = res.data.map(item => {
       return {
         userProjectId: item.userProjectId,
         projectName: item.projectName,
@@ -393,8 +290,8 @@ const getSmsList = async () => {
 };
 
 // 使用TimeUtils工具类的包装函数
-const formatRemainingTime = (createdAt: string) => TimeUtils.formatRemainingTime(createdAt);
-const getTimeStatusClass = (createdAt: string) => TimeUtils.getTimeStatusClass(createdAt);
+const formatRemainingTime = (createdAt) => TimeUtils.formatRemainingTime(createdAt);
+const getTimeStatusClass = (createdAt) => TimeUtils.getTimeStatusClass(createdAt);
 
 // 开始时间更新定时器
 const startTimeUpdate = () => {
@@ -489,141 +386,23 @@ watch(() => route.path, (newPath) => {
   color: #333;
 }
 
+/* 用户信息区域 */
+.user-info-section {
+  background-color: #303133;
+  color: white;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
 /* 短信内容区域 */
 .sms-content-area {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-}
-
-/* SSE状态指示器样式 */
-.sse-status-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sse-status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.status-icon-wrapper {
-  position: relative;
-}
-
-.status-icon {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.status-dot {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background-color: currentColor;
-}
-
-.pulse-ring {
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 30px;
-  height: 30px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  animation: pulse-ring 1.5s infinite;
-  opacity: 0.3;
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1.2);
-    opacity: 0;
-  }
-}
-
-.status-connected {
-  color: #67c23a;
-}
-
-.status-connecting {
-  color: #e6a23c;
-}
-
-.status-error {
-  color: #f56c6c;
-}
-
-.status-disconnected {
-  color: #909399;
-}
-
-.status-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.status-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.status-text {
-  font-size: 13px;
-  opacity: 0.9;
-}
-
-/* 状态统计区域 */
-.status-stats {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.stat-label {
-  font-size: 12px;
-  opacity: 0.9;
-  margin-top: 4px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.stat-separator {
-  width: 1px;
-  height: 40px;
-  background-color: rgba(255, 255, 255, 0.3);
-  margin: 0 5px;
 }
 
 .sms-meta-left {
@@ -718,18 +497,17 @@ watch(() => route.path, (newPath) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 150px;
-  background-color: #fafafa;
+  height: 200px;
 }
 
 .loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   border-top-color: #409EFF;
   animation: spin 1s linear infinite;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 }
 
 @keyframes spin {
@@ -742,7 +520,7 @@ watch(() => route.path, (newPath) => {
 }
 
 .loading-text {
-  font-size: 14px;
+  font-size: 16px;
   color: #909399;
 }
 
@@ -754,17 +532,16 @@ watch(() => route.path, (newPath) => {
   justify-content: center;
   padding: 40px 0;
   color: #909399;
-  background-color: #fafafa;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
+  font-size: 60px;
+  margin-bottom: 15px;
 }
 
 .empty-text {
-  font-size: 16px;
-  margin-bottom: 12px;
+  font-size: 18px;
+  margin-bottom: 15px;
   color: #606266;
 }
 
@@ -784,35 +561,6 @@ watch(() => route.path, (newPath) => {
   display: inline-block;
 }
 
-/* 错误状态 */
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 0;
-  background-color: #fef0f0;
-  color: #f56c6c;
-}
-
-.error-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
-.error-text {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #f56c6c;
-  font-weight: 600;
-}
-
-.error-hint {
-  font-size: 14px;
-  color: #909399;
-  text-align: center;
-}
-
 .table-cell-content {
   display: flex;
   align-items: center;
@@ -824,5 +572,5 @@ watch(() => route.path, (newPath) => {
   margin-right: 5px;
   border-radius: 5px;
 }
-</style>
 
+</style>
