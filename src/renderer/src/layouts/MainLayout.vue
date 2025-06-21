@@ -22,7 +22,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import SideMenu from '../components/menu/SideMenu.vue';
