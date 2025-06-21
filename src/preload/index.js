@@ -14,36 +14,10 @@ const api = {
   },
 }
 
-// 添加electronAPI对象，包含apiRequest方法和SSE相关方法
+// 添加electronAPI对象，包含apiRequest方法
 const myElectronAPI = {
   ...electronAPI,
-  apiRequest: (options) => ipcRenderer.invoke('api-request', options),
-  
-  // SSE相关API
-  createSSEConnection: (options) => ipcRenderer.invoke('create-sse-connection', options),
-  closeSSEConnection: (sseId) => ipcRenderer.send('close-sse-connection', sseId),
-  
-  // SSE事件监听
-  onSSEConnect: (callback) => {
-    ipcRenderer.on('sse-connect', (event, data) => callback(data))
-  },
-  onSSEMessage: (callback) => {
-    ipcRenderer.on('sse-message', (event, data) => callback(data))
-  },
-  onSSEError: (callback) => {
-    ipcRenderer.on('sse-error', (event, data) => callback(data))
-  },
-  onSSEClose: (callback) => {
-    ipcRenderer.on('sse-close', (event, data) => callback(data))
-  },
-  
-  // 移除SSE事件监听器
-  removeSSEListeners: () => {
-    ipcRenderer.removeAllListeners('sse-connect')
-    ipcRenderer.removeAllListeners('sse-message')
-    ipcRenderer.removeAllListeners('sse-error')
-    ipcRenderer.removeAllListeners('sse-close')
-  }
+  apiRequest: (options) => ipcRenderer.invoke('api-request', options)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
