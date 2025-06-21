@@ -49,7 +49,7 @@ export class SmsSSEService {
 
     try {
       // 创建SSE连接
-      this.eventSource = new EventSource('/api/user/sms/sse/code?token='+ tokenStore.token)
+      this.eventSource = new EventSource('/api/user/sms/sse?token='+ tokenStore.token)
 
       // 监听连接建立事件
       this.eventSource.addEventListener('connect', (event) => {

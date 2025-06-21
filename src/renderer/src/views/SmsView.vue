@@ -121,12 +121,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 import message from "../utils/message";
 import { CopyDocument } from "@element-plus/icons-vue";
-import { SmsListService } from "../api/sms";
-import { SmsSSEService } from "../api/sse/sse";
+import { SmsListService, SmsCodeService } from "../api/sms";
 import { useRoute } from "vue-router";
 import DateFormatter from "../utils/DateFormatter.js";
 import TimeUtils from "../utils/timeUtils.js";
@@ -135,8 +134,8 @@ const selectedProject = ref("");
 const selectedRows = ref([]);
 const route = useRoute();
 
-// SSE服务实例
-let sseService = null;
+// 添加页面可见性状态
+const isPageVisible = ref(true);
 
 // 项目选项
 const projectOptions = [
@@ -153,83 +152,97 @@ const smsList = ref([]);
 // 添加loading状态
 const smsLoading = ref(false);
 
-// 时间更新定时器
+// 轮询定时器
+let pollingTimer = null;
+// 时间更新定时器  
 let timeUpdateTimer = null;
+// 轮询间隔时间(毫秒)
+const POLLING_INTERVAL = 6000;
 // 时间更新间隔(毫秒) - 每30秒更新一次时间显示
 const TIME_UPDATE_INTERVAL = 30000;
+
+// 监听页面可见性变化
+const handleVisibilityChange = () => {
+  isPageVisible.value = document.visibilityState === "visible";
+  console.log("页面可见性:", isPageVisible.value ? "可见" : "不可见");
+
+  if (isPageVisible.value) {
+    // 页面可见时，开始轮询和时间更新
+    startPolling();
+    startTimeUpdate();
+    // 立即获取一次最新数据
+    getVerificationCodes();
+  } else {
+    // 页面不可见时，停止轮询和时间更新
+    stopPolling();
+    stopTimeUpdate();
+  }
+};
 
 // 多选变化
 const handleSelectionChange = (rows) => {
   selectedRows.value = rows;
 };
 
-// 启动SSE连接
-const startSSEConnection = () => {
-  if (sseService) {
-    sseService.close();
-  }
-
-  sseService = new SmsSSEService();
-
-  // 设置SSE事件处理器
-  sseService.onConnect((message) => {
-    console.log('SSE连接成功:', message);
-    smsLoading.value = false;
-  });
-
-  sseService.onSmsCode((data) => {
-    console.log('收到新验证码:', data);
-
-    // 将SSE数据转换为短信列表格式
-    const newSms = {
-      id: data.codeInfo.id,
-      time: DateFormatter.format(data.codeInfo.createdAt),
-      message: `您的验证码是: ${data.codeInfo.code}`,
-      phoneNumber: data.codeInfo.phoneNumber,
-      projectName: data.codeInfo.projectName,
-      code: data.codeInfo.code,
-      createdAt: data.codeInfo.createdAt
-    };
-
-    // 检查是否已存在相同的验证码（避免重复添加）
-    const exists = smsList.value.some(sms =>
-      sms.code === newSms.code &&
-      sms.phoneNumber === newSms.phoneNumber &&
-      sms.createdAt === newSms.createdAt
-    );
-
-    if (!exists) {
-      // 将新验证码添加到列表顶部
-      smsList.value.unshift(newSms);
-      message.success('收到新的短信验证码');
+// 获取验证码
+const getVerificationCodes = async () => {
+  try {
+    // 首次加载时显示加载状态，后续轮询时不显示加载状态
+    if (smsList.value.length === 0) {
+      smsLoading.value = true;
     }
-  });
 
-  sseService.onHeartbeat(() => {
-    console.log('SSE心跳正常');
-  });
+    const res = await SmsCodeService();
 
-  sseService.onError((error) => {
-    console.error('SSE连接错误:', error);
+    // 将API返回的数据转换为短信列表格式
+    const newSmsList = res.data.map(item => {
+      return {
+        id: item.id,
+        time: DateFormatter.format(item.createdAt),
+        message: `您的验证码是: ${item.code}`,
+        phoneNumber: item.phoneNumber,
+        projectName: item.projectName,
+        code: item.code,
+        createdAt: item.createdAt // 保留原始创建时间用于计算剩余时间
+      };
+    });
+
+    // 替换短信列表
+    smsList.value = newSmsList;
+    console.log("获取到验证码数据:", newSmsList.length);
+  } catch (error) {
+    console.error("获取验证码失败:", error);
+  } finally {
     smsLoading.value = false;
-  });
-
-  sseService.onClose(() => {
-    console.log('SSE连接已关闭');
-    smsLoading.value = false;
-  });
-
-  // 开始连接
-  smsLoading.value = true;
-  sseService.start();
+  }
 };
 
-// 停止SSE连接
-const stopSSEConnection = () => {
-  if (sseService) {
-    sseService.close();
-    sseService = null;
+// 开始轮询获取验证码
+const startPolling = () => {
+  // 确保不会创建多个定时器
+  stopPolling();
+
+  // 创建新的轮询定时器
+  pollingTimer = setInterval(async () => {
+    // 只有在页面可见时才进行轮询
+    if (isPageVisible.value && isCurrentRoute()) {
+      console.log("轮询获取验证码数据...");
+      await getVerificationCodes();
+    }
+  }, POLLING_INTERVAL);
+};
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
   }
+};
+
+// 检查当前是否为短信页面
+const isCurrentRoute = () => {
+  return route.path === "/sms";
 };
 
 // 复制短信验证码
@@ -297,7 +310,7 @@ const getTimeStatusClass = (createdAt) => TimeUtils.getTimeStatusClass(createdAt
 const startTimeUpdate = () => {
   stopTimeUpdate();
   timeUpdateTimer = setInterval(() => {
-    if (route.path === "/sms" && smsList.value.length > 0) {
+    if (isPageVisible.value && isCurrentRoute() && smsList.value.length > 0) {
       console.log("更新剩余时间显示...");
       // 触发组件重新渲染以更新时间显示
       smsList.value = [...smsList.value];
@@ -314,27 +327,35 @@ const stopTimeUpdate = () => {
 };
 
 onMounted(async () => {
+  // 注册页面可见性变化事件
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
   await getSmsList();
-  // 启动SSE连接获取验证码
-  startSSEConnection();
+  // 页面加载时自动获取验证码
+  await getVerificationCodes();
+  startPolling();
   startTimeUpdate();
 });
 
-// 组件卸载前清除SSE连接和定时器
+// 组件卸载前清除定时器和事件监听
 onBeforeUnmount(() => {
-  stopSSEConnection();
+  stopPolling();
   stopTimeUpdate();
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
 
 // 监听路由变化
 watch(() => route.path, (newPath) => {
   if (newPath === "/sms") {
-    // 当切换到短信页面时，启动SSE连接
-    startSSEConnection();
+    // 当切换到短信页面时，开始轮询和时间更新
+    isPageVisible.value = true;
+    getVerificationCodes();
+    startPolling();
     startTimeUpdate();
   } else {
-    // 当离开短信页面时，停止SSE连接
-    stopSSEConnection();
+    // 当离开短信页面时，停止轮询和时间更新
+    isPageVisible.value = false;
+    stopPolling();
     stopTimeUpdate();
   }
 });
